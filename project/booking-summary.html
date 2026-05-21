@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>AureaCare · Conferma prenotazione</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="js/styles.css">
+  <style>
+    .recap-block {
+      background: #fff;
+      border: 1px solid var(--border-soft);
+      border-radius: var(--r-md);
+      padding: 16px;
+      margin-bottom: 14px;
+    }
+    .recap-block h3 { font-size: 13px; font-weight: 700; color: var(--medium-gray); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 12px; }
+    .kv-row {
+      display: flex; justify-content: space-between; align-items: flex-start; gap: 12px;
+      padding: 10px 0;
+      border-bottom: 1px dashed var(--border-soft);
+      font-size: 14px;
+    }
+    .kv-row:last-child { border-bottom: none; }
+    .kv-row .k { color: var(--medium-gray); }
+    .kv-row .v { font-weight: 700; text-align: right; max-width: 65%; }
+
+    /* Handoff variants */
+    .handoff--visual {
+      background: var(--bg-warm);
+      border: 1px solid var(--bg-warm-br);
+      border-radius: var(--r-md);
+      padding: 16px;
+      margin-top: 14px;
+    }
+    .handoff--visual .visual-head {
+      display: flex; gap: 12px; align-items: center;
+    }
+    .handoff--visual .ambo-illo {
+      width: 56px; height: 56px;
+      border-radius: 14px;
+      background: linear-gradient(135deg, var(--primary-orange), var(--secondary-orange));
+      color: #fff;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .handoff--visual .step3 {
+      display: grid; gap: 8px;
+      margin-top: 14px;
+    }
+    .handoff--visual .step3 .row {
+      display: flex; gap: 10px;
+      align-items: flex-start;
+      padding: 8px 10px;
+      background: #fff;
+      border-radius: 8px;
+      font-size: 12px;
+    }
+    .handoff--visual .step3 .num {
+      width: 20px; height: 20px;
+      border-radius: 50%;
+      background: var(--primary-orange);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 700;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="patient-app">
+    <header class="patient-header">
+      <button class="icon-btn" onclick="history.back()" aria-label="Indietro"><span id="ico-back"></span></button>
+      <div class="brand" style="font-size:15px">Riepilogo</div>
+      <div class="app-switcher-wrap">
+        <button class="icon-btn" data-app-switcher aria-label="App suite"><span id="ico-grid"></span></button>
+      </div>
+    </header>
+
+    <div class="patient-content">
+      <h2 class="h2 mb-4">Conferma la tua prenotazione</h2>
+      <p class="caption mb-16">Verrà inviata in approvazione all'admin AureaCare.</p>
+
+      <!-- Recap prestazione -->
+      <div class="recap-block">
+        <h3>Prestazione</h3>
+        <div class="flex items-center gap-12 mb-12">
+          <div style="width:44px;height:44px;border-radius:12px;background:var(--care-blue-light);color:var(--care-blue-dark);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+            <span id="ico-heart"></span>
+          </div>
+          <div style="flex:1">
+            <p style="font-weight:700">Visita cardiologica</p>
+            <p class="caption">Cardiologia · 30 min</p>
+          </div>
+        </div>
+        <div class="kv-row"><span class="k">Struttura</span><span class="v">Policlinico Gemelli<br><span class="caption" style="font-weight:400">Largo A. Gemelli 8 · Trionfale</span></span></div>
+        <div class="kv-row"><span class="k">Data</span><span class="v" id="kv-date">Giovedì 22 maggio 2026</span></div>
+        <div class="kv-row"><span class="k">Orario</span><span class="v" id="kv-time">14:30</span></div>
+        <div class="kv-row"><span class="k">Medico</span><span class="v">Dr.ssa Elena Conti</span></div>
+      </div>
+
+      <!-- Recap costo -->
+      <div class="recap-block">
+        <h3>Pagamento</h3>
+        <div class="kv-row"><span class="k">Tariffa convenzionata</span><span class="v">€95</span></div>
+        <div class="kv-row" id="row-shuttle-fee" style="display:none"><span class="k">Trasporto AureaShuttle</span><span class="v">€18</span></div>
+        <div class="kv-row"><span class="k">Wallet attuale</span><span class="v">€340 · 8 prestazioni</span></div>
+        <div class="kv-row"><span class="k" style="color:var(--ink);font-weight:700">Saldo dopo conferma</span><span class="v" style="color:var(--care-blue-dark);font-size:16px" id="balance-after">€245 · 7 prestazioni</span></div>
+      </div>
+
+      <!-- Handoff: pre-flagged (chosen variant) -->
+      <div id="handoff-zone"></div>
+
+      <!-- CTA -->
+      <button class="btn btn--care btn--block btn--lg mt-20" onclick="confirmBooking()">Conferma prenotazione</button>
+      <button class="btn btn--ghost btn--block mt-8" onclick="history.back()">Modifica</button>
+
+      <p class="caption text-center mt-16">Verrà inviata in approvazione. Tempi medi: 2-4 ore lavorative.</p>
+    </div>
+
+    <nav class="bottom-nav">
+      <a class="nav-item" href="home.html"><span id="nv-home"></span>Home</a>
+      <a class="nav-item active" href="my-cures.html"><span id="nv-cure"></span>Cure</a>
+      <a class="nav-item" href="wallet.html"><span id="nv-wallet"></span>Wallet</a>
+      <a class="nav-item" href="profile.html"><span id="nv-profile"></span>Profilo</a>
+    </nav>
+  </div>
+
+  <div id="toast-container"></div>
+
+  <script src="data/mock-data.js"></script>
+  <script src="js/icons.js"></script>
+  <script src="js/navigation.js"></script>
+  <script>
+    document.getElementById('ico-back').outerHTML = aIcon('arrow-left', { size: 20 });
+    document.getElementById('ico-grid').outerHTML = aIcon('grid', { size: 20 });
+    document.getElementById('ico-heart').outerHTML = aIcon('heart', { size: 22 });
+    document.getElementById('nv-home').outerHTML   = aIcon('home',    { size: 22 });
+    document.getElementById('nv-cure').outerHTML   = aIcon('heart',   { size: 22 });
+    document.getElementById('nv-wallet').outerHTML = aIcon('wallet',  { size: 22 });
+    document.getElementById('nv-profile').outerHTML= aIcon('user',    { size: 22 });
+
+    const params = new URLSearchParams(location.search);
+    const shuttle = params.get('shuttle') === '1';
+    const day = params.get('day') || 22;
+    const time = params.get('time') || '14:30';
+    document.getElementById('kv-date').innerHTML = `Giovedì ${day} maggio 2026`;
+    document.getElementById('kv-time').textContent = time;
+    if (shuttle) {
+      document.getElementById('row-shuttle-fee').style.display = 'flex';
+      document.getElementById('balance-after').textContent = '€227 · 7 prestazioni';
+    }
+
+    // Handoff variant (read from localStorage; pre-flagged is default per user)
+    const handoffMode = localStorage.getItem('aureacare_handoff_mode') || 'prefilled';
+    const zone = document.getElementById('handoff-zone');
+
+    if (handoffMode === 'sobrio') {
+      zone.innerHTML = `
+        <div class="handoff">
+          <div class="handoff-icon">${aIcon('ambulance', { size: 24 })}</div>
+          <div class="handoff-body">
+            <div class="handoff-title">Hai bisogno del trasporto sanitario?</div>
+            <p class="handoff-sub">Prenota con AureaShuttle: i dati della visita sono già precompilati. Il servizio scala dal tuo wallet pacchetti corse.</p>
+            <div class="handoff-actions">
+              <a class="btn btn--primary-grad" href="#" onclick="event.preventDefault();showToast('AureaShuttle: apertura simulata','info')">Sì, apri AureaShuttle</a>
+              <button class="btn btn--secondary">No, grazie</button>
+            </div>
+          </div>
+        </div>`;
+    } else if (handoffMode === 'visual') {
+      zone.innerHTML = `
+        <div class="handoff--visual">
+          <div class="visual-head">
+            <div class="ambo-illo">${aIcon('ambulance', { size: 28 })}</div>
+            <div>
+              <p style="font-weight:700">Aggiungi trasporto sanitario</p>
+              <p class="caption" style="color:#856404">AureaShuttle ti porta a destinazione, già precompilato.</p>
+            </div>
+          </div>
+          <div class="step3">
+            <div class="row"><span class="num">1</span><span><strong>Conferma qui</strong>: i dati della visita passano ad AureaShuttle.</span></div>
+            <div class="row"><span class="num">2</span><span>Scegli orario di ritiro su AureaShuttle (suggerito 1h prima).</span></div>
+            <div class="row"><span class="num">3</span><span>Il costo scala dal <strong>wallet pacchetti corse</strong> AureaShuttle, non dal wallet Care.</span></div>
+          </div>
+          <div class="handoff-actions" style="display:flex;gap:8px;margin-top:12px">
+            <a class="btn btn--primary-grad" href="#" onclick="event.preventDefault();showToast('AureaShuttle: apertura simulata','info')" style="flex:1">Apri AureaShuttle</a>
+            <button class="btn btn--secondary" style="flex:1">No, grazie</button>
+          </div>
+        </div>`;
+    } else {
+      // Pre-filled (default): if shuttle === true mostra recap precompilato; altrimenti card prompt
+      if (shuttle) {
+        zone.innerHTML = `
+          <div class="handoff handoff--prefilled">
+            <div class="handoff-icon">${aIcon('ambulance', { size: 24 })}</div>
+            <div class="handoff-body">
+              <div class="handoff-title">Trasporto AureaShuttle precompilato</div>
+              <p class="handoff-sub">Hai richiesto il trasporto sanitario in fase di prenotazione. Ecco il riepilogo della richiesta cross-app.</p>
+              <div class="prefill-list">
+                <div class="row"><span>Da</span><span>Via Tuscolana 124, Roma</span></div>
+                <div class="row"><span>A</span><span>Policlinico Gemelli</span></div>
+                <div class="row"><span>Arrivo richiesto</span><span>${day} mag · 14:15</span></div>
+                <div class="row"><span>Stima</span><span style="color:var(--primary-orange);font-weight:700">€18 · ~22 min</span></div>
+                <div class="row"><span>Pacchetto corse</span><span>12 corse residue</span></div>
+              </div>
+              <div class="handoff-actions">
+                <a class="btn btn--primary-grad btn--sm" href="#" onclick="event.preventDefault();showToast('AureaShuttle: dati inviati','care')">Conferma su AureaShuttle ${aIcon('arrow-right',{size:14})}</a>
+                <button class="btn btn--ghost btn--sm" onclick="document.querySelector('.handoff').remove();showToast('Trasporto annullato','info')">Annulla trasporto</button>
+              </div>
+            </div>
+          </div>`;
+      } else {
+        zone.innerHTML = `
+          <div class="handoff">
+            <div class="handoff-icon">${aIcon('ambulance', { size: 24 })}</div>
+            <div class="handoff-body">
+              <div class="handoff-title">Vuoi aggiungere il trasporto?</div>
+              <p class="handoff-sub">Non l'hai richiesto in fase di prenotazione. Puoi aggiungerlo ora: i dati passano automaticamente ad AureaShuttle.</p>
+              <div class="handoff-actions">
+                <a class="btn btn--primary-grad btn--sm" href="#" onclick="event.preventDefault();showToast('AureaShuttle: apertura simulata','info')">Sì, apri AureaShuttle</a>
+                <button class="btn btn--secondary btn--sm">No, grazie</button>
+              </div>
+            </div>
+          </div>`;
+      }
+    }
+
+    function confirmBooking() {
+      showConfirmDialog(
+        'Confermi la prenotazione?',
+        'Verrà inviata in approvazione all\\'admin. Riceverai una notifica entro 2-4 ore.',
+        () => {
+          showToast('Prenotazione inviata in approvazione', 'care');
+          setTimeout(() => location.href = 'my-cures.html', 900);
+        },
+        { confirmLabel: 'Sì, invia' }
+      );
+    }
+  </script>
+</body>
+</html>

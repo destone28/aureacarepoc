@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>AureaCare · Wallet</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="js/styles.css">
+  <style>
+    .wallet-hero {
+      background: linear-gradient(160deg, #fff, var(--care-blue-bg));
+      border: 1px solid #DCE7F4;
+      border-radius: var(--r-lg);
+      padding: 22px;
+      text-align: center;
+      margin-bottom: 16px;
+    }
+    .pkg-grid {
+      display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px;
+      margin-bottom: 16px;
+    }
+    .pkg-card {
+      background: #fff;
+      border: 1.5px solid var(--border-soft);
+      border-radius: var(--r-md);
+      padding: 14px;
+      text-align: center;
+      cursor: pointer;
+      transition: all .15s ease;
+    }
+    .pkg-card:hover { border-color: var(--care-blue); transform: translateY(-1px); }
+    .pkg-card.selected { border-color: var(--care-blue); background: var(--care-blue-bg); }
+    .pkg-amount { font-size: 22px; font-weight: 700; }
+    .pkg-sub { font-size: 11px; color: var(--medium-gray); margin-top: 2px; }
+    .pkg-badge {
+      display: inline-block; margin-top: 6px;
+      background: var(--care-blue-light); color: var(--care-blue-dark);
+      font-size: 10px; font-weight: 700; padding: 2px 6px;
+      border-radius: 4px; letter-spacing: 0.04em;
+    }
+    .pay-grid {
+      display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px;
+      margin-bottom: 16px;
+    }
+    .pay-card {
+      background: #fff;
+      border: 1.5px solid var(--border-soft);
+      border-radius: var(--r-md);
+      padding: 14px 8px;
+      cursor: pointer;
+      text-align: center;
+      transition: all .15s ease;
+    }
+    .pay-card:hover { border-color: var(--care-blue); }
+    .pay-card.selected { border-color: var(--primary-orange); background: #FFF6E8; }
+    .pay-card .pay-name { font-size: 12px; font-weight: 700; margin-top: 6px; }
+  </style>
+</head>
+<body>
+  <div class="patient-app">
+    <header class="patient-header">
+      <button class="icon-btn" onclick="history.back()" aria-label="Indietro"><span id="ico-back"></span></button>
+      <div class="brand" style="font-size:15px">Wallet AureaCare</div>
+      <div class="app-switcher-wrap">
+        <button class="icon-btn" data-app-switcher aria-label="App suite"><span id="ico-grid"></span></button>
+      </div>
+    </header>
+
+    <div class="patient-content">
+      <!-- Hero ring -->
+      <div class="wallet-hero">
+        <div class="wallet-ring-wrap">
+          <div id="wallet-ring-big"></div>
+        </div>
+        <div class="flex justify-center gap-12 mt-16">
+          <div>
+            <p style="font-size:22px;font-weight:700;color:var(--care-blue-dark)">€340</p>
+            <p class="caption">credito</p>
+          </div>
+          <div style="width:1px;background:var(--border-soft)"></div>
+          <div>
+            <p style="font-size:22px;font-weight:700">8 / 12</p>
+            <p class="caption">prestazioni</p>
+          </div>
+          <div style="width:1px;background:var(--border-soft)"></div>
+          <div>
+            <p style="font-size:22px;font-weight:700">€42</p>
+            <p class="caption">media / pres.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Ricarica -->
+      <div class="divider-eyebrow"><span>Ricarica wallet</span><span class="line"></span></div>
+
+      <p class="caption mb-8">Scegli un pacchetto</p>
+      <div class="pkg-grid">
+        <div class="pkg-card" onclick="selectPkg(this, 100)">
+          <div class="pkg-amount">€100</div>
+          <div class="pkg-sub">~ 2-3 prestazioni</div>
+        </div>
+        <div class="pkg-card selected" onclick="selectPkg(this, 250)">
+          <div class="pkg-amount">€250</div>
+          <div class="pkg-sub">~ 6-7 prestazioni</div>
+          <span class="pkg-badge">Più popolare</span>
+        </div>
+        <div class="pkg-card" onclick="selectPkg(this, 500)">
+          <div class="pkg-amount">€500</div>
+          <div class="pkg-sub">~ 12-14 prestazioni</div>
+        </div>
+        <div class="pkg-card" onclick="selectPkg(this, 'custom')">
+          <div class="pkg-amount">Custom</div>
+          <div class="pkg-sub">scegli l'importo</div>
+        </div>
+      </div>
+
+      <p class="caption mb-8">Metodo di pagamento</p>
+      <div class="pay-grid">
+        <div class="pay-card selected" onclick="selectPay(this)">
+          <span id="ico-pay1"></span>
+          <div class="pay-name">Stripe</div>
+        </div>
+        <div class="pay-card" onclick="selectPay(this)">
+          <span id="ico-pay2"></span>
+          <div class="pay-name">PayPal</div>
+        </div>
+        <div class="pay-card" onclick="selectPay(this)">
+          <span id="ico-pay3"></span>
+          <div class="pay-name">Google Pay</div>
+        </div>
+      </div>
+
+      <button class="btn btn--primary-grad btn--block btn--lg mb-12" onclick="topUp()">
+        Ricarica <strong id="topup-amount">€250</strong>
+      </button>
+      <p class="caption text-center mb-20">Pagamento sicuro, tokenizzato. Nessun dato di pagamento è memorizzato da AureaCare.</p>
+
+      <!-- Movimenti -->
+      <div class="divider-eyebrow"><span>Storico movimenti</span><span class="line"></span></div>
+      <div id="movements"></div>
+    </div>
+
+    <nav class="bottom-nav">
+      <a class="nav-item" href="home.html"><span id="nv-home"></span>Home</a>
+      <a class="nav-item" href="my-cures.html"><span id="nv-cure"></span>Cure</a>
+      <a class="nav-item active" href="wallet.html"><span id="nv-wallet"></span>Wallet</a>
+      <a class="nav-item" href="profile.html"><span id="nv-profile"></span>Profilo</a>
+    </nav>
+  </div>
+
+  <div id="toast-container"></div>
+
+  <script src="data/mock-data.js"></script>
+  <script src="js/icons.js"></script>
+  <script src="js/navigation.js"></script>
+  <script>
+    document.getElementById('ico-back').outerHTML = aIcon('arrow-left', { size: 20 });
+    document.getElementById('ico-grid').outerHTML = aIcon('grid', { size: 20 });
+    document.getElementById('ico-pay1').outerHTML = aIcon('credit-card', { size: 22 });
+    document.getElementById('ico-pay2').outerHTML = '<svg class="ico" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#003087" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 11h4a3 3 0 0 0 0-6H8a1 1 0 0 0-1 1v14"/><path d="M11 11h3a3 3 0 0 1 0 6h-3"/></svg>';
+    document.getElementById('ico-pay3').outerHTML = '<svg class="ico" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#4285F4" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v8M8 12h8"/></svg>';
+    document.getElementById('nv-home').outerHTML   = aIcon('home',    { size: 22 });
+    document.getElementById('nv-cure').outerHTML   = aIcon('heart',   { size: 22 });
+    document.getElementById('nv-wallet').outerHTML = aIcon('wallet',  { size: 22 });
+    document.getElementById('nv-profile').outerHTML= aIcon('user',    { size: 22 });
+
+    renderWalletRing(document.getElementById('wallet-ring-big'), {
+      total: 12, used: 4, credit: 340, size: 200, creditMax: 500
+    });
+
+    let selectedPkg = 250;
+    function selectPkg(el, amount) {
+      document.querySelectorAll('.pkg-card').forEach(x => x.classList.remove('selected'));
+      el.classList.add('selected');
+      selectedPkg = amount;
+      document.getElementById('topup-amount').textContent = amount === 'custom' ? '(personalizzato)' : '€' + amount;
+    }
+    function selectPay(el) {
+      document.querySelectorAll('.pay-card').forEach(x => x.classList.remove('selected'));
+      el.classList.add('selected');
+    }
+    function topUp() {
+      showConfirmDialog(
+        'Conferma ricarica',
+        `Stai per ricaricare il tuo wallet di ${selectedPkg === 'custom' ? 'un importo personalizzato' : '€' + selectedPkg}. Vuoi procedere?`,
+        () => showToast('Ricarica completata · €' + selectedPkg, 'success'),
+        { confirmLabel: 'Procedi' }
+      );
+    }
+
+    // Movements
+    const mv = document.getElementById('movements');
+    MOCK.wallet.movements.forEach(m => {
+      const isTop = m.type === 'topup';
+      const row = document.createElement('div');
+      row.className = 'list-row';
+      row.innerHTML = `
+        <div class="row-icon ${isTop ? 'success' : ''}">${aIcon(isTop ? 'plus' : 'heart', { size: 18 })}</div>
+        <div class="row-body">
+          <div class="row-title">${m.label}</div>
+          <div class="row-meta">${m.date}${m.method ? ' · '+m.method : ''} · <span class="font-mono">${m.ref}</span></div>
+        </div>
+        <div class="row-right">
+          <div class="row-amount ${isTop ? 'pos' : 'neg'}">${isTop ? '+' : ''}€${Math.abs(m.amount)}</div>
+          <div class="caption">${isTop ? 'ricarica' : 'addebito'}</div>
+        </div>`;
+      mv.appendChild(row);
+    });
+  </script>
+</body>
+</html>

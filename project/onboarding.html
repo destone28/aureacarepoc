@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>AureaCare · Registrazione paziente</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="js/styles.css">
+  <style>
+    body { background: var(--bg-page); padding: 0; }
+    .wizard-shell {
+      max-width: 440px; margin: 0 auto;
+      min-height: 100vh;
+      background: #fff;
+      display: flex; flex-direction: column;
+    }
+    .wiz-top {
+      padding: 18px 20px 12px;
+      border-bottom: 1px solid var(--border-soft);
+      display: flex; align-items: center; gap: 12px;
+    }
+    .wiz-top .back-btn {
+      width: 36px; height: 36px;
+      border-radius: 10px;
+      background: var(--light-gray);
+      border: none;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .wiz-top .brand-mini { font-weight: 700; font-size: 15px; flex: 1; }
+    .wiz-top .step-counter { font-size: 12px; color: var(--medium-gray); font-weight: 600; }
+    .wiz-progress { padding: 14px 20px 0; }
+    .wiz-body { padding: 18px 20px 32px; flex: 1; }
+    .wiz-footer {
+      position: sticky; bottom: 0;
+      background: #fff;
+      padding: 14px 20px;
+      border-top: 1px solid var(--border-soft);
+      display: flex; gap: 10px;
+    }
+    .wiz-title { font-size: 22px; font-weight: 700; }
+    .wiz-sub { color: var(--medium-gray); font-size: 14px; margin: 6px 0 22px; }
+    .step-pane { display: none; }
+    .step-pane.active { display: block; animation: slideUp 250ms ease-out; }
+    .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .consent-list { display: grid; gap: 12px; margin-top: 16px; }
+    .consent-row {
+      display: flex; gap: 12px;
+      padding: 14px;
+      border: 1px solid var(--border-soft);
+      border-radius: var(--r-md);
+      background: #FAFAFA;
+    }
+    .consent-row input[type=checkbox] {
+      margin-top: 2px;
+      width: 18px; height: 18px;
+      accent-color: var(--care-blue);
+    }
+    .consent-row strong { font-size: 14px; }
+    .consent-row p { font-size: 12px; color: var(--medium-gray); margin-top: 3px; line-height: 1.5; }
+  </style>
+</head>
+<body>
+  <div class="wizard-shell">
+    <div class="wiz-top">
+      <button class="back-btn" onclick="goBackStep()" aria-label="Indietro" id="back-btn-top"><span id="ico-back"></span></button>
+      <span class="brand-mini">Crea account paziente</span>
+      <span class="step-counter"><span id="cur-step">1</span>/4</span>
+    </div>
+
+    <div class="wiz-progress">
+      <div class="steps"></div>
+      <p class="step-label">Step <strong><span id="cur-step-label">1</span> di 4</strong> · <span id="step-name">Anagrafica</span></p>
+    </div>
+
+    <div class="wiz-body">
+      <!-- STEP 1: Anagrafica -->
+      <section class="step-pane active" data-step="1">
+        <h2 class="wiz-title">Iniziamo dai tuoi dati</h2>
+        <p class="wiz-sub">Servono per associare prestazioni e documenti.</p>
+
+        <div class="field-row">
+          <div class="field">
+            <label class="field-label">Nome</label>
+            <div class="input-container"><input class="input" placeholder="Lucia"></div>
+          </div>
+          <div class="field">
+            <label class="field-label">Cognome</label>
+            <div class="input-container"><input class="input" placeholder="Marchetti"></div>
+          </div>
+        </div>
+
+        <div class="field">
+          <label class="field-label">Codice fiscale</label>
+          <div class="input-container"><input class="input" placeholder="MRCLCU82M55H501T" style="text-transform:uppercase;letter-spacing:.05em"></div>
+        </div>
+
+        <div class="field-row">
+          <div class="field">
+            <label class="field-label">Data di nascita</label>
+            <div class="input-container"><input class="input" type="text" placeholder="gg/mm/aaaa"></div>
+          </div>
+          <div class="field">
+            <label class="field-label">Telefono</label>
+            <div class="input-container"><input class="input" placeholder="+39 ..."></div>
+          </div>
+        </div>
+
+        <div class="field">
+          <label class="field-label">Email</label>
+          <div class="input-container"><input class="input" type="email" placeholder="nome@email.it"></div>
+          <p class="field-hint">Verrà usata anche come login.</p>
+        </div>
+      </section>
+
+      <!-- STEP 2: Upload documenti -->
+      <section class="step-pane" data-step="2">
+        <h2 class="wiz-title">Carica i tuoi documenti</h2>
+        <p class="wiz-sub">L'admin AureaCare li verifica prima di approvare le prestazioni.</p>
+
+        <div class="upload-grid" id="upload-grid"></div>
+
+        <div class="banner-roma mt-20">
+          <span id="ico-info"></span>
+          <p>I documenti restano cifrati e visibili solo all'admin AureaCare. Puoi aggiornarli in qualsiasi momento dal profilo.</p>
+        </div>
+      </section>
+
+      <!-- STEP 3: Indirizzo -->
+      <section class="step-pane" data-step="3">
+        <h2 class="wiz-title">Dove ti trovi?</h2>
+        <p class="wiz-sub">Useremo l'indirizzo per suggerirti le strutture più vicine.</p>
+
+        <div class="field">
+          <label class="field-label">Indirizzo</label>
+          <div class="input-container"><input class="input" placeholder="Via Tuscolana 124"></div>
+        </div>
+        <div class="field-row">
+          <div class="field">
+            <label class="field-label">Città</label>
+            <div class="input-container"><input class="input" value="Roma" readonly style="background:#F0F4F9;color:var(--care-blue-dark);font-weight:700"></div>
+          </div>
+          <div class="field">
+            <label class="field-label">CAP</label>
+            <div class="input-container"><input class="input" placeholder="00181"></div>
+          </div>
+        </div>
+
+        <div class="banner-roma mt-12">
+          <span id="ico-pin"></span>
+          <p>Il servizio AureaCare copre inizialmente l'area del <strong>Comune di Roma</strong>. Espansione progressiva in altre città — ti avviseremo appena disponibile nella tua zona.</p>
+        </div>
+      </section>
+
+      <!-- STEP 4: Consenso GDPR -->
+      <section class="step-pane" data-step="4">
+        <h2 class="wiz-title">Privacy e consensi</h2>
+        <p class="wiz-sub">Trasparenza totale su come usiamo i tuoi dati clinici.</p>
+
+        <div class="consent-list">
+          <label class="consent-row">
+            <input type="checkbox" checked>
+            <div>
+              <strong>Termini di servizio AureaCare</strong>
+              <p>Accetto le condizioni d'uso della piattaforma per la prenotazione di prestazioni sanitarie convenzionate.</p>
+            </div>
+          </label>
+          <label class="consent-row">
+            <input type="checkbox" checked>
+            <div>
+              <strong>Trattamento dati personali (GDPR)</strong>
+              <p>Autorizzo il trattamento dei miei dati anagrafici e clinici per la finalità di erogazione del servizio.</p>
+            </div>
+          </label>
+          <label class="consent-row">
+            <input type="checkbox">
+            <div>
+              <strong>Condivisione cross-app (opzionale)</strong>
+              <p>Permetti ad AureaCare di precompilare i dati su AureaShuttle quando richiedi il trasporto sanitario.</p>
+            </div>
+          </label>
+          <label class="consent-row">
+            <input type="checkbox">
+            <div>
+              <strong>Newsletter ESG (opzionale)</strong>
+              <p>Ricevi report trimestrali sull'impatto sanitario e sociale aggregato della suite Aurea.</p>
+            </div>
+          </label>
+        </div>
+      </section>
+    </div>
+
+    <div class="wiz-footer">
+      <button class="btn btn--secondary" id="btn-prev" style="flex:1" onclick="goBackStep()">Indietro</button>
+      <button class="btn btn--care" id="btn-next" style="flex:2" onclick="goNextStep()">Avanti <span id="ico-next"></span></button>
+    </div>
+  </div>
+
+  <div id="toast-container"></div>
+
+  <script src="js/icons.js"></script>
+  <script src="js/navigation.js"></script>
+  <script>
+    let step = 1;
+    const TOTAL = 4;
+    const stepNames = { 1: 'Anagrafica', 2: 'Documenti', 3: 'Indirizzo', 4: 'Consensi' };
+
+    function renderStep() {
+      document.querySelectorAll('.step-pane').forEach(p => p.classList.toggle('active', +p.dataset.step === step));
+      document.getElementById('cur-step').textContent = step;
+      document.getElementById('cur-step-label').textContent = step;
+      document.getElementById('step-name').textContent = stepNames[step];
+      setWizardStep(step, TOTAL);
+      document.getElementById('btn-prev').style.visibility = step === 1 ? 'hidden' : 'visible';
+      document.getElementById('btn-next').innerHTML = step === TOTAL
+        ? 'Completa registrazione ' + aIcon('check', { size: 16 })
+        : 'Avanti ' + aIcon('arrow-right', { size: 16 });
+    }
+
+    function goNextStep() {
+      if (step < TOTAL) { step++; renderStep(); window.scrollTo({ top: 0, behavior: 'smooth' }); }
+      else {
+        setAuth({ email: 'lucia.marchetti@example.it', role: 'patient', patient_id: 'PAT-00142', name: 'Lucia Marchetti', apps: ['via','shuttle','care'] });
+        showToast('Account creato. Benvenuta in AureaCare!', 'care');
+        setTimeout(() => location.href = 'home.html', 900);
+      }
+    }
+    function goBackStep() {
+      if (step > 1) { step--; renderStep(); window.scrollTo({ top: 0, behavior: 'smooth' }); }
+      else { location.href = 'index.html'; }
+    }
+
+    // Icons
+    document.getElementById('ico-back').outerHTML = aIcon('arrow-left', { size: 18 });
+    document.getElementById('ico-info').outerHTML = aIcon('shield', { size: 18 });
+    document.getElementById('ico-pin').outerHTML = aIcon('map-pin', { size: 18 });
+
+    // Upload grid (step 2)
+    const docs = [
+      { key: 'ricetta',  label: 'Ricetta rossa',    hint: 'PDF o foto, max 5MB',  done: false, icon: 'file' },
+      { key: 'isee',     label: 'Modello ISEE',     hint: 'PDF, max 5MB',         done: false, icon: 'file' },
+      { key: 'cie',      label: 'Carta identità (CIE)', hint: 'Fronte + retro',   done: false, icon: 'file' },
+      { key: 'spid',     label: 'Verifica SPID',     hint: 'Login federato',      done: false, icon: 'shield' }
+    ];
+    const grid = document.getElementById('upload-grid');
+    docs.forEach((d, i) => {
+      const card = document.createElement('div');
+      card.className = 'upload-card';
+      card.innerHTML = `
+        ${aIcon(d.icon, { size: 24 })}
+        <div class="upload-title">${d.label}</div>
+        <div class="upload-hint">${d.hint}</div>`;
+      card.addEventListener('click', () => {
+        if (card.classList.contains('done')) return;
+        card.classList.add('done');
+        card.innerHTML = `${aIcon('check-circle', { size: 26 })}<div class="upload-title">${d.label}</div><div class="upload-hint">Caricato</div>`;
+        showToast(d.label + ' caricato', 'success');
+      });
+      grid.appendChild(card);
+    });
+
+    renderStep();
+  </script>
+</body>
+</html>

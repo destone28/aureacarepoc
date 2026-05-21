@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>AureaCare · Prenota una cura</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="js/styles.css">
+  <style>
+    .srv-card {
+      display: flex; align-items: center; gap: 12px;
+      background: #fff;
+      border: 1px solid var(--border-soft);
+      border-radius: var(--r-md);
+      padding: 14px;
+      margin-bottom: 10px;
+      cursor: pointer;
+      transition: all .15s ease;
+      text-decoration: none; color: inherit;
+    }
+    .srv-card:hover { border-color: var(--care-blue); transform: translateY(-1px); box-shadow: var(--shadow); }
+    .srv-icon {
+      width: 44px; height: 44px;
+      border-radius: 12px;
+      background: var(--care-blue-light);
+      color: var(--care-blue-dark);
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .srv-body { flex: 1; min-width: 0; }
+    .srv-name { font-weight: 700; font-size: 14px; }
+    .srv-meta { font-size: 12px; color: var(--medium-gray); margin-top: 2px; }
+    .srv-price { font-weight: 700; font-size: 14px; }
+    .srv-price-sub { font-size: 11px; color: var(--medium-gray); }
+  </style>
+</head>
+<body>
+  <div class="patient-app">
+    <header class="patient-header">
+      <button class="icon-btn" onclick="history.back()" aria-label="Indietro"><span id="ico-back"></span></button>
+      <div class="brand" style="font-size:15px">Prenota una cura</div>
+      <div class="app-switcher-wrap">
+        <button class="icon-btn" data-app-switcher aria-label="App suite"><span id="ico-grid"></span></button>
+      </div>
+    </header>
+
+    <div class="patient-content">
+      <!-- Search -->
+      <div class="input-container mb-16">
+        <span id="ico-search"></span>
+        <input class="input" type="text" placeholder="Cerca prestazione, specialità, struttura…" id="search-input">
+      </div>
+
+      <!-- Tabs -->
+      <div class="tabs mb-16">
+        <button class="tab active" data-kind="visita">Visite</button>
+        <button class="tab" data-kind="terapia">Terapie</button>
+        <button class="tab" data-kind="ciclo">Cicli di cura</button>
+      </div>
+
+      <!-- Summary -->
+      <p class="caption mb-12" id="summary-line">Mostro tutte le visite specialistiche convenzionate.</p>
+
+      <div id="srv-list"></div>
+    </div>
+
+    <nav class="bottom-nav">
+      <a class="nav-item" href="home.html"><span id="nv-home"></span>Home</a>
+      <a class="nav-item active" href="my-cures.html"><span id="nv-cure"></span>Cure</a>
+      <a class="nav-item" href="wallet.html"><span id="nv-wallet"></span>Wallet</a>
+      <a class="nav-item" href="profile.html"><span id="nv-profile"></span>Profilo</a>
+    </nav>
+  </div>
+
+  <div id="toast-container"></div>
+
+  <script src="data/mock-data.js"></script>
+  <script src="js/icons.js"></script>
+  <script src="js/navigation.js"></script>
+  <script>
+    document.getElementById('ico-back').outerHTML = aIcon('arrow-left', { size: 20 });
+    document.getElementById('ico-grid').outerHTML = aIcon('grid', { size: 20 });
+    document.getElementById('ico-search').outerHTML = aIcon('search', { size: 18 });
+    document.getElementById('nv-home').outerHTML   = aIcon('home',    { size: 22 });
+    document.getElementById('nv-cure').outerHTML   = aIcon('heart',   { size: 22 });
+    document.getElementById('nv-wallet').outerHTML = aIcon('wallet',  { size: 22 });
+    document.getElementById('nv-profile').outerHTML= aIcon('user',    { size: 22 });
+
+    let currentKind = 'visita';
+    let searchQuery = '';
+
+    function structuresAvailable(catName) {
+      // count structures with this specialty (cat may include slash)
+      const wanted = catName.split('/').map(s => s.trim().toLowerCase());
+      return MOCK.structures.filter(s => s.active && s.specialties.some(sp => wanted.some(w => sp.toLowerCase().includes(w) || w.includes(sp.toLowerCase())))).length;
+    }
+
+    function renderList() {
+      const list = document.getElementById('srv-list');
+      list.innerHTML = '';
+      const filtered = MOCK.services.filter(s => {
+        if (s.kind !== currentKind) return false;
+        if (searchQuery) {
+          const q = searchQuery.toLowerCase();
+          return s.name.toLowerCase().includes(q) || s.cat.toLowerCase().includes(q);
+        }
+        return true;
+      });
+
+      filtered.forEach(s => {
+        const card = document.createElement('a');
+        card.className = 'srv-card';
+        card.href = `structures.html?service=${s.id}`;
+        const avail = structuresAvailable(s.cat);
+        const priceLine = s.kind === 'ciclo'
+          ? `€${s.price_from}–${s.price_to} <span class="srv-price-sub">/ ciclo ${s.sessions} sed.</span>`
+          : `€${s.price_from}–${s.price_to}`;
+        card.innerHTML = `
+          <div class="srv-icon">${aIcon(s.icon || 'heart', { size: 22 })}</div>
+          <div class="srv-body">
+            <div class="srv-name">${s.name}</div>
+            <div class="srv-meta">${s.cat} · ${s.duration} min${s.kind==='ciclo' ? ' · '+s.sessions+' sedute' : ''}</div>
+            <div class="srv-meta" style="color:var(--care-blue);font-weight:600;margin-top:4px">${avail} strutture disponibili a Roma</div>
+          </div>
+          <div class="text-right">
+            <div class="srv-price">${priceLine}</div>
+            <div class="srv-price-sub">tariffa convenzionata</div>
+          </div>`;
+        list.appendChild(card);
+      });
+
+      const summary = {
+        visita: 'visite specialistiche',
+        terapia: 'terapie e sedute singole',
+        ciclo: 'cicli di cura strutturati'
+      };
+      document.getElementById('summary-line').textContent =
+        `${filtered.length} ${summary[currentKind]} convenzionate.` +
+        (searchQuery ? ` Filtro: "${searchQuery}".` : '');
+    }
+
+    document.querySelectorAll('.tabs .tab').forEach(t => {
+      t.addEventListener('click', () => {
+        document.querySelectorAll('.tabs .tab').forEach(x => x.classList.remove('active'));
+        t.classList.add('active');
+        currentKind = t.dataset.kind;
+        renderList();
+      });
+    });
+
+    document.getElementById('search-input').addEventListener('input', (e) => {
+      searchQuery = e.target.value.trim();
+      renderList();
+    });
+
+    renderList();
+  </script>
+</body>
+</html>

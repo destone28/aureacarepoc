@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>AureaCare · Home</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="js/styles.css">
+</head>
+<body>
+  <div class="patient-app">
+    <!-- Header -->
+    <header class="patient-header">
+      <div class="brand">
+        <div class="brand-logo">A<span class="brand-badge">CARE</span></div>
+        <span>AureaCare</span>
+      </div>
+      <div class="app-switcher-wrap">
+        <button class="icon-btn" data-app-switcher aria-label="App suite"><span id="ico-grid"></span></button>
+      </div>
+      <button class="icon-btn" aria-label="Notifiche" onclick="showToast('Nessuna nuova notifica','info')">
+        <span id="ico-bell"></span>
+        <span class="badge-dot"></span>
+      </button>
+    </header>
+
+    <div class="patient-content">
+      <!-- Greeting -->
+      <div class="mb-16">
+        <p class="caption">Ciao,</p>
+        <h1 class="h1">Lucia 👋</h1>
+      </div>
+
+      <!-- Wallet hero -->
+      <div class="card card--lg" style="padding: 22px; background: linear-gradient(160deg, #FFFFFF 0%, var(--care-blue-bg) 100%); border-color: #DCE7F4;">
+        <div class="flex justify-between items-start mb-12">
+          <div>
+            <p class="eyebrow" style="color: var(--care-blue-dark)">Wallet AureaCare</p>
+            <p class="caption mt-4">Aggiornato pochi minuti fa</p>
+          </div>
+          <a href="wallet.html" class="link" style="color:var(--care-blue);font-weight:700;font-size:13px">Dettagli &rarr;</a>
+        </div>
+        <div class="flex items-center gap-16">
+          <div id="wallet-ring-mini"></div>
+          <div style="flex:1">
+            <p style="font-size:28px;font-weight:700;line-height:1">€340</p>
+            <p class="caption mt-4">Credito residuo</p>
+            <p style="font-size:15px;font-weight:700;margin-top:10px;color:var(--care-blue-dark)">8<span style="font-weight:400;color:var(--medium-gray);font-size:13px"> / 12</span> prestazioni</p>
+            <p class="caption">Rinnovo automatico disattivato</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Prossima prenotazione -->
+      <div class="divider-eyebrow"><span>Prossima prenotazione</span><span class="line"></span></div>
+      <a href="my-cures.html" class="card card--padded card--lift" style="display:block;text-decoration:none;color:inherit">
+        <div class="flex items-start gap-12">
+          <div style="width:48px;height:48px;border-radius:12px;background:var(--care-blue-light);color:var(--care-blue-dark);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+            <span id="ico-heart"></span>
+          </div>
+          <div style="flex:1;min-width:0">
+            <div class="flex items-center gap-8 mb-4"><span class="badge badge--approved"><span class="dot"></span>Approvata</span></div>
+            <p style="font-weight:700;font-size:15px">Visita cardiologica</p>
+            <p class="caption mt-4">Domani · 22 mag · 14:30</p>
+            <p class="caption">Policlinico Gemelli · Largo A. Gemelli 8</p>
+            <p class="caption mt-4">Dr.ssa Elena Conti</p>
+          </div>
+          <div class="text-right">
+            <p style="font-size:15px;font-weight:700">€95</p>
+            <p class="caption">addebito wallet</p>
+          </div>
+        </div>
+        <div class="mt-12" style="padding-top:12px;border-top:1px dashed var(--border-soft);display:flex;align-items:center;gap:8px">
+          <span id="ico-truck" style="color:var(--primary-orange)"></span>
+          <span class="caption" style="color:var(--primary-orange);font-weight:600">Trasporto AureaShuttle confermato</span>
+        </div>
+      </a>
+
+      <!-- CTA prenota -->
+      <a href="book-care.html" class="btn btn--care btn--block btn--lg mt-20" style="padding:18px">
+        <span id="ico-plus"></span>
+        Prenota nuova cura
+      </a>
+
+      <!-- Quick actions -->
+      <div class="quick-grid mt-16">
+        <a href="my-cures.html" class="quick-card">
+          <span id="ico-q1"></span>
+          <div class="quick-label">Le mie cure</div>
+        </a>
+        <a href="structures.html" class="quick-card">
+          <span id="ico-q2"></span>
+          <div class="quick-label">Strutture</div>
+        </a>
+        <a href="wallet.html" class="quick-card">
+          <span id="ico-q3"></span>
+          <div class="quick-label">Ricarica</div>
+        </a>
+      </div>
+
+      <!-- Banner ESG personale -->
+      <div class="divider-eyebrow"><span>Il tuo impatto Q2</span><span class="line"></span></div>
+      <div class="card card--lg" style="padding: 18px; background: linear-gradient(135deg, #FBFDF8, #E1F5EE); border-color:#C8E6CF">
+        <div class="flex items-center gap-12">
+          <div style="width:42px;height:42px;border-radius:12px;background:#fff;color:#0F6E56;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+            <span id="ico-leaf"></span>
+          </div>
+          <div style="flex:1">
+            <p style="font-weight:700">8 cure completate</p>
+            <p class="caption">questo trimestre con AureaCare</p>
+          </div>
+        </div>
+        <div class="mt-16" style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px">
+          <div style="padding:10px;background:#fff;border-radius:10px;text-align:center">
+            <p style="font-size:18px;font-weight:700;color:#0F6E56">142</p>
+            <p style="font-size:10px;color:var(--medium-gray);font-weight:600;letter-spacing:.04em">KG CO₂ EVITATA</p>
+          </div>
+          <div style="padding:10px;background:#fff;border-radius:10px;text-align:center">
+            <p style="font-size:18px;font-weight:700;color:#0F6E56">28h</p>
+            <p style="font-size:10px;color:var(--medium-gray);font-weight:600;letter-spacing:.04em">CAREGIVER</p>
+          </div>
+          <div style="padding:10px;background:#fff;border-radius:10px;text-align:center">
+            <p style="font-size:18px;font-weight:700;color:#0F6E56">3.2×</p>
+            <p style="font-size:10px;color:var(--medium-gray);font-weight:600;letter-spacing:.04em">SROI</p>
+          </div>
+        </div>
+        <p class="caption mt-12" style="line-height:1.5">Hai contribuito a <strong style="color:#0F6E56">142kg di CO₂ evitata</strong> e <strong style="color:#0F6E56">28 ore di caregiver risparmiate</strong>, grazie all'accesso facilitato alle prestazioni convenzionate.</p>
+      </div>
+
+      <!-- Storico breve -->
+      <div class="divider-eyebrow mt-20"><span>Cure recenti</span><span class="line"></span></div>
+      <a class="list-row" href="my-cures.html">
+        <div class="row-icon success">${''}<span id="ico-list1"></span></div>
+        <div class="row-body">
+          <div class="row-title">Visita ortopedica</div>
+          <div class="row-meta">14 mag · Aurelia Hospital</div>
+          <div class="row-meta"><span class="badge badge--completed"><span class="dot"></span>Completata</span></div>
+        </div>
+        <div class="row-right">
+          <div class="row-amount neg">-€85</div>
+          <div class="caption">wallet</div>
+        </div>
+      </a>
+      <a class="list-row" href="my-cures.html">
+        <div class="row-icon"><span id="ico-list2"></span></div>
+        <div class="row-body">
+          <div class="row-title">Tecarterapia</div>
+          <div class="row-meta">12 mag · Centro Don Gnocchi</div>
+          <div class="row-meta"><span class="badge badge--completed"><span class="dot"></span>Completata</span></div>
+        </div>
+        <div class="row-right">
+          <div class="row-amount neg">-€60</div>
+          <div class="caption">wallet</div>
+        </div>
+      </a>
+    </div>
+
+    <!-- Bottom nav -->
+    <nav class="bottom-nav">
+      <a class="nav-item active" href="home.html"><span id="nv-home"></span>Home</a>
+      <a class="nav-item" href="my-cures.html"><span id="nv-cure"></span>Cure</a>
+      <a class="nav-item" href="wallet.html"><span id="nv-wallet"></span>Wallet</a>
+      <a class="nav-item" href="profile.html"><span id="nv-profile"></span>Profilo</a>
+    </nav>
+  </div>
+
+  <div id="toast-container"></div>
+
+  <script src="data/mock-data.js"></script>
+  <script src="js/icons.js"></script>
+  <script src="js/navigation.js"></script>
+  <script>
+    // Header icons
+    document.getElementById('ico-grid').outerHTML = aIcon('grid', { size: 20 });
+    document.getElementById('ico-bell').outerHTML = aIcon('bell', { size: 20 });
+    document.getElementById('ico-heart').outerHTML = aIcon('heart', { size: 24 });
+    document.getElementById('ico-truck').outerHTML = aIcon('truck', { size: 16 });
+    document.getElementById('ico-plus').outerHTML = aIcon('plus', { size: 20 });
+    document.getElementById('ico-leaf').outerHTML = aIcon('leaf', { size: 22 });
+    document.getElementById('ico-q1').outerHTML = aIcon('calendar', { size: 22 });
+    document.getElementById('ico-q2').outerHTML = aIcon('map-pin', { size: 22 });
+    document.getElementById('ico-q3').outerHTML = aIcon('plus', { size: 22 });
+    document.getElementById('ico-list1').outerHTML = aIcon('activity', { size: 20 });
+    document.getElementById('ico-list2').outerHTML = aIcon('zap', { size: 20 });
+    document.getElementById('nv-home').outerHTML   = aIcon('home',    { size: 22 });
+    document.getElementById('nv-cure').outerHTML   = aIcon('heart',   { size: 22 });
+    document.getElementById('nv-wallet').outerHTML = aIcon('wallet',  { size: 22 });
+    document.getElementById('nv-profile').outerHTML= aIcon('user',    { size: 22 });
+
+    // Wallet ring (mini, 100px)
+    renderWalletRing(document.getElementById('wallet-ring-mini'), {
+      total: 12, used: 4, credit: 340, size: 100, creditMax: 500
+    });
+    // shrink center text for mini ring
+    document.querySelectorAll('#wallet-ring-mini .ring-center').forEach(c => { c.style.display='none'; });
+  </script>
+</body>
+</html>

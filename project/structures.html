@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>AureaCare · Strutture</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="js/styles.css">
+  <style>
+    .strs-header {
+      padding: 14px 20px;
+      border-bottom: 1px solid var(--border-soft);
+      background: #fff;
+    }
+    .strs-filters {
+      padding: 12px 20px;
+      background: #fff;
+      border-bottom: 1px solid var(--border-soft);
+      overflow-x: auto;
+      white-space: nowrap;
+      -webkit-overflow-scrolling: touch;
+    }
+    .strs-filters .chip { display: inline-flex; }
+    .str-row {
+      display: flex; gap: 12px;
+      background: #fff;
+      border: 1px solid var(--border-soft);
+      border-radius: var(--r-md);
+      padding: 14px;
+      margin-bottom: 10px;
+      cursor: pointer;
+      transition: all .15s ease;
+      text-decoration: none; color: inherit;
+    }
+    .str-row:hover { border-color: var(--care-blue); transform: translateY(-1px); box-shadow: var(--shadow); }
+    .str-thumb {
+      width: 64px; height: 64px;
+      border-radius: 12px;
+      flex-shrink: 0;
+      background:
+        repeating-linear-gradient(45deg, #f3eee5 0 8px, #ece6d8 8px 16px);
+      display: flex; align-items: center; justify-content: center;
+      color: rgba(80,80,80,.5);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 9px;
+      text-align: center;
+      letter-spacing: 0.06em;
+    }
+    .str-body { flex: 1; min-width: 0; }
+    .str-name { font-weight: 700; font-size: 14px; line-height: 1.3; }
+    .str-row .str-meta { font-size: 12px; color: var(--medium-gray); margin-top: 2px; line-height: 1.45; }
+    .str-row .str-tags { display: flex; gap: 4px; flex-wrap: wrap; margin-top: 6px; }
+    .str-row .str-tag { font-size: 10px; background: var(--light-gray); color: var(--medium-gray); padding: 2px 6px; border-radius: 4px; font-weight: 600; }
+    .str-meta-row { display: flex; align-items: center; gap: 8px; margin-top: 6px; }
+    .star-mini { color: #F59E0B; font-weight: 700; font-size: 12px; }
+    .map-pin-2 { position: absolute; }
+  </style>
+</head>
+<body>
+  <div class="patient-app">
+    <header class="patient-header">
+      <button class="icon-btn" onclick="history.back()" aria-label="Indietro"><span id="ico-back"></span></button>
+      <div class="brand" style="font-size:15px">Strutture convenzionate</div>
+      <div class="app-switcher-wrap">
+        <button class="icon-btn" data-app-switcher aria-label="App suite"><span id="ico-grid"></span></button>
+      </div>
+    </header>
+
+    <!-- Banner Roma sticky -->
+    <div style="padding: 12px 20px 0; background: #fff;">
+      <div class="banner-roma">
+        <span id="ico-pin"></span>
+        <p>Il servizio AureaCare copre inizialmente l'area del <strong>Comune di Roma</strong>. Espansione progressiva in altre città.</p>
+      </div>
+    </div>
+
+    <!-- Mappa -->
+    <div class="map-placeholder mt-12" style="position:relative">
+      <div class="map-pin" style="left:34%;top:46%"></div>
+      <div class="map-pin" style="left:52%;top:38%;background:var(--care-blue)"></div>
+      <div class="map-pin" style="left:48%;top:60%"></div>
+      <div class="map-pin" style="left:64%;top:54%"></div>
+      <div class="map-pin" style="left:28%;top:70%"></div>
+      <div class="map-pin" style="left:70%;top:30%"></div>
+      <span class="map-watermark">— ROMA · MAPPA STATICA ·</span>
+    </div>
+
+    <!-- Filtri sticky -->
+    <div class="strs-filters">
+      <div class="chips">
+        <button class="chip active">Tutte le specialità</button>
+        <button class="chip">Cardiologia</button>
+        <button class="chip">Ortopedia</button>
+        <button class="chip">Fisioterapia</button>
+        <button class="chip">Dermatologia</button>
+        <button class="chip">≤ 5 km</button>
+        <button class="chip">Disponibile oggi</button>
+        <button class="chip">Tariffa convenzionata bassa</button>
+      </div>
+    </div>
+
+    <div class="patient-content">
+      <div class="flex justify-between items-center mb-12">
+        <p class="caption" id="str-summary"></p>
+        <button class="btn btn--secondary btn--sm" style="padding:6px 12px"><span id="ico-filter"></span>Ordina</button>
+      </div>
+      <div id="str-list"></div>
+    </div>
+
+    <nav class="bottom-nav">
+      <a class="nav-item" href="home.html"><span id="nv-home"></span>Home</a>
+      <a class="nav-item active" href="my-cures.html"><span id="nv-cure"></span>Cure</a>
+      <a class="nav-item" href="wallet.html"><span id="nv-wallet"></span>Wallet</a>
+      <a class="nav-item" href="profile.html"><span id="nv-profile"></span>Profilo</a>
+    </nav>
+  </div>
+
+  <div id="toast-container"></div>
+
+  <script src="data/mock-data.js"></script>
+  <script src="js/icons.js"></script>
+  <script src="js/navigation.js"></script>
+  <script>
+    document.getElementById('ico-back').outerHTML = aIcon('arrow-left', { size: 20 });
+    document.getElementById('ico-grid').outerHTML = aIcon('grid', { size: 20 });
+    document.getElementById('ico-pin').outerHTML  = aIcon('map-pin', { size: 18 });
+    document.getElementById('ico-filter').outerHTML = aIcon('filter', { size: 14 });
+    document.getElementById('nv-home').outerHTML   = aIcon('home',    { size: 22 });
+    document.getElementById('nv-cure').outerHTML   = aIcon('heart',   { size: 22 });
+    document.getElementById('nv-wallet').outerHTML = aIcon('wallet',  { size: 22 });
+    document.getElementById('nv-profile').outerHTML= aIcon('user',    { size: 22 });
+
+    const list = document.getElementById('str-list');
+    const active = MOCK.structures.filter(s => s.active);
+    document.getElementById('str-summary').textContent =
+      `${active.length} strutture disponibili a Roma`;
+
+    active.forEach(s => {
+      const row = document.createElement('a');
+      row.className = 'str-row';
+      row.href = `booking.html?structure=${s.id}`;
+      const tagsHtml = s.specialties.slice(0,3).map(sp => `<span class="str-tag">${sp}</span>`).join('');
+      row.innerHTML = `
+        <div class="str-thumb">struttura</div>
+        <div class="str-body">
+          <div class="str-name">${s.name}</div>
+          <div class="str-meta">${s.address} · ${s.district}</div>
+          <div class="str-meta-row">
+            <span class="star-mini">★ ${s.rating.toFixed(1)}</span>
+            <span class="caption">(${s.reviews})</span>
+            <span class="caption">·</span>
+            <span class="caption" style="color:var(--care-blue);font-weight:600">${s.distance_km.toFixed(1)} km</span>
+          </div>
+          <div class="str-tags">${tagsHtml}${s.specialties.length>3 ? '<span class="str-tag">+'+(s.specialties.length-3)+'</span>' : ''}</div>
+          <div class="str-meta" style="margin-top:6px"><span style="color:var(--b-approved-tx);font-weight:600">${s.next_slot}</span> · prossimo slot</div>
+        </div>`;
+      list.appendChild(row);
+    });
+  </script>
+</body>
+</html>

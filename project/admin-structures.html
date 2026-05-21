@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>AureaCare · Gestione strutture</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="js/styles.css">
+  <style>
+    .specialty-chip {
+      display: inline-block;
+      background: var(--care-blue-light);
+      color: var(--care-blue-dark);
+      font-size: 11px;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 4px;
+      margin-right: 4px;
+      margin-bottom: 4px;
+    }
+    .toggle-mini {
+      position: relative;
+      width: 36px; height: 22px;
+      background: var(--border-gray);
+      border-radius: 999px;
+      cursor: pointer;
+      transition: background .2s ease;
+      flex-shrink: 0;
+    }
+    .toggle-mini::after {
+      content: ''; position: absolute; top: 3px; left: 3px;
+      width: 16px; height: 16px; background: #fff; border-radius: 50%;
+      transition: transform .2s ease;
+      box-shadow: 0 1px 2px rgba(0,0,0,.15);
+    }
+    .toggle-mini.on { background: var(--success); }
+    .toggle-mini.on::after { transform: translateX(14px); }
+  </style>
+</head>
+<body class="admin-page">
+  <div class="admin-shell">
+    <aside class="admin-sidebar">
+      <div class="logo">A</div>
+      <a class="sb-item" href="admin-dashboard.html" data-label="Dashboard"><span id="sb1"></span></a>
+      <a class="sb-item" href="admin-approvals.html" data-label="Approvazioni"><span id="sb2"></span></a>
+      <a class="sb-item active" href="admin-structures.html" data-label="Strutture"><span id="sb3"></span></a>
+      <a class="sb-item" href="admin-patients.html" data-label="Pazienti"><span id="sb4"></span></a>
+      <a class="sb-item" href="#" data-label="KPI ESG"><span id="sb5"></span></a>
+      <div class="spacer"></div>
+      <button class="sb-item" data-label="Impostazioni"><span id="sb6"></span></button>
+      <button class="sb-item" data-label="Esci" onclick="logout()"><span id="sb7"></span></button>
+    </aside>
+
+    <div class="admin-main">
+      <header class="admin-topbar">
+        <h1>Strutture convenzionate</h1>
+        <span class="badge badge--info" style="font-size:13px;padding:6px 12px">18 strutture · 17 attive</span>
+        <button class="icon-btn" style="width:38px;height:38px;background:var(--light-gray);border:none;border-radius:10px"><span id="ico-bell"></span></button>
+        <div class="avatar">FR</div>
+      </header>
+
+      <div class="admin-content">
+        <div class="crumbs mb-16" style="font-size:13px;color:var(--medium-gray)">Console &rsaquo; <strong style="color:var(--ink)">Strutture</strong></div>
+
+        <div class="flex justify-between items-center mb-16">
+          <div>
+            <h2 style="font-size:17px;font-weight:700">Partner sanitari Roma</h2>
+            <p class="caption">Pubbliche e private convenzionate · area Comune di Roma</p>
+          </div>
+          <div class="flex gap-8">
+            <div class="input-container" style="padding:8px 12px;min-width:240px">
+              <span id="ico-search"></span>
+              <input class="input" placeholder="Cerca struttura, specialità…">
+            </div>
+            <button class="btn btn--care" onclick="openModal('add-modal')"><span id="ico-plus"></span>Aggiungi struttura</button>
+          </div>
+        </div>
+
+        <div class="card card--padded-lg">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Struttura</th>
+                <th>Indirizzo</th>
+                <th>Specializzazioni</th>
+                <th>Coeff. tariffa</th>
+                <th>Orari</th>
+                <th>Stato</th>
+                <th style="width:140px">Azioni</th>
+              </tr>
+            </thead>
+            <tbody id="rows"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal aggiungi struttura -->
+  <div class="modal-overlay" id="add-modal" onclick="if(event.target===this) closeModal('add-modal')">
+    <div class="modal modal--wide">
+      <div class="modal-header">
+        <div class="modal-title">Aggiungi struttura convenzionata</div>
+        <button class="modal-close" onclick="closeModal('add-modal')"><span id="ico-x"></span></button>
+      </div>
+      <div class="modal-body">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+          <div class="field"><label class="field-label">Nome struttura</label><div class="input-container"><input class="input" placeholder="Es. Policlinico Gemelli"></div></div>
+          <div class="field"><label class="field-label">Tipo</label><div class="input-container"><select class="input"><option>Pubblico convenzionato</option><option>Privato convenzionato</option></select></div></div>
+          <div class="field" style="grid-column:1/-1"><label class="field-label">Indirizzo</label><div class="input-container"><input class="input" placeholder="Via, civico, quartiere"></div></div>
+          <div class="field"><label class="field-label">CAP</label><div class="input-container"><input class="input" placeholder="00181"></div></div>
+          <div class="field"><label class="field-label">Quartiere</label><div class="input-container"><input class="input" placeholder="Trionfale"></div></div>
+          <div class="field" style="grid-column:1/-1"><label class="field-label">Specializzazioni (separa con virgola)</label><div class="input-container"><input class="input" placeholder="Cardiologia, Ortopedia, Dermatologia"></div></div>
+          <div class="field"><label class="field-label">Coefficiente tariffario</label><div class="input-container"><input class="input" placeholder="1.00"></div><p class="field-hint">Moltiplica le tariffe standard del catalogo (range 0.85 – 1.15)</p></div>
+          <div class="field"><label class="field-label">Orari di apertura</label><div class="input-container"><input class="input" placeholder="08:00 – 20:00"></div></div>
+          <div class="field" style="grid-column:1/-1"><label class="field-label">Note interne</label><div class="input-container"><textarea class="input" rows="3" placeholder="Convenzione firmata, condizioni particolari, contatto referente…"></textarea></div></div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn--secondary" onclick="closeModal('add-modal')">Annulla</button>
+        <button class="btn btn--care" onclick="closeModal('add-modal');showToast('Struttura aggiunta al network','success')">Aggiungi al network</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast-container"></div>
+  <div class="rotate-hint">
+    <span id="ico-rot"></span>
+    <h2>Console ottimizzata per schermi più grandi</h2>
+    <p>Per usare la console AureaCare, ruota il dispositivo o passa a tablet/desktop.</p>
+    <button class="btn btn--primary" onclick="this.parentElement.style.display='none'">Continua</button>
+  </div>
+
+  <script src="data/mock-data.js"></script>
+  <script src="js/icons.js"></script>
+  <script src="js/navigation.js"></script>
+  <script>
+    document.getElementById('sb1').outerHTML = aIcon('bar-chart', { size: 20 });
+    document.getElementById('sb2').outerHTML = aIcon('check-circle', { size: 20 });
+    document.getElementById('sb3').outerHTML = aIcon('building', { size: 20 });
+    document.getElementById('sb4').outerHTML = aIcon('users', { size: 20 });
+    document.getElementById('sb5').outerHTML = aIcon('leaf', { size: 20 });
+    document.getElementById('sb6').outerHTML = aIcon('settings', { size: 20 });
+    document.getElementById('sb7').outerHTML = aIcon('log-out', { size: 20 });
+    document.getElementById('ico-bell').outerHTML = aIcon('bell', { size: 18 });
+    document.getElementById('ico-rot').outerHTML = aIcon('rotate', { size: 56 });
+    document.getElementById('ico-search').outerHTML = aIcon('search', { size: 16 });
+    document.getElementById('ico-plus').outerHTML = aIcon('plus', { size: 16 });
+    document.getElementById('ico-x').outerHTML = aIcon('x', { size: 16 });
+
+    const rows = MOCK.structures.map(s => {
+      const tags = s.specialties.slice(0,3).map(sp => `<span class="specialty-chip">${sp}</span>`).join('');
+      const more = s.specialties.length > 3 ? `<span class="specialty-chip" style="background:var(--light-gray);color:var(--medium-gray)">+${s.specialties.length-3}</span>` : '';
+      return `<tr>
+        <td>
+          <div style="font-weight:700">${s.name}</div>
+          <div class="cell-sub">${s.type} · ★ ${s.rating} (${s.reviews})</div>
+        </td>
+        <td>
+          <div>${s.address}</div>
+          <div class="cell-sub">${s.district} · ${s.area}</div>
+        </td>
+        <td style="max-width:280px">${tags}${more}</td>
+        <td><strong>${s.tariff_factor.toFixed(2)}×</strong></td>
+        <td>${s.weekly_open}</td>
+        <td>
+          <div class="flex items-center gap-8">
+            <div class="toggle-mini ${s.active ? 'on' : ''}" onclick="this.classList.toggle('on');showToast('${s.name}: ${s.active ? 'disattivata':'attivata'}','info')"></div>
+            <span class="caption">${s.active ? 'Attiva' : 'Inattiva'}</span>
+          </div>
+        </td>
+        <td>
+          <div class="actions">
+            <button class="btn btn--ghost btn--sm" title="Modifica" onclick="showToast('Modifica struttura ${s.name}','info')">${aIcon('edit',{size:14})}</button>
+            <button class="btn btn--ghost btn--sm" title="Dettagli">${aIcon('eye',{size:14})}</button>
+            <button class="btn btn--ghost btn--sm" title="Rimuovi" style="color:var(--error)">${aIcon('x',{size:14})}</button>
+          </div>
+        </td>
+      </tr>`;
+    });
+    document.getElementById('rows').innerHTML = rows.join('');
+  </script>
+</body>
+</html>

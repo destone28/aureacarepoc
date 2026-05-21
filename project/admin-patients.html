@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>AureaCare · Pazienti</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="js/styles.css">
+  <style>
+    .avatar-sm {
+      width: 36px; height: 36px;
+      border-radius: 50%;
+      color: #fff;
+      font-weight: 700;
+      font-size: 13px;
+      display: inline-flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .doc-pill {
+      display: inline-flex; align-items: center; gap: 4px;
+      font-size: 11px; font-weight: 700;
+      padding: 3px 8px; border-radius: 999px;
+    }
+    .doc-pill.ok { background: var(--b-approved-bg); color: var(--b-approved-tx); }
+    .doc-pill.partial { background: var(--b-pending-bg); color: var(--b-pending-tx); }
+    .doc-pill.pending { background: var(--b-cancelled-bg); color: var(--b-cancelled-tx); }
+  </style>
+</head>
+<body class="admin-page">
+  <div class="admin-shell">
+    <aside class="admin-sidebar">
+      <div class="logo">A</div>
+      <a class="sb-item" href="admin-dashboard.html" data-label="Dashboard"><span id="sb1"></span></a>
+      <a class="sb-item" href="admin-approvals.html" data-label="Approvazioni"><span id="sb2"></span></a>
+      <a class="sb-item" href="admin-structures.html" data-label="Strutture"><span id="sb3"></span></a>
+      <a class="sb-item active" href="admin-patients.html" data-label="Pazienti"><span id="sb4"></span></a>
+      <a class="sb-item" href="#" data-label="KPI ESG"><span id="sb5"></span></a>
+      <div class="spacer"></div>
+      <button class="sb-item" data-label="Impostazioni"><span id="sb6"></span></button>
+      <button class="sb-item" data-label="Esci" onclick="logout()"><span id="sb7"></span></button>
+    </aside>
+
+    <div class="admin-main">
+      <header class="admin-topbar">
+        <h1>Pazienti registrati</h1>
+        <span class="badge badge--info" style="font-size:13px;padding:6px 12px">142 attivi · 12 nuovi questo mese</span>
+        <button class="icon-btn" style="width:38px;height:38px;background:var(--light-gray);border:none;border-radius:10px"><span id="ico-bell"></span></button>
+        <div class="avatar">FR</div>
+      </header>
+
+      <div class="admin-content">
+        <div class="crumbs mb-16" style="font-size:13px;color:var(--medium-gray)">Console &rsaquo; <strong style="color:var(--ink)">Pazienti</strong></div>
+
+        <!-- Quick stats -->
+        <div class="kpi-grid" style="grid-template-columns:repeat(4,1fr);margin-bottom:24px">
+          <div class="kpi-card">
+            <p class="kpi-label">Pazienti totali</p>
+            <p class="kpi-value">142</p>
+            <p class="caption">su area Roma</p>
+          </div>
+          <div class="kpi-card">
+            <p class="kpi-label">Documenti verificati</p>
+            <p class="kpi-value">128</p>
+            <p class="caption">90.1% conformità</p>
+          </div>
+          <div class="kpi-card">
+            <p class="kpi-label">Wallet medio</p>
+            <p class="kpi-value">€385</p>
+            <p class="caption">+€42 vs mese precedente</p>
+          </div>
+          <div class="kpi-card">
+            <p class="kpi-label">Cure medie/paz.</p>
+            <p class="kpi-value">9.3</p>
+            <p class="caption">in 12 mesi</p>
+          </div>
+        </div>
+
+        <div class="card card--padded-lg">
+          <div class="flex justify-between items-center mb-16">
+            <div>
+              <h2 style="font-size:17px;font-weight:700">Elenco pazienti</h2>
+              <p class="caption">Mostro 12 di 142 · ordinati per ultimo accesso</p>
+            </div>
+            <div class="flex gap-8">
+              <div class="input-container" style="padding:8px 12px;min-width:240px">
+                <span id="ico-search"></span>
+                <input class="input" placeholder="Cerca nome o CF…">
+              </div>
+              <button class="btn btn--secondary">${''}<span id="ico-export"></span>Esporta CSV</button>
+            </div>
+          </div>
+
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Paziente</th>
+                <th>CF</th>
+                <th>Contatto</th>
+                <th>Wallet</th>
+                <th>Cure completate</th>
+                <th>Documenti</th>
+                <th>Ultimo accesso</th>
+                <th style="width:140px">Azioni</th>
+              </tr>
+            </thead>
+            <tbody id="rows"></tbody>
+          </table>
+
+          <div class="flex justify-between items-center mt-16" style="border-top:1px solid var(--border-soft);padding-top:14px">
+            <p class="caption">12 di 142 risultati</p>
+            <div class="flex gap-6">
+              <button class="btn btn--secondary btn--sm">‹ Precedenti</button>
+              <button class="btn btn--secondary btn--sm">Successivi ›</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modale dettaglio paziente -->
+  <div class="modal-overlay" id="patient-modal" onclick="if(event.target===this) closeModal('patient-modal')">
+    <div class="modal modal--wide">
+      <div class="modal-header">
+        <div class="modal-title" id="pm-title">Lucia Marchetti</div>
+        <button class="modal-close" onclick="closeModal('patient-modal')"><span id="ico-x"></span></button>
+      </div>
+      <div class="modal-body" id="pm-body"></div>
+      <div class="modal-footer">
+        <button class="btn btn--secondary" onclick="closeModal('patient-modal')">Chiudi</button>
+        <button class="btn btn--ghost" onclick="showToast('Nota inviata al paziente','info')">Invia messaggio</button>
+        <button class="btn btn--care">Apri scheda completa</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast-container"></div>
+  <div class="rotate-hint">
+    <span id="ico-rot"></span>
+    <h2>Console ottimizzata per schermi più grandi</h2>
+    <p>Per usare la console AureaCare, ruota il dispositivo o passa a tablet/desktop.</p>
+    <button class="btn btn--primary" onclick="this.parentElement.style.display='none'">Continua</button>
+  </div>
+
+  <script src="data/mock-data.js"></script>
+  <script src="js/icons.js"></script>
+  <script src="js/navigation.js"></script>
+  <script>
+    document.getElementById('sb1').outerHTML = aIcon('bar-chart', { size: 20 });
+    document.getElementById('sb2').outerHTML = aIcon('check-circle', { size: 20 });
+    document.getElementById('sb3').outerHTML = aIcon('building', { size: 20 });
+    document.getElementById('sb4').outerHTML = aIcon('users', { size: 20 });
+    document.getElementById('sb5').outerHTML = aIcon('leaf', { size: 20 });
+    document.getElementById('sb6').outerHTML = aIcon('settings', { size: 20 });
+    document.getElementById('sb7').outerHTML = aIcon('log-out', { size: 20 });
+    document.getElementById('ico-bell').outerHTML = aIcon('bell', { size: 18 });
+    document.getElementById('ico-rot').outerHTML = aIcon('rotate', { size: 56 });
+    document.getElementById('ico-search').outerHTML = aIcon('search', { size: 16 });
+    document.getElementById('ico-export').outerHTML = aIcon('upload', { size: 14 });
+    document.getElementById('ico-x').outerHTML = aIcon('x', { size: 16 });
+
+    const palettes = [
+      ['#6E5BB8','#4338CA'], ['#0EA5A4','#0F7570'], ['#FF8C00','#FF6A00'], ['#3B82F6','#1E4FBF'],
+      ['#E91E63','#AD1457'], ['#0F6E56','#0A4D3B'], ['#6366F1','#3B3FB8'], ['#F59E0B','#B45309']
+    ];
+    const docMap = {
+      complete: ['ok', 'Completi'],
+      partial:  ['partial', 'Parziali'],
+      pending:  ['pending', 'In attesa']
+    };
+
+    const rows = MOCK.admin_patients.map((p, i) => {
+      const [c1, c2] = palettes[i % palettes.length];
+      const initials = p.name.split(' ').map(s => s[0]).join('');
+      const [docCls, docLabel] = docMap[p.docs_status];
+      return `<tr style="cursor:pointer" onclick="openP('${p.id}')">
+        <td>
+          <div class="flex items-center gap-12">
+            <span class="avatar-sm" style="background:linear-gradient(135deg, ${c1}, ${c2})">${initials}</span>
+            <div>
+              <div style="font-weight:700">${p.name}</div>
+              <div class="cell-sub">${p.id}</div>
+            </div>
+          </div>
+        </td>
+        <td><span class="font-mono" style="font-size:12px">${p.cf}</span></td>
+        <td>${p.phone}</td>
+        <td><strong>€${p.wallet}</strong></td>
+        <td>${p.completed}</td>
+        <td><span class="doc-pill ${docCls}">${aIcon(docCls==='ok'?'check-circle':docCls==='partial'?'alert':'clock',{size:12})}${docLabel}</span></td>
+        <td>${p.last_login}</td>
+        <td>
+          <div class="actions">
+            <button class="btn btn--ghost btn--sm" title="Apri">${aIcon('eye',{size:14})}</button>
+            <button class="btn btn--ghost btn--sm" title="Messaggio">${aIcon('message-square',{size:14})}</button>
+          </div>
+        </td>
+      </tr>`;
+    });
+    document.getElementById('rows').innerHTML = rows.join('');
+
+    function openP(id) {
+      const p = MOCK.admin_patients.find(x => x.id === id);
+      if (!p) return;
+      const initials = p.name.split(' ').map(s => s[0]).join('');
+      const [c1, c2] = palettes[MOCK.admin_patients.indexOf(p) % palettes.length];
+      document.getElementById('pm-title').textContent = p.name;
+      const docPatient = MOCK.bookings.slice(0,5);
+      document.getElementById('pm-body').innerHTML = `
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px">
+          <div>
+            <div style="display:flex;gap:14px;align-items:center;margin-bottom:18px">
+              <span class="avatar-sm" style="background:linear-gradient(135deg, ${c1}, ${c2});width:56px;height:56px;font-size:18px">${initials}</span>
+              <div>
+                <p style="font-weight:700;font-size:16px">${p.name}</p>
+                <p class="caption font-mono">${p.cf}</p>
+                <p class="caption">${p.phone}</p>
+              </div>
+            </div>
+
+            <p class="eyebrow mb-8">Wallet & cure</p>
+            <div style="display:grid;gap:8px;font-size:13px;background:#FAFAFA;padding:14px;border-radius:10px">
+              <div style="display:flex;justify-content:space-between"><span class="text-muted">Credito wallet</span><strong style="color:var(--care-blue-dark)">€${p.wallet}</strong></div>
+              <div style="display:flex;justify-content:space-between"><span class="text-muted">Prestazioni completate</span><strong>${p.completed}</strong></div>
+              <div style="display:flex;justify-content:space-between"><span class="text-muted">Approvazioni</span><strong>${Math.floor(p.completed*0.95)} su ${p.completed+1}</strong></div>
+              <div style="display:flex;justify-content:space-between"><span class="text-muted">Cliente da</span><strong>04/01/2026</strong></div>
+              <div style="display:flex;justify-content:space-between"><span class="text-muted">Stato documenti</span><span class="doc-pill ok">${aIcon('check-circle',{size:12})}Completi</span></div>
+            </div>
+
+            <p class="eyebrow mt-20 mb-8">Documenti</p>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:12px">
+              <div style="padding:10px;background:#FAFAFA;border-radius:8px"><strong>Ricetta rossa</strong><br><span class="caption">verificata 12/04/26</span></div>
+              <div style="padding:10px;background:#FAFAFA;border-radius:8px"><strong>ISEE</strong><br><span class="caption">verificato 02/02/26</span></div>
+              <div style="padding:10px;background:#FAFAFA;border-radius:8px"><strong>CIE</strong><br><span class="caption">verificata 04/01/26</span></div>
+              <div style="padding:10px;background:#FAFAFA;border-radius:8px"><strong>SPID</strong><br><span class="caption">login federato</span></div>
+            </div>
+          </div>
+
+          <div>
+            <p class="eyebrow mb-8">Storico prenotazioni (5 più recenti)</p>
+            <div style="display:grid;gap:8px">
+              ${docPatient.map(b => `<div style="padding:10px 12px;background:#FAFAFA;border-radius:10px;display:flex;justify-content:space-between;align-items:center;font-size:13px">
+                <div>
+                  <strong>${b.service_name}</strong><br>
+                  <span class="caption">${b.structure_name} · ${b.date} ${b.time}</span>
+                </div>
+                <div style="text-align:right">
+                  <strong>€${b.cost}</strong><br>
+                  <span class="badge badge--${b.status === 'completed' ? 'completed' : b.status === 'pending' ? 'pending' : b.status === 'cancelled' ? 'cancelled' : 'approved'}"><span class="dot"></span>${b.status}</span>
+                </div>
+              </div>`).join('')}
+            </div>
+
+            <p class="eyebrow mt-20 mb-8">ESG aggregato</p>
+            <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;text-align:center">
+              <div style="padding:14px;background:#F4FBF6;border-radius:10px"><p style="font-size:22px;font-weight:700;color:#0F6E56">${(p.completed*17.7).toFixed(0)}kg</p><p class="caption">CO₂ evitata</p></div>
+              <div style="padding:14px;background:#F4FBF6;border-radius:10px"><p style="font-size:22px;font-weight:700;color:#0F6E56">${(p.completed*3.4).toFixed(0)}h</p><p class="caption">caregiver</p></div>
+              <div style="padding:14px;background:#F4FBF6;border-radius:10px"><p style="font-size:22px;font-weight:700;color:#0F6E56">3.2×</p><p class="caption">SROI</p></div>
+            </div>
+          </div>
+        </div>`;
+      openModal('patient-modal');
+    }
+  </script>
+</body>
+</html>

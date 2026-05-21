@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>AureaCare · Le mie cure</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="js/styles.css">
+  <style>
+    .cure-card {
+      background: #fff;
+      border: 1px solid var(--border-soft);
+      border-radius: var(--r-md);
+      padding: 14px;
+      margin-bottom: 10px;
+      transition: all .15s ease;
+      cursor: pointer;
+    }
+    .cure-card:hover { border-color: var(--care-blue); transform: translateY(-1px); box-shadow: var(--shadow); }
+    .cure-head { display: flex; gap: 12px; align-items: center; }
+    .cure-icon {
+      width: 44px; height: 44px;
+      border-radius: 12px;
+      background: var(--care-blue-light);
+      color: var(--care-blue-dark);
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .cure-icon.complete { background: #EAF3DE; color: var(--b-completed-tx); }
+    .cure-icon.pending { background: var(--b-pending-bg); color: var(--b-pending-tx); }
+    .cure-icon.cancelled { background: var(--b-cancelled-bg); color: var(--b-cancelled-tx); }
+    .cure-title { font-weight: 700; font-size: 14px; }
+    .cure-meta { font-size: 12px; color: var(--medium-gray); margin-top: 2px; }
+    .cure-bar {
+      margin-top: 10px;
+      padding-top: 10px;
+      border-top: 1px dashed var(--border-soft);
+      display: flex; align-items: center; justify-content: space-between;
+      font-size: 12px;
+    }
+  </style>
+</head>
+<body>
+  <div class="patient-app">
+    <header class="patient-header">
+      <button class="icon-btn" onclick="history.back()" aria-label="Indietro"><span id="ico-back"></span></button>
+      <div class="brand" style="font-size:15px">Le mie cure</div>
+      <div class="app-switcher-wrap">
+        <button class="icon-btn" data-app-switcher aria-label="App suite"><span id="ico-grid"></span></button>
+      </div>
+    </header>
+
+    <div class="patient-content">
+      <div class="tabs mb-16">
+        <button class="tab active" data-filter="all">Tutte</button>
+        <button class="tab" data-filter="pending">In attesa</button>
+        <button class="tab" data-filter="approved">Approvate</button>
+        <button class="tab" data-filter="completed">Completate</button>
+        <button class="tab" data-filter="cancelled">Annullate</button>
+      </div>
+
+      <p class="caption mb-12" id="cure-summary"></p>
+      <div id="cure-list"></div>
+    </div>
+
+    <nav class="bottom-nav">
+      <a class="nav-item" href="home.html"><span id="nv-home"></span>Home</a>
+      <a class="nav-item active" href="my-cures.html"><span id="nv-cure"></span>Cure</a>
+      <a class="nav-item" href="wallet.html"><span id="nv-wallet"></span>Wallet</a>
+      <a class="nav-item" href="profile.html"><span id="nv-profile"></span>Profilo</a>
+    </nav>
+  </div>
+
+  <!-- Modal dettaglio -->
+  <div class="modal-overlay" id="cure-modal" onclick="if(event.target===this) closeModal('cure-modal')">
+    <div class="modal">
+      <div class="modal-header">
+        <div class="modal-title">Dettaglio prenotazione</div>
+        <button class="modal-close" onclick="closeModal('cure-modal')"><span id="ico-x"></span></button>
+      </div>
+      <div class="modal-body" id="cure-modal-body"></div>
+    </div>
+  </div>
+
+  <div id="toast-container"></div>
+
+  <script src="data/mock-data.js"></script>
+  <script src="js/icons.js"></script>
+  <script src="js/navigation.js"></script>
+  <script>
+    document.getElementById('ico-back').outerHTML = aIcon('arrow-left', { size: 20 });
+    document.getElementById('ico-grid').outerHTML = aIcon('grid', { size: 20 });
+    document.getElementById('ico-x').outerHTML = aIcon('x', { size: 16 });
+    document.getElementById('nv-home').outerHTML   = aIcon('home',    { size: 22 });
+    document.getElementById('nv-cure').outerHTML   = aIcon('heart',   { size: 22 });
+    document.getElementById('nv-wallet').outerHTML = aIcon('wallet',  { size: 22 });
+    document.getElementById('nv-profile').outerHTML= aIcon('user',    { size: 22 });
+
+    const statusMap = {
+      pending:   { badge: 'badge--pending',   label: 'In approvazione', icon: 'clock'      },
+      approved:  { badge: 'badge--approved',  label: 'Approvata',       icon: 'check-circle' },
+      confirmed: { badge: 'badge--confirmed', label: 'Confermata',      icon: 'check-circle' },
+      completed: { badge: 'badge--completed', label: 'Completata',      icon: 'check-circle' },
+      cancelled: { badge: 'badge--cancelled', label: 'Annullata',       icon: 'x'          }
+    };
+
+    let filter = 'all';
+    function renderCures() {
+      const list = document.getElementById('cure-list');
+      const filtered = MOCK.bookings.filter(b => filter === 'all' ? true : b.status === filter);
+      document.getElementById('cure-summary').textContent = `${filtered.length} prenotazioni` + (filter !== 'all' ? ` · filtro: ${statusMap[filter].label}` : '');
+      list.innerHTML = '';
+      filtered.sort((a,b) => b.id.localeCompare(a.id));
+      filtered.forEach(b => {
+        const s = statusMap[b.status] || statusMap.pending;
+        const iconCls = b.status === 'completed' ? 'complete' : b.status === 'pending' ? 'pending' : b.status === 'cancelled' ? 'cancelled' : '';
+        const card = document.createElement('div');
+        card.className = 'cure-card';
+        card.onclick = () => openDetail(b);
+        card.innerHTML = `
+          <div class="cure-head">
+            <div class="cure-icon ${iconCls}">${aIcon('heart', { size: 22 })}</div>
+            <div style="flex:1;min-width:0">
+              <div class="flex items-center gap-8 mb-4">
+                <span class="badge ${s.badge}"><span class="dot"></span>${s.label}</span>
+              </div>
+              <div class="cure-title">${b.service_name}</div>
+              <div class="cure-meta">${b.structure_name} · ${b.doctor}</div>
+              <div class="cure-meta">${b.date} · ${b.time}</div>
+            </div>
+            <div class="text-right">
+              <p style="font-weight:700">€${b.cost}</p>
+              <p class="caption">wallet</p>
+            </div>
+          </div>
+          ${b.shuttle ? `<div class="cure-bar"><span style="color:var(--primary-orange);font-weight:600;display:flex;align-items:center;gap:6px">${aIcon('truck',{size:14})} Trasporto AureaShuttle</span><span class="caption">${b.status==='completed' ? 'Effettuato' : 'In agenda'}</span></div>` : ''}`;
+        list.appendChild(card);
+      });
+      if (!filtered.length) {
+        list.innerHTML = `<div class="card card--padded-lg text-center" style="margin-top:12px">
+          ${aIcon('calendar', { size: 32, cls: 'mb-12' })}
+          <p style="font-weight:700">Nessuna prenotazione</p>
+          <p class="caption">Non ci sono cure in questa categoria.</p>
+        </div>`;
+      }
+    }
+
+    document.querySelectorAll('.tabs .tab').forEach(t => {
+      t.addEventListener('click', () => {
+        document.querySelectorAll('.tabs .tab').forEach(x => x.classList.remove('active'));
+        t.classList.add('active');
+        filter = t.dataset.filter;
+        renderCures();
+      });
+    });
+
+    function openDetail(b) {
+      const s = statusMap[b.status] || statusMap.pending;
+      const body = document.getElementById('cure-modal-body');
+      body.innerHTML = `
+        <div class="flex items-center gap-12 mb-16">
+          <div class="cure-icon" style="width:48px;height:48px">${aIcon('heart',{size:24})}</div>
+          <div>
+            <div class="flex items-center gap-8 mb-4"><span class="badge ${s.badge}"><span class="dot"></span>${s.label}</span></div>
+            <p style="font-weight:700;font-size:16px">${b.service_name}</p>
+            <p class="caption">${b.doctor}</p>
+          </div>
+        </div>
+
+        <div style="display:grid;gap:8px;background:#FAFAFA;padding:12px;border-radius:10px;font-size:13px">
+          <div style="display:flex;justify-content:space-between"><span class="text-muted">Struttura</span><strong>${b.structure_name}</strong></div>
+          <div style="display:flex;justify-content:space-between"><span class="text-muted">Data</span><strong>${b.date}</strong></div>
+          <div style="display:flex;justify-content:space-between"><span class="text-muted">Orario</span><strong>${b.time}</strong></div>
+          <div style="display:flex;justify-content:space-between"><span class="text-muted">Riferimento</span><strong class="font-mono">${b.id}</strong></div>
+          <div style="display:flex;justify-content:space-between"><span class="text-muted">Costo</span><strong>€${b.cost}</strong></div>
+          ${b.shuttle ? `<div style="display:flex;justify-content:space-between"><span class="text-muted">Trasporto</span><strong style="color:var(--primary-orange)">AureaShuttle ✓</strong></div>` : ''}
+        </div>
+
+        <div class="flex gap-8 mt-16">
+          ${b.status === 'pending' ? `<button class="btn btn--danger" style="flex:1" onclick="cancel()">Annulla richiesta</button>` : ''}
+          ${b.status === 'approved' || b.status === 'confirmed' ? `<button class="btn btn--danger" style="flex:1" onclick="cancel()">Cancella</button><button class="btn btn--secondary" style="flex:1">Sposta</button>` : ''}
+          ${b.status === 'completed' ? `<button class="btn btn--secondary btn--block">Scarica fattura</button>` : ''}
+          ${b.status === 'cancelled' ? `<button class="btn btn--care btn--block">Riprenota</button>` : ''}
+        </div>`;
+      openModal('cure-modal');
+    }
+
+    function cancel() {
+      closeModal();
+      showConfirmDialog('Annullare la prenotazione?', 'L\\'importo verrà riaccreditato sul wallet entro 24h.',
+        () => showToast('Prenotazione annullata · rimborso in corso','info'),
+        { confirmLabel: 'Sì, annulla', danger: true });
+    }
+
+    renderCures();
+  </script>
+</body>
+</html>
