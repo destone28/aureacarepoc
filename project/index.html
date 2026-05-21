@@ -112,7 +112,7 @@
           <span id="ico-lock"></span>
           <input type="password" id="password" class="input" placeholder="••••••••" autocomplete="current-password" required>
         </div>
-        <a href="#" class="link" style="display:block;text-align:right;font-size:13px;color:var(--care-blue);margin-top:6px;font-weight:600">Password dimenticata?</a>
+        <a href="#" class="link" style="display:block;text-align:right;font-size:13px;color:var(--care-blue);margin-top:6px;font-weight:600" onclick="event.preventDefault();openForgot()">Password dimenticata?</a>
       </div>
       <button type="submit" class="btn btn--care btn--block btn--lg">Accedi</button>
     </form>
@@ -140,6 +140,31 @@
     <p class="caption text-center" style="margin-top:20px"><a href="admin-login.html" style="color:var(--medium-gray);text-decoration:underline">Sei un amministratore?</a></p>
   </div>
 
+  <!-- Modale Password dimenticata -->
+  <div class="modal-overlay" id="forgot-modal" onclick="if(event.target===this) closeModal('forgot-modal')">
+    <div class="modal">
+      <div class="modal-header">
+        <div class="modal-title">Recupera la password</div>
+        <button class="modal-close" onclick="closeModal('forgot-modal')"><span id="ico-x"></span></button>
+      </div>
+      <div class="modal-body">
+        <p class="caption mb-16">Inserisci l'email associata al tuo account Aurea. Ti invieremo un link sicuro per scegliere una nuova password.</p>
+        <div class="field">
+          <label class="field-label">Email</label>
+          <div class="input-container"><input class="input" type="email" id="forgot-email" placeholder="nome@email.it"></div>
+        </div>
+        <div class="banner-roma">
+          <span id="ico-i"></span>
+          <p>Se l'email è registrata, riceverai il link entro pochi minuti. Controlla anche lo spam.</p>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn--secondary" onclick="closeModal('forgot-modal')">Annulla</button>
+        <button class="btn btn--care" onclick="sendForgot()">Invia link reset</button>
+      </div>
+    </div>
+  </div>
+
   <div id="toast-container"></div>
 
   <script src="js/icons.js"></script>
@@ -147,6 +172,16 @@
   <script>
     document.getElementById('ico-mail').outerHTML = aIcon('mail', { size: 18 });
     document.getElementById('ico-lock').outerHTML = aIcon('lock', { size: 18 });
+    document.getElementById('ico-x').outerHTML    = aIcon('x', { size: 16 });
+    document.getElementById('ico-i').outerHTML    = aIcon('info', { size: 18 });
+
+    function openForgot() { openModal('forgot-modal'); }
+    function sendForgot() {
+      const e = document.getElementById('forgot-email').value.trim();
+      if (!e.includes('@')) return showToast('Email non valida', 'error');
+      closeModal('forgot-modal');
+      showToast('Link di reset inviato a ' + e, 'success');
+    }
 
     document.getElementById('loginForm').addEventListener('submit', (e) => {
       e.preventDefault();

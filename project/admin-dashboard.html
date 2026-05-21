@@ -20,7 +20,7 @@
       <a class="sb-item" href="admin-patients.html" data-label="Pazienti"><span id="sb4"></span></a>
       <a class="sb-item" href="#" data-label="KPI ESG" onclick="event.preventDefault();showToast('Sezione ESG: in arrivo','info')"><span id="sb5"></span></a>
       <div class="spacer"></div>
-      <button class="sb-item" data-label="Impostazioni"><span id="sb6"></span></button>
+      <button class="sb-item" data-label="Impostazioni" onclick="showToast('Impostazioni console: in arrivo','info')"><span id="sb6"></span></button>
       <button class="sb-item" data-label="Esci" onclick="logout()"><span id="sb7"></span></button>
     </aside>
 
@@ -29,7 +29,7 @@
       <header class="admin-topbar">
         <h1>Dashboard AureaCare</h1>
         <a href="admin-approvals.html" class="badge badge--warning" style="font-size:13px;padding:6px 12px"><strong>3</strong> prestazioni in approvazione</a>
-        <button class="icon-btn" style="width:38px;height:38px;background:var(--light-gray);border:none;border-radius:10px"><span id="ico-bell"></span></button>
+        <button class="icon-btn" style="width:38px;height:38px;background:var(--light-gray);border:none;border-radius:10px" onclick="showToast('3 richieste in attesa di revisione','info')"><span id="ico-bell"></span></button>
         <div class="avatar">FR</div>
       </header>
 
@@ -76,10 +76,10 @@
                 <span class="flex items-center gap-6 caption"><span style="width:10px;height:10px;background:#0F6E56;border-radius:50%"></span>SROI sanitario</span>
               </div>
             </div>
-            <div class="tabs" style="background:#fff;border:1px solid var(--border-soft);padding:2px">
-              <button class="tab">Giornaliero</button>
-              <button class="tab active">Mensile</button>
-              <button class="tab">Trimestre</button>
+            <div class="tabs" id="trend-tabs" style="background:#fff;border:1px solid var(--border-soft);padding:2px">
+              <button class="tab" data-range="day">Giornaliero</button>
+              <button class="tab active" data-range="month">Mensile</button>
+              <button class="tab" data-range="quarter">Trimestre</button>
             </div>
           </div>
 
@@ -218,9 +218,9 @@
       const action = r.status === 'pending' || r.status === 'info_requested'
         ? `<div class="actions">
             <button class="btn btn--success btn--sm" onclick="approve('${r.id}')">Approva</button>
-            <button class="btn btn--ghost btn--sm" onclick="event.preventDefault();showToast('Apertura dettaglio ${r.id}','info')">Dettagli</button>
+            <a class="btn btn--ghost btn--sm" href="admin-approvals.html#${r.id}">Dettagli</a>
           </div>`
-        : `<button class="btn btn--ghost btn--sm">Dettagli</button>`;
+        : `<a class="btn btn--ghost btn--sm" href="admin-approvals.html#${r.id}">Dettagli</a>`;
       return `<tr>
         <td><strong class="font-mono" style="font-size:12px">${r.id}</strong></td>
         <td><div style="font-weight:700">${r.patient}</div><div class="cell-sub">${r.cf}</div></td>
@@ -234,7 +234,41 @@
     });
     document.getElementById('req-rows').innerHTML = rows.join('');
 
-    function approve(id) { showToast('Richiesta ' + id + ' approvata', 'success'); }
+    function approve(id) {
+      showConfirmDialog(
+        'Approva veloce',
+        'Approvare ' + id + ' senza revisione completa? Il paziente riceverà notifica entro pochi minuti.',
+        () => showToast('Richiesta ' + id + ' approvata · paziente notificato', 'success'),
+        { confirmLabel: 'Sì, approva' }
+      );
+    }
+
+    // Tab chart switch — riassegna labels asse X
+    document.getElementById('trend-tabs').addEventListener('click', (e) => {
+      const t = e.target.closest('.tab'); if (!t) return;
+      document.querySelectorAll('#trend-tabs .tab').forEach(x => x.classList.remove('active'));
+      t.classList.add('active');
+      const range = t.dataset.range;
+      const labelsByRange = {
+        day:     ['L','M','M','G','V','S','D'],
+        month:   ['Nov','Dic','Gen','Feb','Mar','Apr','Mag'],
+        quarter: ['Q1 25','Q2 25','Q3 25','Q4 25','Q1 26','Q2 26']
+      };
+      const subtitle = { day: 'Trend giornaliero · ultima settimana', month: 'Trend mensile · ultimi 7 mesi', quarter: 'Trend trimestrale · ultimi 6 trimestri' };
+      // Aggiorno labels asse X
+      const svg = document.getElementById('trend-chart');
+      const xLabels = svg.querySelectorAll('g[font-family="Open Sans"][font-size="12"] text');
+      const labels = labelsByRange[range];
+      const xs = [100,200,300,400,500,600,700];
+      xLabels.forEach((el, i) => {
+        if (i < labels.length) { el.textContent = labels[i]; el.setAttribute('x', xs[i]); el.style.display=''; }
+        else { el.style.display = 'none'; }
+      });
+      // Aggiorno sottotitolo card
+      const sub = document.querySelector('.card.card--padded-lg .caption');
+      if (sub) sub.textContent = subtitle[range];
+      showToast('Range chart: ' + t.textContent.trim(), 'info');
+    });
   </script>
 </body>
 </html>

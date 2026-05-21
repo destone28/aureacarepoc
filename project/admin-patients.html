@@ -36,9 +36,9 @@
       <a class="sb-item" href="admin-approvals.html" data-label="Approvazioni"><span id="sb2"></span></a>
       <a class="sb-item" href="admin-structures.html" data-label="Strutture"><span id="sb3"></span></a>
       <a class="sb-item active" href="admin-patients.html" data-label="Pazienti"><span id="sb4"></span></a>
-      <a class="sb-item" href="#" data-label="KPI ESG"><span id="sb5"></span></a>
+      <a class="sb-item" href="#" data-label="KPI ESG" onclick="event.preventDefault();showToast('Sezione ESG: in arrivo','info')"><span id="sb5"></span></a>
       <div class="spacer"></div>
-      <button class="sb-item" data-label="Impostazioni"><span id="sb6"></span></button>
+      <button class="sb-item" data-label="Impostazioni" onclick="showToast('Impostazioni console: in arrivo','info')"><span id="sb6"></span></button>
       <button class="sb-item" data-label="Esci" onclick="logout()"><span id="sb7"></span></button>
     </aside>
 
@@ -46,7 +46,7 @@
       <header class="admin-topbar">
         <h1>Pazienti registrati</h1>
         <span class="badge badge--info" style="font-size:13px;padding:6px 12px">142 attivi · 12 nuovi questo mese</span>
-        <button class="icon-btn" style="width:38px;height:38px;background:var(--light-gray);border:none;border-radius:10px"><span id="ico-bell"></span></button>
+        <button class="icon-btn" style="width:38px;height:38px;background:var(--light-gray);border:none;border-radius:10px" onclick="showToast('12 nuovi pazienti questo mese','info')"><span id="ico-bell"></span></button>
         <div class="avatar">FR</div>
       </header>
 
@@ -88,7 +88,7 @@
                 <span id="ico-search"></span>
                 <input class="input" placeholder="Cerca nome o CF…">
               </div>
-              <button class="btn btn--secondary">${''}<span id="ico-export"></span>Esporta CSV</button>
+              <button class="btn btn--secondary" onclick="exportCSV()">${''}<span id="ico-export"></span>Esporta CSV</button>
             </div>
           </div>
 
@@ -109,10 +109,10 @@
           </table>
 
           <div class="flex justify-between items-center mt-16" style="border-top:1px solid var(--border-soft);padding-top:14px">
-            <p class="caption">12 di 142 risultati</p>
+            <p class="caption" id="pag-label">Pagina 1 · 12 di 142 risultati</p>
             <div class="flex gap-6">
-              <button class="btn btn--secondary btn--sm">‹ Precedenti</button>
-              <button class="btn btn--secondary btn--sm">Successivi ›</button>
+              <button class="btn btn--secondary btn--sm" onclick="pag(-1)">‹ Precedenti</button>
+              <button class="btn btn--secondary btn--sm" onclick="pag(1)">Successivi ›</button>
             </div>
           </div>
         </div>
@@ -130,8 +130,41 @@
       <div class="modal-body" id="pm-body"></div>
       <div class="modal-footer">
         <button class="btn btn--secondary" onclick="closeModal('patient-modal')">Chiudi</button>
-        <button class="btn btn--ghost" onclick="showToast('Nota inviata al paziente','info')">Invia messaggio</button>
-        <button class="btn btn--care">Apri scheda completa</button>
+        <button class="btn btn--ghost" onclick="openMessage()">Invia messaggio</button>
+        <button class="btn btn--care" onclick="closeModal('patient-modal');showToast('Apertura scheda completa simulata','care')">Apri scheda completa</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modale invia messaggio paziente -->
+  <div class="modal-overlay" id="msg-modal" onclick="if(event.target===this) closeModal('msg-modal')">
+    <div class="modal">
+      <div class="modal-header">
+        <div class="modal-title">Invia messaggio al paziente</div>
+        <button class="modal-close" onclick="closeModal('msg-modal')">${''}<span id="ico-x2"></span></button>
+      </div>
+      <div class="modal-body">
+        <p class="caption mb-12" id="msg-to">Destinatario: …</p>
+        <div class="field">
+          <label class="field-label">Oggetto</label>
+          <div class="input-container"><input class="input" id="msg-subj" placeholder="Es. Richiesta documenti aggiornati"></div>
+        </div>
+        <div class="field">
+          <label class="field-label">Messaggio</label>
+          <div class="input-container"><textarea class="input" id="msg-body" rows="5" placeholder="Scrivi il messaggio…"></textarea></div>
+        </div>
+        <div class="field">
+          <label class="field-label">Canale</label>
+          <div class="input-container" style="padding:10px 12px;background:var(--light-gray)">
+            <span id="ico-mailch"></span>
+            <span style="font-weight:600;font-size:13px">Email</span>
+            <span class="caption" style="margin-left:auto">Invio all'indirizzo registrato</span>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn--secondary" onclick="closeModal('msg-modal')">Annulla</button>
+        <button class="btn btn--care" onclick="sendMessage()">Invia</button>
       </div>
     </div>
   </div>
@@ -160,6 +193,8 @@
     document.getElementById('ico-search').outerHTML = aIcon('search', { size: 16 });
     document.getElementById('ico-export').outerHTML = aIcon('upload', { size: 14 });
     document.getElementById('ico-x').outerHTML = aIcon('x', { size: 16 });
+    document.getElementById('ico-x2').outerHTML = aIcon('x', { size: 16 });
+    document.getElementById('ico-mailch').outerHTML = aIcon('mail', { size: 16 });
 
     const palettes = [
       ['#6E5BB8','#4338CA'], ['#0EA5A4','#0F7570'], ['#FF8C00','#FF6A00'], ['#3B82F6','#1E4FBF'],
@@ -175,8 +210,8 @@
       const [c1, c2] = palettes[i % palettes.length];
       const initials = p.name.split(' ').map(s => s[0]).join('');
       const [docCls, docLabel] = docMap[p.docs_status];
-      return `<tr style="cursor:pointer" onclick="openP('${p.id}')">
-        <td>
+      return `<tr data-id="${p.id}">
+        <td onclick="openP('${p.id}')" style="cursor:pointer">
           <div class="flex items-center gap-12">
             <span class="avatar-sm" style="background:linear-gradient(135deg, ${c1}, ${c2})">${initials}</span>
             <div>
@@ -193,13 +228,69 @@
         <td>${p.last_login}</td>
         <td>
           <div class="actions">
-            <button class="btn btn--ghost btn--sm" title="Apri">${aIcon('eye',{size:14})}</button>
-            <button class="btn btn--ghost btn--sm" title="Messaggio">${aIcon('message-square',{size:14})}</button>
+            <button class="btn btn--ghost btn--sm" title="Apri" onclick="openP('${p.id}')">${aIcon('eye',{size:14})}</button>
+            <button class="btn btn--ghost btn--sm" title="Messaggio" onclick="openMessageFor('${p.id}')">${aIcon('message-square',{size:14})}</button>
           </div>
         </td>
       </tr>`;
     });
     document.getElementById('rows').innerHTML = rows.join('');
+
+    // Paginazione simulata
+    let currentPage = 1;
+    const totalPages = 12;
+    function pag(delta) {
+      const next = currentPage + delta;
+      if (next < 1) return showToast('Sei già alla prima pagina', 'info');
+      if (next > totalPages) return showToast('Sei già all\'ultima pagina', 'info');
+      currentPage = next;
+      const lastCount = currentPage === totalPages ? '10' : '12';
+      document.getElementById('pag-label').textContent =
+        `Pagina ${currentPage} di ${totalPages} · ${lastCount} di 142 risultati`;
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      showToast('Pagina ' + currentPage, 'care');
+    }
+
+    // Esporta CSV (genera download client-side)
+    function exportCSV() {
+      const header = ['ID','Nome','CF','Telefono','Wallet','Completate','Docs','UltimoAccesso'];
+      const lines = [header.join(',')].concat(
+        MOCK.admin_patients.map(p => [p.id, '"'+p.name+'"', p.cf, p.phone, p.wallet, p.completed, p.docs_status, '"'+p.last_login+'"'].join(','))
+      );
+      const blob = new Blob([lines.join('\n')], { type: 'text/csv;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'aureacare_pazienti_' + new Date().toISOString().slice(0,10) + '.csv';
+      document.body.appendChild(a); a.click(); a.remove();
+      URL.revokeObjectURL(url);
+      showToast('CSV scaricato · ' + MOCK.admin_patients.length + ' pazienti', 'success');
+    }
+
+    // Invia messaggio
+    let currentPatient = null;
+    function openMessageFor(id) {
+      currentPatient = MOCK.admin_patients.find(p => p.id === id);
+      if (!currentPatient) return;
+      document.getElementById('msg-to').textContent = 'Destinatario: ' + currentPatient.name + ' · ' + currentPatient.phone;
+      document.getElementById('msg-subj').value = '';
+      document.getElementById('msg-body').value = '';
+      openModal('msg-modal');
+    }
+    function openMessage() {
+      const title = document.getElementById('pm-title').textContent;
+      currentPatient = MOCK.admin_patients.find(p => p.name === title) || MOCK.admin_patients[0];
+      document.getElementById('msg-to').textContent = 'Destinatario: ' + currentPatient.name + ' · ' + currentPatient.phone;
+      closeModal('patient-modal');
+      openModal('msg-modal');
+    }
+    function sendMessage() {
+      const subj = document.getElementById('msg-subj').value.trim();
+      const body = document.getElementById('msg-body').value.trim();
+      if (!subj || !body) return showToast('Compila oggetto e messaggio', 'error');
+      closeModal('msg-modal');
+      showToast('Messaggio inviato a ' + (currentPatient ? currentPatient.name : 'paziente'), 'success');
+    }
 
     function openP(id) {
       const p = MOCK.admin_patients.find(x => x.id === id);

@@ -100,15 +100,18 @@
       <div class="recap-card">
         <div class="recap-thumb"><span id="ico-heart"></span></div>
         <div style="flex:1;min-width:0">
-          <p class="caption" style="color:var(--care-blue-dark);font-weight:700">VISITA SPECIALISTICA</p>
-          <p style="font-weight:700;font-size:15px">Visita cardiologica</p>
-          <p class="caption">Policlinico Gemelli · 4.2 km · ★ 4.7</p>
+          <p class="caption" style="color:var(--care-blue-dark);font-weight:700" id="rec-eyebrow">VISITA SPECIALISTICA</p>
+          <p style="font-weight:700;font-size:15px" id="rec-service">Visita cardiologica</p>
+          <p class="caption" id="rec-meta">Policlinico Gemelli · 4.2 km · ★ 4.7</p>
         </div>
         <div class="text-right">
-          <p style="font-weight:700">€95</p>
+          <p style="font-weight:700" id="rec-price">€95</p>
           <p class="caption">conv.</p>
         </div>
       </div>
+
+      <!-- Mini mappa struttura selezionata -->
+      <div class="aurea-map aurea-map--xs mb-16" id="booking-map"></div>
 
       <!-- Calendario -->
       <div class="cal-nav">
@@ -191,6 +194,24 @@
     document.getElementById('ico-l').outerHTML = aIcon('chevron-left', { size: 16 });
     document.getElementById('ico-r').outerHTML = aIcon('chevron-right', { size: 16 });
     document.getElementById('ico-amb').outerHTML = aIcon('ambulance', { size: 20 });
+
+    // Recap dinamico (legge ?structure=... dalla URL)
+    const urlParams = new URLSearchParams(location.search);
+    const sid = urlParams.get('structure') || 'STR-001';
+    const selected = MOCK.structures.find(s => s.id === sid) || MOCK.structures[0];
+    document.getElementById('rec-meta').textContent =
+      `${selected.name} · ${selected.distance_km.toFixed(1)} km · ★ ${selected.rating.toFixed(1)}`;
+
+    // Mini mappa con la struttura + casa paziente + linea tratteggiata
+    aMap.init('booking-map', {
+      structures: [selected],
+      selectedId: selected.id,
+      showPatient: true,
+      route: [MOCK.patient_location, { lat: selected.lat, lng: selected.lng }],
+      zoom: 13,
+      interactive: false,
+      fitBounds: true
+    });
     document.getElementById('nv-home').outerHTML   = aIcon('home',    { size: 22 });
     document.getElementById('nv-cure').outerHTML   = aIcon('heart',   { size: 22 });
     document.getElementById('nv-wallet').outerHTML = aIcon('wallet',  { size: 22 });

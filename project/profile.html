@@ -73,7 +73,7 @@
       <div class="app-switcher-wrap">
         <button class="icon-btn" data-app-switcher aria-label="App suite"><span id="ico-grid"></span></button>
       </div>
-      <button class="icon-btn" aria-label="Impostazioni"><span id="ico-set"></span></button>
+      <button class="icon-btn" aria-label="Impostazioni" onclick="openSetting('notif')"><span id="ico-set"></span></button>
     </header>
 
     <div class="patient-content">
@@ -92,8 +92,12 @@
         <div class="data-row"><span class="k">Telefono</span><span class="v">+39 333 712 8439</span></div>
         <div class="data-row"><span class="k">Email</span><span class="v">lucia.marchetti@example.it</span></div>
         <div class="data-row"><span class="k">Indirizzo</span><span class="v" style="text-align:right">Via Tuscolana 124<br><span class="caption" style="font-weight:400">Tuscolano · Roma</span></span></div>
-        <div class="data-row"><span class="k"></span><a href="#" class="link" style="color:var(--care-blue);font-weight:700;font-size:13px">Modifica anagrafica</a></div>
+        <div class="data-row"><span class="k"></span><a href="#" class="link" style="color:var(--care-blue);font-weight:700;font-size:13px" onclick="event.preventDefault();openEditProfile()">Modifica anagrafica</a></div>
       </div>
+
+      <!-- Mini mappa indirizzo paziente -->
+      <div class="divider-eyebrow"><span>La tua zona</span><span class="line"></span></div>
+      <div class="aurea-map aurea-map--xs mb-20" id="profile-map"></div>
 
       <!-- Documenti -->
       <div class="divider-eyebrow"><span>Documenti caricati</span><span class="line"></span></div>
@@ -134,10 +138,10 @@
       <!-- Settings -->
       <div class="divider-eyebrow"><span>Impostazioni</span><span class="line"></span></div>
       <div class="card card--padded mb-20">
-        <div class="setting-row"><div class="set-ico"><span id="s1"></span></div><span class="setting-label">Notifiche</span><span class="caption">Attive</span><span id="ch1"></span></div>
-        <div class="setting-row"><div class="set-ico"><span id="s2"></span></div><span class="setting-label">Lingua</span><span class="caption">Italiano</span><span id="ch2"></span></div>
-        <div class="setting-row"><div class="set-ico"><span id="s3"></span></div><span class="setting-label">Privacy & GDPR</span><span id="ch3"></span></div>
-        <div class="setting-row"><div class="set-ico"><span id="s4"></span></div><span class="setting-label">Aiuto e supporto</span><span id="ch4"></span></div>
+        <div class="setting-row" onclick="openSetting('notif')"><div class="set-ico"><span id="s1"></span></div><span class="setting-label">Notifiche</span><span class="caption">Attive</span><span id="ch1"></span></div>
+        <div class="setting-row" onclick="openSetting('lang')"><div class="set-ico"><span id="s2"></span></div><span class="setting-label">Lingua</span><span class="caption">Italiano</span><span id="ch2"></span></div>
+        <div class="setting-row" onclick="openSetting('privacy')"><div class="set-ico"><span id="s3"></span></div><span class="setting-label">Privacy & GDPR</span><span id="ch3"></span></div>
+        <div class="setting-row" onclick="openSetting('help')"><div class="set-ico"><span id="s4"></span></div><span class="setting-label">Aiuto e supporto</span><span id="ch4"></span></div>
         <div class="setting-row danger" onclick="logout()"><div class="set-ico"><span id="s5"></span></div><span class="setting-label">Esci dall'account</span></div>
       </div>
 
@@ -152,6 +156,42 @@
     </nav>
   </div>
 
+  <!-- Modale generico settings -->
+  <div class="modal-overlay" id="set-modal" onclick="if(event.target===this) closeModal('set-modal')">
+    <div class="modal">
+      <div class="modal-header">
+        <div class="modal-title" id="set-title">Impostazioni</div>
+        <button class="modal-close" onclick="closeModal('set-modal')"><span id="ico-x"></span></button>
+      </div>
+      <div class="modal-body" id="set-body"></div>
+      <div class="modal-footer">
+        <button class="btn btn--secondary" onclick="closeModal('set-modal')">Chiudi</button>
+        <button class="btn btn--care" onclick="saveSettings()">Salva</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modale modifica anagrafica -->
+  <div class="modal-overlay" id="edit-modal" onclick="if(event.target===this) closeModal('edit-modal')">
+    <div class="modal">
+      <div class="modal-header">
+        <div class="modal-title">Modifica anagrafica</div>
+        <button class="modal-close" onclick="closeModal('edit-modal')"><span id="ico-x2"></span></button>
+      </div>
+      <div class="modal-body">
+        <p class="caption mb-16">Modifica i dati di contatto. CF e data di nascita non sono modificabili.</p>
+        <div class="field"><label class="field-label">Telefono</label><div class="input-container"><input class="input" id="ed-phone" value="+39 333 712 8439"></div></div>
+        <div class="field"><label class="field-label">Email</label><div class="input-container"><input class="input" id="ed-email" type="email" value="lucia.marchetti@example.it"></div></div>
+        <div class="field"><label class="field-label">Indirizzo</label><div class="input-container"><input class="input" id="ed-addr" value="Via Tuscolana 124"></div></div>
+        <div class="field"><label class="field-label">CAP</label><div class="input-container"><input class="input" id="ed-cap" value="00181"></div></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn--secondary" onclick="closeModal('edit-modal')">Annulla</button>
+        <button class="btn btn--care" onclick="saveProfile()">Salva modifiche</button>
+      </div>
+    </div>
+  </div>
+
   <div id="toast-container"></div>
 
   <script src="data/mock-data.js"></script>
@@ -160,6 +200,8 @@
   <script>
     document.getElementById('ico-grid').outerHTML = aIcon('grid', { size: 20 });
     document.getElementById('ico-set').outerHTML  = aIcon('settings', { size: 20 });
+    document.getElementById('ico-x').outerHTML    = aIcon('x', { size: 16 });
+    document.getElementById('ico-x2').outerHTML   = aIcon('x', { size: 16 });
     ['dr1','dr2','dr3','dr4'].forEach((id,i) => { document.getElementById(id).outerHTML = aIcon(i===3 ? 'shield-check' : 'file-check', { size: 18 }); });
     document.getElementById('s1').outerHTML = aIcon('bell', { size: 18 });
     document.getElementById('s2').outerHTML = aIcon('message-square', { size: 18 });
@@ -172,6 +214,105 @@
     document.getElementById('nv-cure').outerHTML   = aIcon('heart',   { size: 22 });
     document.getElementById('nv-wallet').outerHTML = aIcon('wallet',  { size: 22 });
     document.getElementById('nv-profile').outerHTML= aIcon('user',    { size: 22 });
+
+    // Mini mappa indirizzo paziente
+    aMap.init('profile-map', {
+      structures: [],
+      center: [MOCK.patient_location.lat, MOCK.patient_location.lng],
+      zoom: 14,
+      showPatient: true,
+      interactive: false
+    });
+
+    // Settings: 4 pannelli (Notifiche, Lingua, Privacy, Aiuto)
+    const settingsState = {
+      notif: { booking: true, reminder: true, marketing: false, esg: true },
+      lang:  'it'
+    };
+    const panels = {
+      notif: () => ({
+        title: 'Notifiche',
+        html: `
+          <p class="caption mb-16">Scegli come e quando ricevere comunicazioni AureaCare.</p>
+          <div class="set-modal-row"><span class="label">Conferme prenotazione</span><div class="switch ${settingsState.notif.booking?'on':''}" data-key="booking"></div></div>
+          <div class="set-modal-row"><span class="label">Promemoria visita (24h prima)</span><div class="switch ${settingsState.notif.reminder?'on':''}" data-key="reminder"></div></div>
+          <div class="set-modal-row"><span class="label">Comunicazioni promozionali</span><div class="switch ${settingsState.notif.marketing?'on':''}" data-key="marketing"></div></div>
+          <div class="set-modal-row"><span class="label">Report ESG trimestrale</span><div class="switch ${settingsState.notif.esg?'on':''}" data-key="esg"></div></div>`
+      }),
+      lang: () => ({
+        title: 'Lingua',
+        html: `
+          <p class="caption mb-16">Seleziona la lingua di AureaCare.</p>
+          <div class="slots" style="grid-template-columns:1fr">
+            <button class="slot lang-opt ${settingsState.lang==='it'?'selected':''}" data-lang="it">🇮🇹 Italiano</button>
+            <button class="slot lang-opt ${settingsState.lang==='en'?'selected':''}" data-lang="en">🇬🇧 English</button>
+            <button class="slot lang-opt ${settingsState.lang==='es'?'selected':''}" data-lang="es">🇪🇸 Español</button>
+          </div>
+          <p class="caption mt-12">Le lingue extra-italiano sono in beta.</p>`
+      }),
+      privacy: () => ({
+        title: 'Privacy & GDPR',
+        html: `
+          <p class="caption mb-16">Gestisci i tuoi consensi al trattamento dei dati.</p>
+          <div class="set-modal-row"><span class="label"><strong>Trattamento dati clinici</strong><br><span class="caption">Necessario per l'erogazione del servizio</span></span><div class="switch on" style="opacity:.5;pointer-events:none"></div></div>
+          <div class="set-modal-row"><span class="label">Condivisione dati con AureaShuttle</span><div class="switch on" data-key="share-shuttle"></div></div>
+          <div class="set-modal-row"><span class="label">Analisi anonime per miglioramento servizio</span><div class="switch" data-key="analytics"></div></div>
+          <p class="caption mt-12">Puoi richiedere la cancellazione totale dei dati dal supporto.</p>
+          <button class="btn btn--ghost btn--block mt-8" style="color:var(--error)" onclick="showConfirmDialog('Richiedi cancellazione', 'Riceverai una mail con la procedura GDPR di cancellazione (entro 30 giorni).', ()=> showToast('Richiesta inviata · controlla la mail','info'), {confirmLabel:'Invia richiesta', danger:true})">Richiedi cancellazione account</button>`
+      }),
+      help: () => ({
+        title: 'Aiuto e supporto',
+        html: `
+          <p class="caption mb-16">Risponde il team AureaCare entro 24 ore lavorative.</p>
+          <a class="list-row" href="mailto:supporto@aureacare.it">${aIcon('mail',{size:20})}<div class="row-body"><div class="row-title">supporto@aureacare.it</div><div class="row-meta">Risposta entro 24h</div></div></a>
+          <a class="list-row" href="tel:+390612345678">${aIcon('phone',{size:20})}<div class="row-body"><div class="row-title">+39 06 1234 5678</div><div class="row-meta">Lun–Ven · 9-18</div></div></a>
+          <div class="list-row" onclick="showToast('Chat live: in arrivo','info')">${aIcon('message-square',{size:20})}<div class="row-body"><div class="row-title">Chat in app</div><div class="row-meta">In arrivo</div></div></div>
+          <div class="list-row" onclick="showToast('FAQ in arrivo · v0.2','info')">${aIcon('info',{size:20})}<div class="row-body"><div class="row-title">FAQ e guide</div><div class="row-meta">Domande frequenti</div></div></div>`
+      })
+    };
+
+    function openSetting(kind) {
+      const p = panels[kind]();
+      document.getElementById('set-title').textContent = p.title;
+      document.getElementById('set-body').innerHTML = p.html;
+      // Wire up switches
+      document.querySelectorAll('#set-body .switch[data-key]').forEach(sw => {
+        sw.addEventListener('click', () => {
+          sw.classList.toggle('on');
+          const k = sw.dataset.key;
+          if (settingsState.notif[k] !== undefined) settingsState.notif[k] = sw.classList.contains('on');
+        });
+      });
+      // Wire up lang
+      document.querySelectorAll('#set-body .lang-opt').forEach(o => {
+        o.addEventListener('click', () => {
+          document.querySelectorAll('#set-body .lang-opt').forEach(x => x.classList.remove('selected'));
+          o.classList.add('selected');
+          settingsState.lang = o.dataset.lang;
+        });
+      });
+      openModal('set-modal');
+    }
+    function saveSettings() {
+      closeModal('set-modal');
+      showToast('Preferenze salvate', 'success');
+    }
+
+    // Modifica anagrafica
+    function openEditProfile() { openModal('edit-modal'); }
+    function saveProfile() {
+      const phone = document.getElementById('ed-phone').value.trim();
+      const email = document.getElementById('ed-email').value.trim();
+      if (!email.includes('@')) return showToast('Email non valida', 'error');
+      // Aggiorno la UI sopra
+      const dataRows = document.querySelectorAll('.data-row .v');
+      if (dataRows.length >= 4) {
+        dataRows[2].textContent = phone;
+        dataRows[3].textContent = email;
+      }
+      closeModal('edit-modal');
+      showToast('Anagrafica aggiornata', 'success');
+    }
   </script>
 </body>
 </html>

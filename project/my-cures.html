@@ -180,11 +180,64 @@
 
         <div class="flex gap-8 mt-16">
           ${b.status === 'pending' ? `<button class="btn btn--danger" style="flex:1" onclick="cancel()">Annulla richiesta</button>` : ''}
-          ${b.status === 'approved' || b.status === 'confirmed' ? `<button class="btn btn--danger" style="flex:1" onclick="cancel()">Cancella</button><button class="btn btn--secondary" style="flex:1">Sposta</button>` : ''}
-          ${b.status === 'completed' ? `<button class="btn btn--secondary btn--block">Scarica fattura</button>` : ''}
-          ${b.status === 'cancelled' ? `<button class="btn btn--care btn--block">Riprenota</button>` : ''}
+          ${b.status === 'approved' || b.status === 'confirmed' ? `<button class="btn btn--danger" style="flex:1" onclick="cancel()">Cancella</button><button class="btn btn--secondary" style="flex:1" onclick="reschedule('${b.id}')">Sposta</button>` : ''}
+          ${b.status === 'completed' ? `<button class="btn btn--secondary btn--block" onclick="downloadInvoice('${b.id}')">Scarica fattura</button>` : ''}
+          ${b.status === 'cancelled' ? `<button class="btn btn--care btn--block" onclick="rebook('${b.id}')">Riprenota</button>` : ''}
         </div>`;
       openModal('cure-modal');
+    }
+
+    function reschedule(id) {
+      closeModal('cure-modal');
+      const b = MOCK.bookings.find(x => x.id === id);
+      if (!b) return;
+      // Trova structure_id corrispondente (se mappato)
+      const sid = b.structure_id || 'STR-001';
+      showConfirmDialog(
+        'Sposta la prenotazione',
+        'Verrai portato al calendario per scegliere un nuovo orario per "' + b.service_name + '". La data attuale (' + b.date + ') sarà liberata.',
+        () => location.href = 'booking.html?structure=' + sid + '&reschedule=' + id,
+        { confirmLabel: 'Scegli nuovo slot' }
+      );
+    }
+
+    function downloadInvoice(id) {
+      const b = MOCK.bookings.find(x => x.id === id);
+      if (!b) return;
+      const lines = [
+        'FATTURA AUREACARE',
+        '',
+        'Numero:       INV-' + id,
+        'Data:         ' + b.date + ' 2026',
+        'Paziente:     ' + (MOCK.patient ? MOCK.patient.first_name + ' ' + MOCK.patient.last_name : 'Paziente'),
+        'Codice fisc.: ' + (MOCK.patient ? MOCK.patient.cf : ''),
+        '',
+        'Prestazione:  ' + b.service_name,
+        'Struttura:    ' + b.structure_name,
+        'Medico:       ' + b.doctor,
+        'Importo:      €' + b.cost + ' (tariffa convenzionata)',
+        '',
+        'Modalità pagamento: Wallet AureaCare',
+        'Status:             ' + b.status,
+        '',
+        '— Documento generato dal POC AureaCare —'
+      ].join('\n');
+      const blob = new Blob([lines], { type: 'text/plain;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = 'fattura_' + id + '.txt';
+      document.body.appendChild(a); a.click(); a.remove();
+      URL.revokeObjectURL(url);
+      showToast('Fattura scaricata · ' + id, 'success');
+    }
+
+    function rebook(id) {
+      const b = MOCK.bookings.find(x => x.id === id);
+      if (!b) return;
+      closeModal('cure-modal');
+      const sid = b.structure_id || 'STR-001';
+      showToast('Riprenotazione: cerco nuovi slot…', 'care');
+      setTimeout(() => location.href = 'booking.html?structure=' + sid + '&service=' + (b.service_id || ''), 600);
     }
 
     function cancel() {

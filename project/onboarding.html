@@ -147,6 +147,10 @@
           </div>
         </div>
 
+        <!-- Mini mappa Roma con strutture limitrofe -->
+        <p class="eyebrow mt-16 mb-8">Strutture vicine a Roma</p>
+        <div class="aurea-map aurea-map--xs" id="ob-map" style="height:200px"></div>
+
         <div class="banner-roma mt-12">
           <span id="ico-pin"></span>
           <p>Il servizio AureaCare copre inizialmente l'area del <strong>Comune di Roma</strong>. Espansione progressiva in altre città — ti avviseremo appena disponibile nella tua zona.</p>
@@ -199,12 +203,14 @@
 
   <div id="toast-container"></div>
 
+  <script src="data/mock-data.js"></script>
   <script src="js/icons.js"></script>
   <script src="js/navigation.js"></script>
   <script>
     let step = 1;
     const TOTAL = 4;
     const stepNames = { 1: 'Anagrafica', 2: 'Documenti', 3: 'Indirizzo', 4: 'Consensi' };
+    let obMapInit = false;
 
     function renderStep() {
       document.querySelectorAll('.step-pane').forEach(p => p.classList.toggle('active', +p.dataset.step === step));
@@ -216,6 +222,20 @@
       document.getElementById('btn-next').innerHTML = step === TOTAL
         ? 'Completa registrazione ' + aIcon('check', { size: 16 })
         : 'Avanti ' + aIcon('arrow-right', { size: 16 });
+
+      // Init lazy della mappa allo step 3
+      if (step === 3 && !obMapInit) {
+        setTimeout(() => {
+          aMap.init('ob-map', {
+            structures: MOCK.structures.filter(s => s.active).slice(0, 8),
+            center: [41.9028, 12.4964],
+            zoom: 11,
+            interactive: false,
+            popup: false
+          });
+        }, 150);
+        obMapInit = true;
+      }
     }
 
     function goNextStep() {

@@ -76,37 +76,49 @@
       </div>
     </div>
 
-    <!-- Mappa -->
-    <div class="map-placeholder mt-12" style="position:relative">
-      <div class="map-pin" style="left:34%;top:46%"></div>
-      <div class="map-pin" style="left:52%;top:38%;background:var(--care-blue)"></div>
-      <div class="map-pin" style="left:48%;top:60%"></div>
-      <div class="map-pin" style="left:64%;top:54%"></div>
-      <div class="map-pin" style="left:28%;top:70%"></div>
-      <div class="map-pin" style="left:70%;top:30%"></div>
-      <span class="map-watermark">— ROMA · MAPPA STATICA ·</span>
+    <!-- Mappa Leaflet/OpenStreetMap (sostituisce placeholder statico) -->
+    <div class="aurea-map mt-12" id="strs-map" style="height:260px">
+      <div class="map-legend">
+        <div class="row"><span class="dot dot--care"></span>Strutture</div>
+        <div class="row"><span class="dot dot--home"></span>Casa</div>
+      </div>
     </div>
 
     <!-- Filtri sticky -->
     <div class="strs-filters">
-      <div class="chips">
-        <button class="chip active">Tutte le specialità</button>
-        <button class="chip">Cardiologia</button>
-        <button class="chip">Ortopedia</button>
-        <button class="chip">Fisioterapia</button>
-        <button class="chip">Dermatologia</button>
-        <button class="chip">≤ 5 km</button>
-        <button class="chip">Disponibile oggi</button>
-        <button class="chip">Tariffa convenzionata bassa</button>
+      <div class="chips" id="filter-chips">
+        <button class="chip active" data-filter="all">Tutte le specialità</button>
+        <button class="chip" data-filter="cardio">Cardiologia</button>
+        <button class="chip" data-filter="orto">Ortopedia</button>
+        <button class="chip" data-filter="fisio">Fisioterapia</button>
+        <button class="chip" data-filter="derma">Dermatologia</button>
+        <button class="chip" data-filter="near">≤ 5 km</button>
+        <button class="chip" data-filter="today">Disponibile oggi</button>
+        <button class="chip" data-filter="cheap">Tariffa bassa</button>
       </div>
     </div>
 
     <div class="patient-content">
       <div class="flex justify-between items-center mb-12">
         <p class="caption" id="str-summary"></p>
-        <button class="btn btn--secondary btn--sm" style="padding:6px 12px"><span id="ico-filter"></span>Ordina</button>
+        <button class="btn btn--secondary btn--sm" style="padding:6px 12px" id="sort-btn"><span id="ico-filter"></span>Ordina</button>
       </div>
       <div id="str-list"></div>
+    </div>
+
+    <!-- Bottom sheet: Ordina -->
+    <div class="sheet-backdrop" id="sort-bg" onclick="closeSort()"></div>
+    <div class="sheet" id="sort-sheet">
+      <div class="sheet-handle"></div>
+      <h3>Ordina per</h3>
+      <p class="caption mb-16">Scegli l'ordine di visualizzazione delle strutture.</p>
+      <div class="slots" id="sort-opts" style="grid-template-columns:1fr">
+        <button class="slot selected" data-sort="distance">Distanza · più vicina prima</button>
+        <button class="slot" data-sort="rating">Valutazione · migliore prima</button>
+        <button class="slot" data-sort="tariff">Tariffa convenzionata · più bassa</button>
+        <button class="slot" data-sort="slot">Disponibilità · slot più vicino</button>
+      </div>
+      <button class="btn btn--care btn--block btn--lg mt-16" onclick="applySort()">Applica ordine</button>
     </div>
 
     <nav class="bottom-nav">
@@ -133,31 +145,110 @@
     document.getElementById('nv-profile').outerHTML= aIcon('user',    { size: 22 });
 
     const list = document.getElementById('str-list');
-    const active = MOCK.structures.filter(s => s.active);
-    document.getElementById('str-summary').textContent =
-      `${active.length} strutture disponibili a Roma`;
+    const allActive = MOCK.structures.filter(s => s.active);
 
-    active.forEach(s => {
-      const row = document.createElement('a');
-      row.className = 'str-row';
-      row.href = `booking.html?structure=${s.id}`;
-      const tagsHtml = s.specialties.slice(0,3).map(sp => `<span class="str-tag">${sp}</span>`).join('');
-      row.innerHTML = `
-        <div class="str-thumb">struttura</div>
-        <div class="str-body">
-          <div class="str-name">${s.name}</div>
-          <div class="str-meta">${s.address} · ${s.district}</div>
-          <div class="str-meta-row">
-            <span class="star-mini">★ ${s.rating.toFixed(1)}</span>
-            <span class="caption">(${s.reviews})</span>
-            <span class="caption">·</span>
-            <span class="caption" style="color:var(--care-blue);font-weight:600">${s.distance_km.toFixed(1)} km</span>
-          </div>
-          <div class="str-tags">${tagsHtml}${s.specialties.length>3 ? '<span class="str-tag">+'+(s.specialties.length-3)+'</span>' : ''}</div>
-          <div class="str-meta" style="margin-top:6px"><span style="color:var(--b-approved-tx);font-weight:600">${s.next_slot}</span> · prossimo slot</div>
+    let currentFilter = 'all';
+    let currentSort = 'distance';
+
+    const filterFns = {
+      all:    () => true,
+      cardio: s => s.specialties.some(x => /cardio/i.test(x)),
+      orto:   s => s.specialties.some(x => /ortop|riabilit/i.test(x)),
+      fisio:  s => s.specialties.some(x => /fisio|logoped|osteop/i.test(x)),
+      derma:  s => s.specialties.some(x => /dermat/i.test(x)),
+      near:   s => s.distance_km <= 5,
+      today:  s => /oggi|domani/i.test(s.next_slot),
+      cheap:  s => s.tariff_factor <= 0.95
+    };
+    const sortFns = {
+      distance: (a, b) => a.distance_km - b.distance_km,
+      rating:   (a, b) => b.rating - a.rating,
+      tariff:   (a, b) => a.tariff_factor - b.tariff_factor,
+      slot:     (a, b) => (/(oggi|domani)/i.test(a.next_slot) ? 0 : 1) - (/(oggi|domani)/i.test(b.next_slot) ? 0 : 1)
+    };
+
+    function renderList() {
+      const filtered = allActive.filter(filterFns[currentFilter]).sort(sortFns[currentSort]);
+      document.getElementById('str-summary').textContent =
+        `${filtered.length} ${filtered.length === 1 ? 'struttura' : 'strutture'} a Roma` +
+        (currentFilter !== 'all' ? ' · filtro attivo' : '');
+      list.innerHTML = '';
+      if (!filtered.length) {
+        list.innerHTML = `<div class="card card--padded-lg text-center" style="margin-top:12px">
+          ${aIcon('map-pin',{size:32,cls:'mb-12'})}
+          <p style="font-weight:700">Nessuna struttura in questo filtro</p>
+          <p class="caption">Prova a rimuovere alcuni filtri o ad allargare il raggio.</p>
         </div>`;
-      list.appendChild(row);
+        renderMap(allActive);
+        return;
+      }
+      filtered.forEach(s => {
+        const row = document.createElement('a');
+        row.className = 'str-row';
+        row.href = `booking.html?structure=${s.id}`;
+        const tagsHtml = s.specialties.slice(0,3).map(sp => `<span class="str-tag">${sp}</span>`).join('');
+        row.innerHTML = `
+          <div class="str-thumb">struttura</div>
+          <div class="str-body">
+            <div class="str-name">${s.name}</div>
+            <div class="str-meta">${s.address} · ${s.district}</div>
+            <div class="str-meta-row">
+              <span class="star-mini">★ ${s.rating.toFixed(1)}</span>
+              <span class="caption">(${s.reviews})</span>
+              <span class="caption">·</span>
+              <span class="caption" style="color:var(--care-blue);font-weight:600">${s.distance_km.toFixed(1)} km</span>
+            </div>
+            <div class="str-tags">${tagsHtml}${s.specialties.length>3 ? '<span class="str-tag">+'+(s.specialties.length-3)+'</span>' : ''}</div>
+            <div class="str-meta" style="margin-top:6px"><span style="color:var(--b-approved-tx);font-weight:600">${s.next_slot}</span> · prossimo slot</div>
+          </div>`;
+        list.appendChild(row);
+      });
+      renderMap(filtered);
+    }
+
+    let mapInstance = null;
+    function renderMap(items) {
+      mapInstance = aMap.init('strs-map', {
+        structures: items,
+        showPatient: true,
+        onPick: (s) => location.href = 'booking.html?structure=' + s.id
+      });
+    }
+
+    // Filtri chip
+    document.getElementById('filter-chips').addEventListener('click', (e) => {
+      const c = e.target.closest('.chip');
+      if (!c) return;
+      document.querySelectorAll('#filter-chips .chip').forEach(x => x.classList.remove('active'));
+      c.classList.add('active');
+      currentFilter = c.dataset.filter;
+      renderList();
     });
+
+    // Sort sheet
+    document.getElementById('sort-btn').addEventListener('click', () => {
+      document.getElementById('sort-sheet').classList.add('open');
+      document.getElementById('sort-bg').classList.add('open');
+    });
+    function closeSort() {
+      document.getElementById('sort-sheet').classList.remove('open');
+      document.getElementById('sort-bg').classList.remove('open');
+    }
+    document.querySelectorAll('#sort-opts .slot').forEach(o => {
+      o.addEventListener('click', () => {
+        document.querySelectorAll('#sort-opts .slot').forEach(x => x.classList.remove('selected'));
+        o.classList.add('selected');
+      });
+    });
+    function applySort() {
+      const sel = document.querySelector('#sort-opts .slot.selected');
+      currentSort = sel ? sel.dataset.sort : 'distance';
+      closeSort();
+      renderList();
+      showToast('Ordine: ' + sel.textContent.trim(), 'care');
+    }
+
+    renderList();
   </script>
 </body>
 </html>

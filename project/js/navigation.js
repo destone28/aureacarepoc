@@ -263,6 +263,134 @@ function renderWalletRing(el, opts) {
   el.appendChild(wrap);
 }
 
+// ---------- Mappe Leaflet / OpenStreetMap ----------
+// Uso: aMap.init(container, { structures, selectedId, showPatient, interactive, onPick })
+// Tile CartoDB Positron — sobrio, coerente con la palette AureaCare.
+// Marker SVG inline (care-blue per default, orange per "selected", verde per casa paziente).
+const aMap = (function () {
+  const TILE_URL = 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png';
+  const TILE_ATTR = '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> · <a href="https://carto.com/attributions">CARTO</a>';
+
+  function ensureLeaflet(cb) {
+    if (window.L) return cb();
+    if (document.getElementById('leaflet-css')) {
+      // already loading — poll
+      const i = setInterval(() => { if (window.L) { clearInterval(i); cb(); } }, 80);
+      return;
+    }
+    const css = document.createElement('link');
+    css.id = 'leaflet-css';
+    css.rel = 'stylesheet';
+    css.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
+    css.integrity = 'sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=';
+    css.crossOrigin = '';
+    document.head.appendChild(css);
+    const js = document.createElement('script');
+    js.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
+    js.integrity = 'sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=';
+    js.crossOrigin = '';
+    js.onload = cb;
+    document.head.appendChild(js);
+  }
+
+  function divPin(color, label, size) {
+    const s = size || 30;
+    return L.divIcon({
+      className: 'aurea-pin',
+      iconSize: [s, s + 6],
+      iconAnchor: [s/2, s + 6],
+      popupAnchor: [0, -s - 2],
+      html: `<div style="position:relative;width:${s}px;height:${s+6}px">
+        <div style="position:absolute;left:0;top:0;width:${s}px;height:${s}px;background:${color};border:3px solid #fff;border-radius:50% 50% 50% 0;transform:rotate(-45deg);box-shadow:0 3px 8px rgba(0,0,0,.25)"></div>
+        <div style="position:absolute;left:${(s-12)/2}px;top:${(s-12)/2}px;width:12px;height:12px;background:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:${color}">${label || ''}</div>
+      </div>`
+    });
+  }
+
+  function init(container, opts) {
+    opts = opts || {};
+    const el = (typeof container === 'string') ? document.getElementById(container) : container;
+    if (!el) return null;
+    // Reset eventuale istanza precedente
+    if (el._leaflet_id) {
+      try { el._aureaMap && el._aureaMap.remove(); } catch (e) {}
+      el.innerHTML = '';
+    }
+
+    const out = { el, map: null, markers: [] };
+    ensureLeaflet(() => {
+      const accent = getComputedStyle(document.documentElement).getPropertyValue('--care-blue').trim() || '#3B82F6';
+      const orange = getComputedStyle(document.documentElement).getPropertyValue('--primary-orange').trim() || '#FF8C00';
+      const green  = '#0F6E56';
+
+      const structures = (opts.structures || (window.MOCK && MOCK.structures) || []).filter(s => s.lat && s.lng);
+      const center = opts.center || (structures[0] ? [structures[0].lat, structures[0].lng] : [41.9028, 12.4964]);
+      const zoom = opts.zoom != null ? opts.zoom : (structures.length > 1 ? 11 : 14);
+      const interactive = opts.interactive !== false;
+
+      const map = L.map(el, {
+        zoomControl: interactive,
+        scrollWheelZoom: interactive,
+        dragging: interactive,
+        doubleClickZoom: interactive,
+        boxZoom: interactive,
+        keyboard: interactive,
+        touchZoom: interactive,
+        tap: interactive
+      }).setView(center, zoom);
+      L.tileLayer(TILE_URL, { attribution: TILE_ATTR, subdomains: 'abcd', maxZoom: 19 }).addTo(map);
+
+      structures.forEach(s => {
+        const selected = opts.selectedId && s.id === opts.selectedId;
+        const color = selected ? orange : accent;
+        const m = L.marker([s.lat, s.lng], { icon: divPin(color, '', selected ? 34 : 28) }).addTo(map);
+        if (opts.popup !== false) {
+          const popHtml = `
+            <div style="font-family:'Open Sans',system-ui;min-width:200px">
+              <div style="font-weight:700;font-size:13px;line-height:1.3;margin-bottom:4px">${s.name}</div>
+              <div style="font-size:11px;color:#666">${s.address} · ${s.district}</div>
+              <div style="font-size:11px;color:#666;margin-top:4px">★ ${s.rating.toFixed(1)} · ${s.distance_km.toFixed(1)} km</div>
+              ${opts.onPick ? `<a href="#" data-pick="${s.id}" style="display:inline-block;margin-top:8px;padding:5px 10px;background:${accent};color:#fff;text-decoration:none;font-size:11px;font-weight:700;border-radius:6px">Scegli struttura →</a>` : ''}
+            </div>`;
+          m.bindPopup(popHtml);
+          if (opts.onPick) {
+            m.on('popupopen', (e) => {
+              const link = e.popup.getElement().querySelector('[data-pick]');
+              if (link) link.addEventListener('click', (ev) => { ev.preventDefault(); opts.onPick(s); });
+            });
+          }
+        }
+        if (selected) m.openPopup();
+        out.markers.push(m);
+      });
+
+      if (opts.showPatient && window.MOCK && MOCK.patient_location) {
+        const loc = MOCK.patient_location;
+        const m = L.marker([loc.lat, loc.lng], { icon: divPin(green, '🏠', 28) }).addTo(map);
+        m.bindPopup(`<div style="font-family:'Open Sans',system-ui;font-size:12px"><strong>Casa</strong><br>${(MOCK.patient && MOCK.patient.address) || 'Via Tuscolana 124, Roma'}</div>`);
+        out.markers.push(m);
+      }
+
+      if (opts.route && opts.route.length === 2 && opts.route.every(p => p)) {
+        L.polyline(opts.route.map(p => [p.lat, p.lng]), { color: orange, weight: 4, opacity: .7, dashArray: '6 6' }).addTo(map);
+      }
+
+      // Fit bounds se più marker e nessun selectedId specifico
+      if (structures.length > 1 && !opts.selectedId && opts.fitBounds !== false) {
+        const group = L.featureGroup(out.markers);
+        try { map.fitBounds(group.getBounds().pad(0.15)); } catch (e) {}
+      }
+
+      out.map = map;
+      el._aureaMap = map;
+      setTimeout(() => map.invalidateSize(), 80);
+    });
+    return out;
+  }
+
+  return { init, ensureLeaflet };
+})();
+
 // ---------- Wizard helpers (onboarding) ----------
 function setWizardStep(currentStep, totalSteps) {
   const stepsEl = document.querySelector('.steps');

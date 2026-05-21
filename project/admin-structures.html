@@ -47,9 +47,9 @@
       <a class="sb-item" href="admin-approvals.html" data-label="Approvazioni"><span id="sb2"></span></a>
       <a class="sb-item active" href="admin-structures.html" data-label="Strutture"><span id="sb3"></span></a>
       <a class="sb-item" href="admin-patients.html" data-label="Pazienti"><span id="sb4"></span></a>
-      <a class="sb-item" href="#" data-label="KPI ESG"><span id="sb5"></span></a>
+      <a class="sb-item" href="#" data-label="KPI ESG" onclick="event.preventDefault();showToast('Sezione ESG: in arrivo','info')"><span id="sb5"></span></a>
       <div class="spacer"></div>
-      <button class="sb-item" data-label="Impostazioni"><span id="sb6"></span></button>
+      <button class="sb-item" data-label="Impostazioni" onclick="showToast('Impostazioni console: in arrivo','info')"><span id="sb6"></span></button>
       <button class="sb-item" data-label="Esci" onclick="logout()"><span id="sb7"></span></button>
     </aside>
 
@@ -57,7 +57,7 @@
       <header class="admin-topbar">
         <h1>Strutture convenzionate</h1>
         <span class="badge badge--info" style="font-size:13px;padding:6px 12px">18 strutture · 17 attive</span>
-        <button class="icon-btn" style="width:38px;height:38px;background:var(--light-gray);border:none;border-radius:10px"><span id="ico-bell"></span></button>
+        <button class="icon-btn" style="width:38px;height:38px;background:var(--light-gray);border:none;border-radius:10px" onclick="showToast('Nessuna notifica struttura','info')"><span id="ico-bell"></span></button>
         <div class="avatar">FR</div>
       </header>
 
@@ -78,6 +78,21 @@
           </div>
         </div>
 
+        <!-- Mappa overview di tutte le strutture -->
+        <div class="card card--padded-lg mb-20">
+          <div class="flex justify-between items-center mb-12">
+            <div>
+              <h2 style="font-size:15px;font-weight:700">Network sul territorio</h2>
+              <p class="caption">Distribuzione delle 18 strutture convenzionate · area Roma</p>
+            </div>
+            <div class="map-legend" style="position:static;box-shadow:none;background:transparent;padding:0;flex-direction:row;gap:14px">
+              <div class="row"><span class="dot dot--care"></span>Attive</div>
+              <div class="row"><span class="dot dot--selected"></span>Inattive</div>
+            </div>
+          </div>
+          <div class="aurea-map" id="net-map" style="height:300px;border-radius:10px;overflow:hidden"></div>
+        </div>
+
         <div class="card card--padded-lg">
           <table class="data-table">
             <thead>
@@ -94,6 +109,21 @@
             <tbody id="rows"></tbody>
           </table>
         </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modale dettagli struttura -->
+  <div class="modal-overlay" id="detail-modal" onclick="if(event.target===this) closeModal('detail-modal')">
+    <div class="modal modal--wide">
+      <div class="modal-header">
+        <div class="modal-title" id="dm-title">Dettagli struttura</div>
+        <button class="modal-close" onclick="closeModal('detail-modal')">${''}<span id="ico-x2"></span></button>
+      </div>
+      <div class="modal-body" id="dm-body"></div>
+      <div class="modal-footer">
+        <button class="btn btn--secondary" onclick="closeModal('detail-modal')">Chiudi</button>
+        <button class="btn btn--care" onclick="closeModal('detail-modal');showToast('Modifica salvata','success')">Salva modifiche</button>
       </div>
     </div>
   </div>
@@ -149,38 +179,158 @@
     document.getElementById('ico-search').outerHTML = aIcon('search', { size: 16 });
     document.getElementById('ico-plus').outerHTML = aIcon('plus', { size: 16 });
     document.getElementById('ico-x').outerHTML = aIcon('x', { size: 16 });
+    document.getElementById('ico-x2').outerHTML = aIcon('x', { size: 16 });
 
-    const rows = MOCK.structures.map(s => {
-      const tags = s.specialties.slice(0,3).map(sp => `<span class="specialty-chip">${sp}</span>`).join('');
-      const more = s.specialties.length > 3 ? `<span class="specialty-chip" style="background:var(--light-gray);color:var(--medium-gray)">+${s.specialties.length-3}</span>` : '';
-      return `<tr>
-        <td>
-          <div style="font-weight:700">${s.name}</div>
-          <div class="cell-sub">${s.type} · ★ ${s.rating} (${s.reviews})</div>
-        </td>
-        <td>
-          <div>${s.address}</div>
-          <div class="cell-sub">${s.district} · ${s.area}</div>
-        </td>
-        <td style="max-width:280px">${tags}${more}</td>
-        <td><strong>${s.tariff_factor.toFixed(2)}×</strong></td>
-        <td>${s.weekly_open}</td>
-        <td>
-          <div class="flex items-center gap-8">
-            <div class="toggle-mini ${s.active ? 'on' : ''}" onclick="this.classList.toggle('on');showToast('${s.name}: ${s.active ? 'disattivata':'attivata'}','info')"></div>
-            <span class="caption">${s.active ? 'Attiva' : 'Inattiva'}</span>
+    function buildRows() {
+      const rows = MOCK.structures.map(s => {
+        const tags = s.specialties.slice(0,3).map(sp => `<span class="specialty-chip">${sp}</span>`).join('');
+        const more = s.specialties.length > 3 ? `<span class="specialty-chip" style="background:var(--light-gray);color:var(--medium-gray)">+${s.specialties.length-3}</span>` : '';
+        return `<tr data-id="${s.id}">
+          <td>
+            <div style="font-weight:700">${s.name}</div>
+            <div class="cell-sub">${s.type} · ★ ${s.rating} (${s.reviews})</div>
+          </td>
+          <td>
+            <div>${s.address}</div>
+            <div class="cell-sub">${s.district} · ${s.area}</div>
+          </td>
+          <td style="max-width:280px">${tags}${more}</td>
+          <td><strong>${s.tariff_factor.toFixed(2)}×</strong></td>
+          <td>${s.weekly_open}</td>
+          <td>
+            <div class="flex items-center gap-8">
+              <div class="toggle-mini ${s.active ? 'on' : ''}" onclick="toggleActive(this, '${s.id}')"></div>
+              <span class="caption" data-status="${s.id}">${s.active ? 'Attiva' : 'Inattiva'}</span>
+            </div>
+          </td>
+          <td>
+            <div class="actions">
+              <button class="btn btn--ghost btn--sm" title="Modifica" onclick="openDetail('${s.id}', true)">${aIcon('edit',{size:14})}</button>
+              <button class="btn btn--ghost btn--sm" title="Dettagli" onclick="openDetail('${s.id}', false)">${aIcon('eye',{size:14})}</button>
+              <button class="btn btn--ghost btn--sm" title="Rimuovi" style="color:var(--error)" onclick="removeStruct('${s.id}')">${aIcon('x',{size:14})}</button>
+            </div>
+          </td>
+        </tr>`;
+      });
+      document.getElementById('rows').innerHTML = rows.join('');
+    }
+    buildRows();
+
+    function toggleActive(el, id) {
+      const s = MOCK.structures.find(x => x.id === id);
+      if (!s) return;
+      el.classList.toggle('on');
+      s.active = el.classList.contains('on');
+      const lbl = document.querySelector(`[data-status="${id}"]`);
+      if (lbl) lbl.textContent = s.active ? 'Attiva' : 'Inattiva';
+      showToast(`${s.name}: ${s.active ? 'attivata' : 'disattivata'}`, 'info');
+      renderNetworkMap();
+    }
+
+    function removeStruct(id) {
+      const s = MOCK.structures.find(x => x.id === id);
+      if (!s) return;
+      showConfirmDialog(
+        'Rimuovere dal network?',
+        `${s.name} non sarà più disponibile per le nuove prenotazioni. I pazienti con prenotazioni attive non saranno impattati.`,
+        () => {
+          const idx = MOCK.structures.indexOf(s);
+          MOCK.structures.splice(idx, 1);
+          buildRows();
+          renderNetworkMap();
+          showToast('Struttura rimossa dal network', 'info');
+        },
+        { confirmLabel: 'Sì, rimuovi', danger: true }
+      );
+    }
+
+    function openDetail(id, editMode) {
+      const s = MOCK.structures.find(x => x.id === id);
+      if (!s) return;
+      document.getElementById('dm-title').textContent = (editMode ? 'Modifica · ' : 'Dettagli · ') + s.name;
+      const body = document.getElementById('dm-body');
+      const ro = editMode ? '' : 'readonly';
+      const tags = s.specialties.map(sp => `<span class="specialty-chip">${sp}</span>`).join('');
+      body.innerHTML = `
+        <div style="display:grid;grid-template-columns:1.1fr 1fr;gap:24px">
+          <div>
+            <p class="eyebrow mb-8">Anagrafica</p>
+            <div style="display:grid;gap:10px">
+              <div class="field"><label class="field-label">Nome</label><div class="input-container"><input class="input" ${ro} value="${s.name}"></div></div>
+              <div class="field"><label class="field-label">Indirizzo</label><div class="input-container"><input class="input" ${ro} value="${s.address}"></div></div>
+              <div class="field"><label class="field-label">Quartiere</label><div class="input-container"><input class="input" ${ro} value="${s.district}"></div></div>
+              <div class="field"><label class="field-label">Tipo</label><div class="input-container"><input class="input" ${ro} value="${s.type}"></div></div>
+              <div class="field"><label class="field-label">Coeff. tariffario</label><div class="input-container"><input class="input" ${ro} value="${s.tariff_factor.toFixed(2)}"></div></div>
+              <div class="field"><label class="field-label">Orari</label><div class="input-container"><input class="input" ${ro} value="${s.weekly_open}"></div></div>
+            </div>
+
+            <p class="eyebrow mt-20 mb-8">Specializzazioni</p>
+            <div>${tags}</div>
+
+            <p class="eyebrow mt-20 mb-8">KPI struttura</p>
+            <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;text-align:center">
+              <div style="padding:12px;background:#FAFAFA;border-radius:10px"><p style="font-size:18px;font-weight:700">★ ${s.rating.toFixed(1)}</p><p class="caption">${s.reviews} recensioni</p></div>
+              <div style="padding:12px;background:#FAFAFA;border-radius:10px"><p style="font-size:18px;font-weight:700;color:var(--care-blue-dark)">${s.distance_km.toFixed(1)} km</p><p class="caption">da centro Roma</p></div>
+              <div style="padding:12px;background:#FAFAFA;border-radius:10px"><p style="font-size:18px;font-weight:700">${s.tariff_factor.toFixed(2)}×</p><p class="caption">coeff. tariffa</p></div>
+            </div>
           </div>
-        </td>
-        <td>
-          <div class="actions">
-            <button class="btn btn--ghost btn--sm" title="Modifica" onclick="showToast('Modifica struttura ${s.name}','info')">${aIcon('edit',{size:14})}</button>
-            <button class="btn btn--ghost btn--sm" title="Dettagli">${aIcon('eye',{size:14})}</button>
-            <button class="btn btn--ghost btn--sm" title="Rimuovi" style="color:var(--error)">${aIcon('x',{size:14})}</button>
+
+          <div>
+            <p class="eyebrow mb-8">Posizione</p>
+            <div class="aurea-map" id="dm-map" style="height:280px;border-radius:10px;overflow:hidden"></div>
+            <p class="caption mt-8">Coordinate: ${s.lat.toFixed(4)}, ${s.lng.toFixed(4)}</p>
+
+            <p class="eyebrow mt-20 mb-8">Prossimo slot disponibile</p>
+            <div style="padding:12px;background:#FAFAFA;border-radius:10px;display:flex;justify-content:space-between;align-items:center">
+              <strong>${s.next_slot}</strong>
+              <span class="badge ${s.active ? 'badge--approved' : 'badge--cancelled'}"><span class="dot"></span>${s.active ? 'Attiva' : 'Inattiva'}</span>
+            </div>
           </div>
-        </td>
-      </tr>`;
-    });
-    document.getElementById('rows').innerHTML = rows.join('');
+        </div>`;
+      openModal('detail-modal');
+      setTimeout(() => aMap.init('dm-map', { structures: [s], selectedId: s.id, zoom: 14, interactive: true }), 50);
+    }
+
+    // Mappa overview con TUTTE le strutture, colorate per stato
+    function renderNetworkMap() {
+      const netEl = document.getElementById('net-map');
+      // Costruisco custom: due livelli di marker (attive/inattive)
+      aMap.ensureLeaflet(() => {
+        if (netEl._aureaMap) { try { netEl._aureaMap.remove(); } catch(e){} netEl.innerHTML = ''; }
+        const accent = getComputedStyle(document.documentElement).getPropertyValue('--care-blue').trim() || '#3B82F6';
+        const orange = getComputedStyle(document.documentElement).getPropertyValue('--primary-orange').trim() || '#FF8C00';
+        const map = L.map(netEl, { scrollWheelZoom: false }).setView([41.9028, 12.4964], 11);
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', { attribution: '&copy; OpenStreetMap · CARTO', subdomains: 'abcd' }).addTo(map);
+        const markers = [];
+        MOCK.structures.forEach(s => {
+          if (!s.lat || !s.lng) return;
+          const color = s.active ? accent : orange;
+          const icon = L.divIcon({
+            className: 'aurea-pin',
+            iconSize: [26, 32], iconAnchor: [13, 32], popupAnchor: [0, -28],
+            html: `<div style="position:relative;width:26px;height:32px">
+              <div style="position:absolute;left:0;top:0;width:26px;height:26px;background:${color};border:3px solid #fff;border-radius:50% 50% 50% 0;transform:rotate(-45deg);box-shadow:0 3px 8px rgba(0,0,0,.25)"></div>
+            </div>`
+          });
+          const m = L.marker([s.lat, s.lng], { icon }).addTo(map);
+          m.bindPopup(`<div style="font-family:'Open Sans';min-width:200px">
+            <div style="font-weight:700;font-size:13px">${s.name}</div>
+            <div style="font-size:11px;color:#666">${s.address}</div>
+            <div style="font-size:11px;color:#666;margin-top:4px">${s.type} · ★ ${s.rating}</div>
+            <a href="#" data-id="${s.id}" style="display:inline-block;margin-top:8px;padding:4px 10px;background:${accent};color:#fff;text-decoration:none;font-size:11px;font-weight:700;border-radius:6px">Apri dettagli →</a>
+          </div>`);
+          m.on('popupopen', (e) => {
+            const link = e.popup.getElement().querySelector('[data-id]');
+            if (link) link.addEventListener('click', (ev) => { ev.preventDefault(); openDetail(s.id, false); map.closePopup(); });
+          });
+          markers.push(m);
+        });
+        if (markers.length > 1) { try { map.fitBounds(L.featureGroup(markers).getBounds().pad(0.1)); } catch(e){} }
+        netEl._aureaMap = map;
+        setTimeout(() => map.invalidateSize(), 100);
+      });
+    }
+    renderNetworkMap();
   </script>
 </body>
 </html>

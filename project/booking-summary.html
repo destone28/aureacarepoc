@@ -102,6 +102,9 @@
         <div class="kv-row"><span class="k">Medico</span><span class="v">Dr.ssa Elena Conti</span></div>
       </div>
 
+      <!-- Mini mappa della struttura confermata -->
+      <div class="aurea-map aurea-map--xs mb-16" id="summary-map"></div>
+
       <!-- Recap costo -->
       <div class="recap-block">
         <h3>Pagamento</h3>
@@ -158,6 +161,12 @@
     const handoffMode = localStorage.getItem('aureacare_handoff_mode') || 'prefilled';
     const zone = document.getElementById('handoff-zone');
 
+    function declineShuttle(btn) {
+      const wrap = btn.closest('.handoff, .handoff--visual');
+      if (wrap) wrap.remove();
+      showToast('Trasporto rifiutato · puoi aggiungerlo più tardi', 'info');
+    }
+
     if (handoffMode === 'sobrio') {
       zone.innerHTML = `
         <div class="handoff">
@@ -166,8 +175,8 @@
             <div class="handoff-title">Hai bisogno del trasporto sanitario?</div>
             <p class="handoff-sub">Prenota con AureaShuttle: i dati della visita sono già precompilati. Il servizio scala dal tuo wallet pacchetti corse.</p>
             <div class="handoff-actions">
-              <a class="btn btn--primary-grad" href="#" onclick="event.preventDefault();showToast('AureaShuttle: apertura simulata','info')">Sì, apri AureaShuttle</a>
-              <button class="btn btn--secondary">No, grazie</button>
+              <a class="btn btn--primary-grad" href="#" onclick="event.preventDefault();openShuttleSim()">Sì, apri AureaShuttle</a>
+              <button class="btn btn--secondary" onclick="declineShuttle(this)">No, grazie</button>
             </div>
           </div>
         </div>`;
@@ -187,8 +196,8 @@
             <div class="row"><span class="num">3</span><span>Il costo scala dal <strong>wallet pacchetti corse</strong> AureaShuttle, non dal wallet Care.</span></div>
           </div>
           <div class="handoff-actions" style="display:flex;gap:8px;margin-top:12px">
-            <a class="btn btn--primary-grad" href="#" onclick="event.preventDefault();showToast('AureaShuttle: apertura simulata','info')" style="flex:1">Apri AureaShuttle</a>
-            <button class="btn btn--secondary" style="flex:1">No, grazie</button>
+            <a class="btn btn--primary-grad" href="#" onclick="event.preventDefault();openShuttleSim()" style="flex:1">Apri AureaShuttle</a>
+            <button class="btn btn--secondary" style="flex:1" onclick="declineShuttle(this)">No, grazie</button>
           </div>
         </div>`;
     } else {
@@ -208,8 +217,8 @@
                 <div class="row"><span>Pacchetto corse</span><span>12 corse residue</span></div>
               </div>
               <div class="handoff-actions">
-                <a class="btn btn--primary-grad btn--sm" href="#" onclick="event.preventDefault();showToast('AureaShuttle: dati inviati','care')">Conferma su AureaShuttle ${aIcon('arrow-right',{size:14})}</a>
-                <button class="btn btn--ghost btn--sm" onclick="document.querySelector('.handoff').remove();showToast('Trasporto annullato','info')">Annulla trasporto</button>
+                <a class="btn btn--primary-grad btn--sm" href="#" onclick="event.preventDefault();openShuttleSim()">Conferma su AureaShuttle ${aIcon('arrow-right',{size:14})}</a>
+                <button class="btn btn--ghost btn--sm" onclick="declineShuttle(this)">Annulla trasporto</button>
               </div>
             </div>
           </div>`;
@@ -221,13 +230,60 @@
               <div class="handoff-title">Vuoi aggiungere il trasporto?</div>
               <p class="handoff-sub">Non l'hai richiesto in fase di prenotazione. Puoi aggiungerlo ora: i dati passano automaticamente ad AureaShuttle.</p>
               <div class="handoff-actions">
-                <a class="btn btn--primary-grad btn--sm" href="#" onclick="event.preventDefault();showToast('AureaShuttle: apertura simulata','info')">Sì, apri AureaShuttle</a>
-                <button class="btn btn--secondary btn--sm">No, grazie</button>
+                <a class="btn btn--primary-grad btn--sm" href="#" onclick="event.preventDefault();openShuttleSim()">Sì, apri AureaShuttle</a>
+                <button class="btn btn--secondary btn--sm" onclick="declineShuttle(this)">No, grazie</button>
               </div>
             </div>
           </div>`;
       }
     }
+
+    // Modale simulazione "apertura AureaShuttle"
+    function openShuttleSim() {
+      const overlay = document.createElement('div');
+      overlay.className = 'modal-overlay active';
+      overlay.innerHTML = `
+        <div class="modal" style="max-width:420px">
+          <div class="modal-header">
+            <div class="modal-title">Apertura AureaShuttle</div>
+            <button class="modal-close" onclick="this.closest('.modal-overlay').remove()">${aIcon('x',{size:16})}</button>
+          </div>
+          <div class="modal-body">
+            <div style="display:flex;gap:14px;align-items:center;margin-bottom:14px">
+              <div style="width:48px;height:48px;border-radius:12px;background:linear-gradient(135deg,var(--primary-orange),var(--secondary-orange));color:#fff;display:flex;align-items:center;justify-content:center">${aIcon('ambulance',{size:22})}</div>
+              <div>
+                <p style="font-weight:700">Cross-app handoff</p>
+                <p class="caption">Apertura simulata di AureaShuttle con dati precompilati.</p>
+              </div>
+            </div>
+            <div style="background:#FAFAFA;border-radius:10px;padding:14px;font-size:13px;display:grid;gap:6px">
+              <div style="display:flex;justify-content:space-between"><span class="text-muted">Da</span><strong>Via Tuscolana 124</strong></div>
+              <div style="display:flex;justify-content:space-between"><span class="text-muted">A</span><strong>Policlinico Gemelli</strong></div>
+              <div style="display:flex;justify-content:space-between"><span class="text-muted">Quando</span><strong>${day} mag · 13:30</strong></div>
+              <div style="display:flex;justify-content:space-between"><span class="text-muted">Stima</span><strong style="color:var(--primary-orange)">€18 · ~22 min</strong></div>
+            </div>
+            <p class="caption mt-12">In produzione qui si aprirebbe la app AureaShuttle. Per ora vedi il riepilogo che riceverà.</p>
+          </div>
+          <div class="modal-footer">
+            <button class="btn btn--secondary" onclick="this.closest('.modal-overlay').remove()">Chiudi</button>
+            <button class="btn btn--primary-grad" onclick="this.closest('.modal-overlay').remove();showToast('Dati inviati ad AureaShuttle','care')">Conferma handoff</button>
+          </div>
+        </div>`;
+      overlay.onclick = (e) => { if (e.target === overlay) overlay.remove(); };
+      document.body.appendChild(overlay);
+    }
+
+    // Mini mappa (struttura confermata + casa paziente)
+    const targetStruct = MOCK.structures.find(s => /gemelli/i.test(s.name)) || MOCK.structures[0];
+    aMap.init('summary-map', {
+      structures: [targetStruct],
+      selectedId: targetStruct.id,
+      showPatient: true,
+      route: shuttle ? [MOCK.patient_location, { lat: targetStruct.lat, lng: targetStruct.lng }] : null,
+      zoom: 13,
+      interactive: false,
+      fitBounds: true
+    });
 
     function confirmBooking() {
       showConfirmDialog(

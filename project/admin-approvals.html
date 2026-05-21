@@ -50,9 +50,9 @@
       <a class="sb-item active" href="admin-approvals.html" data-label="Approvazioni"><span id="sb2"></span></a>
       <a class="sb-item" href="admin-structures.html" data-label="Strutture"><span id="sb3"></span></a>
       <a class="sb-item" href="admin-patients.html" data-label="Pazienti"><span id="sb4"></span></a>
-      <a class="sb-item" href="#" data-label="KPI ESG"><span id="sb5"></span></a>
+      <a class="sb-item" href="#" data-label="KPI ESG" onclick="event.preventDefault();showToast('Sezione ESG: in arrivo','info')"><span id="sb5"></span></a>
       <div class="spacer"></div>
-      <button class="sb-item" data-label="Impostazioni"><span id="sb6"></span></button>
+      <button class="sb-item" data-label="Impostazioni" onclick="showToast('Impostazioni console: in arrivo','info')"><span id="sb6"></span></button>
       <button class="sb-item" data-label="Esci" onclick="logout()"><span id="sb7"></span></button>
     </aside>
 
@@ -60,7 +60,7 @@
       <header class="admin-topbar">
         <h1>Coda approvazioni</h1>
         <span class="badge badge--warning" style="font-size:13px;padding:6px 12px">3 in attesa</span>
-        <button class="icon-btn" style="width:38px;height:38px;background:var(--light-gray);border:none;border-radius:10px"><span id="ico-bell"></span></button>
+        <button class="icon-btn" style="width:38px;height:38px;background:var(--light-gray);border:none;border-radius:10px" onclick="showToast('3 nuove notifiche admin','info')"><span id="ico-bell"></span></button>
         <div class="avatar">FR</div>
       </header>
 
@@ -94,7 +94,7 @@
             <span id="ico-cal"></span>
             <input class="input" placeholder="Range data" value="ult. 14 giorni" readonly>
           </div>
-          <button class="btn btn--ghost btn--sm">Reset</button>
+          <button class="btn btn--ghost btn--sm" onclick="resetFilters()">Reset</button>
           <span class="filter-pill">3 filtri attivi</span>
         </div>
 
@@ -118,10 +118,10 @@
             <tbody id="rows"></tbody>
           </table>
           <div class="flex justify-between items-center mt-16" style="border-top:1px solid var(--border-soft);padding-top:14px">
-            <p class="caption">Mostro 12 di 47 richieste totali</p>
+            <p class="caption" id="pag-label">Pagina 1 · mostro 12 di 47 richieste totali</p>
             <div class="flex gap-6">
-              <button class="btn btn--secondary btn--sm">‹ Precedenti</button>
-              <button class="btn btn--secondary btn--sm">Successivi ›</button>
+              <button class="btn btn--secondary btn--sm" onclick="pag(-1)">‹ Precedenti</button>
+              <button class="btn btn--secondary btn--sm" onclick="pag(1)">Successivi ›</button>
             </div>
           </div>
         </div>
@@ -257,6 +257,9 @@
               <div style="display:flex;justify-content:space-between"><span>Cliente AureaCare da</span><strong>09/01/2026</strong></div>
             </div>
 
+            <p class="eyebrow mt-20 mb-8">Posizione struttura</p>
+            <div class="aurea-map aurea-map--xs" id="ap-map" style="height:180px"></div>
+
             <div class="banner-roma mt-16">
               <span>${aIcon('info', {size:18})}</span>
               <p><strong>Cross-app:</strong> richiesto anche trasporto AureaShuttle per questa prestazione. Verrà coordinato in automatico se approvata.</p>
@@ -264,6 +267,41 @@
           </div>
         </div>`;
       openModal('approve-modal');
+
+      // Inizializza la mini-mappa: cerca per nome (parziale) tra strutture mockate
+      setTimeout(() => {
+        const target = MOCK.structures.find(s => r.structure && s.name.toLowerCase().includes(r.structure.toLowerCase().split(' ')[0])) || MOCK.structures[0];
+        aMap.init('ap-map', {
+          structures: [target],
+          selectedId: target.id,
+          showPatient: true,
+          zoom: 12,
+          interactive: true,
+          fitBounds: true
+        });
+      }, 60);
+    }
+
+    // Filtri reset
+    function resetFilters() {
+      document.querySelectorAll('.filter-bar input').forEach(i => { if (i.type !== 'checkbox') i.value = ''; });
+      document.querySelectorAll('.filter-bar select').forEach(s => s.selectedIndex = 0);
+      showToast('Filtri resettati', 'info');
+    }
+
+    // Paginazione simulata
+    let currentPage = 1;
+    const totalPages = 4;
+    function pag(delta) {
+      const next = currentPage + delta;
+      if (next < 1) return showToast('Sei già alla prima pagina', 'info');
+      if (next > totalPages) return showToast('Sei già all\'ultima pagina', 'info');
+      currentPage = next;
+      const fromTo = currentPage === totalPages ? '11' : '12';
+      document.getElementById('pag-label').textContent =
+        `Pagina ${currentPage} di ${totalPages} · mostro ${fromTo} di 47 richieste totali`;
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      showToast('Pagina ' + currentPage, 'care');
     }
 
     function quickApprove(id) {
