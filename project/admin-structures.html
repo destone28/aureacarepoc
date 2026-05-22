@@ -94,7 +94,7 @@
         </div>
 
         <div class="card card--padded-lg">
-          <table class="data-table">
+          <table class="data-table data-table--cards">
             <thead>
               <tr>
                 <th>Struttura</th>
@@ -186,24 +186,24 @@
         const tags = s.specialties.slice(0,3).map(sp => `<span class="specialty-chip">${sp}</span>`).join('');
         const more = s.specialties.length > 3 ? `<span class="specialty-chip" style="background:var(--light-gray);color:var(--medium-gray)">+${s.specialties.length-3}</span>` : '';
         return `<tr data-id="${s.id}">
-          <td>
+          <td data-th="Struttura">
             <div style="font-weight:700">${s.name}</div>
             <div class="cell-sub">${s.type} · ★ ${s.rating} (${s.reviews})</div>
           </td>
-          <td>
+          <td data-th="Indirizzo">
             <div>${s.address}</div>
             <div class="cell-sub">${s.district} · ${s.area}</div>
           </td>
-          <td style="max-width:280px">${tags}${more}</td>
-          <td><strong>${s.tariff_factor.toFixed(2)}×</strong></td>
-          <td>${s.weekly_open}</td>
-          <td>
+          <td data-th="Specializzazioni" style="max-width:280px">${tags}${more}</td>
+          <td data-th="Coeff. tariffa"><strong>${s.tariff_factor.toFixed(2)}×</strong></td>
+          <td data-th="Orari">${s.weekly_open}</td>
+          <td data-th="Stato">
             <div class="flex items-center gap-8">
               <div class="toggle-mini ${s.active ? 'on' : ''}" onclick="toggleActive(this, '${s.id}')"></div>
               <span class="caption" data-status="${s.id}">${s.active ? 'Attiva' : 'Inattiva'}</span>
             </div>
           </td>
-          <td>
+          <td data-th="Azioni">
             <div class="actions">
               <button class="btn btn--ghost btn--sm" title="Modifica" onclick="openDetail('${s.id}', true)">${aIcon('edit',{size:14})}</button>
               <button class="btn btn--ghost btn--sm" title="Dettagli" onclick="openDetail('${s.id}', false)">${aIcon('eye',{size:14})}</button>

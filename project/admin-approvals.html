@@ -100,7 +100,7 @@
 
         <!-- Tabella -->
         <div class="card card--padded-lg">
-          <table class="data-table">
+          <table class="data-table data-table--cards">
             <thead>
               <tr>
                 <th style="width:32px"><input type="checkbox"></th>
@@ -191,16 +191,16 @@
            </div>`
         : `<button class="btn btn--ghost btn--sm" onclick="openReview('${r.id}')">Dettagli</button>`;
       return `<tr data-id="${r.id}">
-        <td><input type="checkbox"></td>
-        <td><span class="font-mono" style="font-size:12px;font-weight:700">${r.id}</span></td>
-        <td><div style="font-weight:700">${r.patient}</div><div class="cell-sub">${r.cf}</div></td>
-        <td>${r.service}</td>
-        <td>${r.structure}</td>
-        <td><div>${r.date}</div><div class="cell-sub">inv. ${r.submitted}</div></td>
-        <td><strong>€${r.cost}</strong></td>
-        <td>€${r.wallet_after} <span class="cell-sub" style="margin-top:0;display:inline">res.</span></td>
-        <td><span class="badge ${b}"><span class="dot"></span>${l}</span></td>
-        <td>${action}</td>
+        <td data-th=""><input type="checkbox"></td>
+        <td data-th="ID"><span class="font-mono" style="font-size:12px;font-weight:700">${r.id}</span></td>
+        <td data-th="Paziente"><div style="font-weight:700">${r.patient}</div><div class="cell-sub">${r.cf}</div></td>
+        <td data-th="Prestazione">${r.service}</td>
+        <td data-th="Struttura">${r.structure}</td>
+        <td data-th="Data prevista"><div>${r.date}</div><div class="cell-sub">inv. ${r.submitted}</div></td>
+        <td data-th="Costo"><strong>€${r.cost}</strong></td>
+        <td data-th="Wallet (post)">€${r.wallet_after} <span class="cell-sub" style="margin-top:0;display:inline">res.</span></td>
+        <td data-th="Stato"><span class="badge ${b}"><span class="dot"></span>${l}</span></td>
+        <td data-th="Azioni">${action}</td>
       </tr>`;
     });
     document.getElementById('rows').innerHTML = rows.join('');

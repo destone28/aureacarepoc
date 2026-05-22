@@ -1135,27 +1135,11 @@ textarea.input { resize: vertical; min-height: 80px; }
 .text-right { text-align: right; }
 .font-mono { font-family: 'JetBrains Mono', 'SF Mono', Menlo, monospace; }
 
-/* Tablet rotation hint (admin) */
-.rotate-hint {
-  display: none;
-  position: fixed; inset: 0;
-  background: #1a1d24;
-  color: #fff;
-  z-index: 99999;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  padding: 40px;
-  gap: 16px;
-}
-.rotate-hint h2 { font-size: 22px; font-weight: 700; }
-.rotate-hint p { color: #B6BBC4; max-width: 320px; line-height: 1.5; }
-.rotate-hint .ico { width: 64px; height: 64px; color: var(--primary-orange); }
-
-@media (max-width: 760px) and (orientation: portrait) {
-  body.admin-page .rotate-hint { display: flex; }
-}
+/* Tablet rotation hint — DEPRECATED: la console admin è ora completamente
+   responsive in portrait mobile (bottom-nav + card-view tabelle).
+   Lasciato display:none per non rompere il markup esistente; un toast
+   informativo viene mostrato 1 volta su mobile via navigation.js. */
+.rotate-hint { display: none !important; }
 
 /* Section divider with eyebrow (canvas) */
 .divider-eyebrow {
@@ -1246,4 +1230,415 @@ textarea.input { resize: vertical; min-height: 80px; }
   box-shadow: 0 4px 12px rgba(0,0,0,.15);
   pointer-events: none;
   z-index: 600;
+}
+
+/* ============================================================
+   RESPONSIVE — ottimizzazioni mobile cross-app
+   Approccio: mobile-first nei flow paziente, fallback su admin
+   per landscape stretto (≤960px) e bypass rotate-hint.
+   ============================================================ */
+
+/* Modali — full-screen su mobile, scroll affidabile, footer wrap */
+@media (max-width: 640px) {
+  .modal-overlay { padding: 0; align-items: flex-end; }
+  .modal,
+  .modal[style*="max-width"] {
+    max-width: 100% !important;
+    width: 100%;
+    max-height: 92vh;
+    border-radius: 16px 16px 0 0;
+    animation: slideUp 220ms ease-out;
+  }
+  .modal--wide { max-width: 100% !important; }
+  .modal-header { padding: 16px 18px; }
+  .modal-title { font-size: 17px; }
+  .modal-body { padding: 18px; }
+  .modal-footer {
+    padding: 14px 18px;
+    flex-wrap: wrap;
+  }
+  .modal-footer .btn { flex: 1 1 auto; min-width: 0; }
+  /* Quando un solo bottone è presente, occupa tutta la riga */
+  .modal-footer .btn:only-child { flex-basis: 100%; }
+
+  /* Grid 2-col dentro modali admin (review/dettagli/paziente):
+     collassano a una colonna evitando overflow */
+  .modal-body > div[style*="grid-template-columns:1.2fr 1fr"],
+  .modal-body > div[style*="grid-template-columns:1.1fr 1fr"],
+  .modal-body > div[style*="grid-template-columns:1fr 1fr"] {
+    grid-template-columns: 1fr !important;
+    gap: 18px !important;
+  }
+  /* Grid documenti review (2-col): tieni due colonne se contiene molti item piccoli */
+  .modal-body div[style*="grid-template-columns:repeat(2,1fr)"] {
+    grid-template-columns: repeat(2, minmax(0,1fr)) !important;
+  }
+  /* Grid 3-col KPI dentro modali (ESG paziente, KPI struttura) */
+  .modal-body div[style*="grid-template-columns:repeat(3,1fr)"] {
+    grid-template-columns: repeat(3, minmax(0,1fr)) !important;
+    gap: 6px !important;
+  }
+  .modal-body div[style*="grid-template-columns:repeat(3,1fr)"] p[style*="font-size:22px"] {
+    font-size: 18px !important;
+  }
+  /* Action button row (dettaglio my-cures: Cancella+Sposta) */
+  .modal-body .flex.gap-8 { flex-wrap: wrap; }
+  .modal-body .flex.gap-8 > .btn {
+    min-width: 0;
+    flex: 1 1 calc(50% - 4px);
+  }
+  /* Bottone singolo full-width */
+  .modal-body .flex.gap-8 > .btn:only-child { flex-basis: 100%; }
+}
+
+/* KV-row e data-row: valore va a capo invece di sforare */
+.kv-row .v,
+.data-row .v {
+  word-break: break-word;
+  overflow-wrap: anywhere;
+}
+
+/* Modal body: tutti i testi rispettano il contenitore — niente overflow orizzontale */
+.modal-body { word-wrap: break-word; overflow-wrap: anywhere; }
+.modal-body p, .modal-body strong, .modal-body span { min-width: 0; }
+/* I figli flex testuali possono shrinkare; le icone hanno flex-shrink:0 esplicito */
+.modal-body .flex > div { min-width: 0; }
+.modal-body .cure-icon,
+.modal-body .recap-thumb,
+.modal-body [class*="avatar"],
+.modal-body [class*="-icon"] { flex-shrink: 0; min-width: auto; }
+/* Righe key-value (display:flex; justify-content:space-between) — il valore wrappa */
+.modal-body div[style*="justify-content:space-between"] > strong,
+.modal-body div[style*="justify-content:space-between"] > span:last-child {
+  text-align: right;
+  word-break: break-word;
+  overflow-wrap: anywhere;
+  max-width: 60%;
+}
+@media (max-width: 480px) {
+  .kv-row { gap: 8px; }
+  .kv-row .v { max-width: 60%; font-size: 13px; }
+  .data-row { gap: 8px; }
+}
+
+/* Recap card (booking, my-cures): adatta padding e font su mobile */
+@media (max-width: 480px) {
+  .recap-card { padding: 12px; gap: 10px; }
+  .recap-thumb,
+  .recap-card .recap-thumb { width: 40px; height: 40px; }
+  .recap-card p[style*="font-size:15px"] { font-size: 14px !important; }
+}
+
+/* Strs-row (lista strutture): impedisce overflow del thumbnail/tag */
+@media (max-width: 380px) {
+  .str-row { padding: 12px; gap: 10px; }
+  .str-thumb { width: 52px; height: 52px; font-size: 8px; }
+  .str-row .str-tag { font-size: 9px; padding: 2px 5px; }
+}
+
+/* Cure-card (my-cures): la riga prezzo/wallet a destra deve restare leggibile */
+@media (max-width: 380px) {
+  .cure-head { gap: 10px; }
+  .cure-icon { width: 40px; height: 40px; }
+  .cure-head .text-right { min-width: 60px; }
+}
+
+/* Calendar: celle più piccole su mobile stretto */
+@media (max-width: 380px) {
+  .cal-grid { gap: 4px; }
+  .cal-day { font-size: 13px; min-height: 38px; }
+}
+
+/* Bottom sheet (booking, sort sheet) */
+@media (max-width: 480px) {
+  .sheet { padding: 16px; max-height: 80vh; overflow-y: auto; }
+  .slots { grid-template-columns: repeat(3, 1fr); gap: 6px; }
+  .slot { font-size: 13px; padding: 10px 6px; }
+}
+
+/* ============================================================
+   Admin console — responsive a 3 livelli:
+   - desktop ≥1100px: layout originale (sidebar 72px + content)
+   - tablet 760-1100px: sidebar compatta 56px, topbar wrap, tabelle scroll-x
+   - mobile <760px: sidebar diventa BOTTOM-NAV; tabelle in card-view
+   ============================================================ */
+
+/* TABLET (landscape mobile / iPad / browser stretti) */
+@media (max-width: 1100px) and (min-width: 761px) {
+  .admin-shell { grid-template-columns: 56px 1fr; }
+  .admin-sidebar { padding: 12px 0; }
+  .admin-sidebar .sb-item { width: 40px; height: 40px; }
+  .admin-sidebar .sb-item[data-label]::after { display: none; }
+  .admin-topbar { padding: 14px 18px; gap: 10px; flex-wrap: wrap; }
+  .admin-topbar h1 { font-size: 17px; }
+  .admin-content { padding: 18px; }
+
+  /* Tabelle: scroll orizzontale sulla card */
+  .card--padded-lg {
+    padding: 14px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .data-table { min-width: 720px; }
+  .data-table th, .data-table td { padding: 10px 12px; font-size: 13px; }
+  .data-table .cell-sub { font-size: 11px; }
+  .data-table .actions { gap: 4px; }
+  .data-table .actions .btn { padding: 4px 8px; font-size: 12px; }
+}
+
+/* MOBILE PORTRAIT (≤760px) — la sidebar diventa bottom-nav, tabelle in card-view */
+@media (max-width: 760px) {
+  body.admin-page { padding-bottom: 72px; }
+  .admin-shell {
+    grid-template-columns: 1fr;
+    min-height: 100vh;
+  }
+
+  /* Sidebar → bottom nav orizzontale */
+  .admin-sidebar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    top: auto;
+    height: auto;
+    flex-direction: row;
+    justify-content: space-around;
+    padding: 8px 4px;
+    gap: 2px;
+    z-index: 100;
+    border-top: 1px solid rgba(255,255,255,.08);
+    box-shadow: 0 -4px 16px rgba(0,0,0,.2);
+  }
+  .admin-sidebar .logo { display: none; }
+  .admin-sidebar .spacer { display: none; }
+  .admin-sidebar .sb-item {
+    flex: 1 1 0;
+    flex-direction: column;
+    width: auto;
+    height: 52px;
+    gap: 2px;
+    padding: 6px 4px;
+    min-width: 0;
+    font-size: 10px;
+    font-weight: 600;
+    color: #8A93A0;
+    border-radius: 0;
+    background: transparent;
+  }
+  .admin-sidebar .sb-item::before {
+    content: attr(data-label);
+    font-size: 10px;
+    font-weight: 600;
+    order: 2;
+    line-height: 1;
+  }
+  .admin-sidebar .sb-item .ico {
+    width: 22px; height: 22px;
+    order: 1;
+  }
+  .admin-sidebar .sb-item[data-label]::after { display: none; }
+  .admin-sidebar .sb-item.active {
+    background: transparent;
+    color: var(--care-blue);
+  }
+  /* Nascondiamo gli ultimi due bottoni (Impostazioni / Esci) sulla bottom-nav:
+     restano accessibili da menu o tap-and-hold; il primo "Esci" lo spostiamo
+     come voce nel topbar (vedi più sotto). Su mobile la nav è già piena
+     con Dashboard/Approvazioni/Strutture/Pazienti/ESG (5 voci) e diventerebbe
+     ingestibile con 7. */
+  .admin-sidebar .sb-item[data-label="Impostazioni"],
+  .admin-sidebar .sb-item[data-label="Esci"] { display: none; }
+
+  /* Topbar mobile: titolo + actions wrap */
+  .admin-topbar {
+    padding: 12px 14px;
+    gap: 8px;
+    flex-wrap: wrap;
+    border-bottom: 1px solid var(--border-soft);
+  }
+  .admin-topbar h1 {
+    font-size: 17px;
+    flex: 1 1 100%;
+    order: -1;
+  }
+  .admin-topbar .badge {
+    font-size: 11px !important;
+    padding: 4px 8px !important;
+    order: 1;
+  }
+  .admin-topbar .icon-btn { width: 34px !important; height: 34px !important; }
+  .admin-topbar .avatar { width: 32px; height: 32px; font-size: 12px; }
+
+  .admin-content { padding: 14px; }
+  .crumbs { font-size: 12px !important; }
+
+  /* KPI grid: 2 colonne con valori più compatti */
+  .kpi-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 10px; margin-bottom: 18px; }
+  .kpi-card { padding: 14px; }
+  .kpi-card .kpi-value { font-size: 22px; }
+  .kpi-card .kpi-label { font-size: 11px; }
+  .kpi-card .kpi-delta { font-size: 11px; }
+  .kpi-card .kpi-icon { width: 32px; height: 32px; }
+
+  /* Card chart: il chart SVG si comprime grazie a viewBox; ridurre solo padding */
+  .card--padded-lg { padding: 14px; }
+  .card--padded-lg #trend-chart { height: 220px; }
+  .card--padded-lg .flex.justify-between { flex-wrap: wrap; gap: 8px; }
+  .card--padded-lg .tabs { padding: 2px; }
+  .card--padded-lg .tabs .tab { font-size: 12px; padding: 6px 10px; }
+
+  /* Filter bar approvals: tutti gli input full-width, stacked */
+  .filter-bar {
+    padding: 12px;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+  }
+  .filter-bar .input-container { min-width: 0; width: 100%; }
+  .filter-bar .btn { width: 100%; }
+  .filter-bar .filter-pill { align-self: flex-start; }
+
+  /* ============================================================
+     Tabelle dati admin: CARD-VIEW su mobile portrait
+     Ogni <tr> diventa una card; <td> verticali con label da data-th.
+     Per attivare card-view è sufficiente aggiungere class="data-table--cards"
+     al <table> dentro la pagina, oppure il fallback è scroll-x.
+     Default: scroll orizzontale sulla card (sempre funzionante).
+     ============================================================ */
+  .card--padded-lg {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .data-table { min-width: 0; }
+  .data-table th, .data-table td { padding: 8px 10px; font-size: 12px; white-space: nowrap; }
+  .data-table .cell-sub { font-size: 10px; }
+  .data-table .actions { gap: 3px; }
+  .data-table .actions .btn { padding: 3px 6px; font-size: 11px; }
+
+  /* CARD-VIEW: attivabile dando alla table class "data-table--cards"
+     (mantenibile in futuro per le tabelle paziente/approvals dove è più
+     comodo della scrollata orizzontale). */
+  .data-table--cards,
+  .data-table--cards thead,
+  .data-table--cards tbody,
+  .data-table--cards tr,
+  .data-table--cards td { display: block; width: 100%; }
+  .data-table--cards thead { display: none; }
+  .data-table--cards tr {
+    background: #fff;
+    border: 1px solid var(--border-soft);
+    border-radius: var(--r-md);
+    padding: 12px;
+    margin-bottom: 10px;
+    box-shadow: var(--shadow-sm);
+  }
+  .data-table--cards td {
+    border: none !important;
+    padding: 6px 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 12px;
+    white-space: normal;
+  }
+  .data-table--cards td::before {
+    content: attr(data-th);
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--medium-gray);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    flex-shrink: 0;
+    align-self: center;
+  }
+  .data-table--cards td .actions { justify-content: flex-end; }
+
+  /* Paginazione: stack verticale */
+  .flex.justify-between.items-center.mt-16[style*="border-top"] {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+}
+
+/* Micro mobile (≤380px): ulteriori compattazioni */
+@media (max-width: 380px) {
+  .admin-sidebar .sb-item { font-size: 9px; }
+  .admin-sidebar .sb-item .ico { width: 20px; height: 20px; }
+  .admin-content { padding: 10px; }
+  .kpi-card .kpi-value { font-size: 19px; }
+}
+
+/* Filter bar admin-approvals: wrappa e prende tutta la larghezza su mobile */
+@media (max-width: 760px) {
+  .filter-bar { padding: 12px; }
+  .filter-bar .input-container { min-width: 0; width: 100%; flex: 1 1 100%; }
+  .filter-bar .btn { flex: 1 1 auto; }
+  .filter-bar .filter-pill { flex: 1 1 100%; justify-content: center; }
+}
+
+/* Topbar AureaCare admin: action row wrap (search + bottoni) */
+@media (max-width: 760px) {
+  .admin-content .flex.gap-8 .input-container {
+    min-width: 0;
+    width: 100%;
+  }
+}
+
+/* Login card (index/admin-login) — già responsive, ma controlla padding su micro-mobile */
+@media (max-width: 380px) {
+  .login-card, .admin-card { padding: 24px 20px; }
+}
+
+/* Wizard onboarding: campo doppio su mobile sottile diventa singolo */
+@media (max-width: 380px) {
+  .field-row { grid-template-columns: 1fr !important; gap: 0 !important; }
+}
+
+/* Quick grid home: già 3 col, tieni così ma riduci icone su mobile sottile */
+@media (max-width: 380px) {
+  .quick-grid { gap: 8px; }
+  .quick-card { padding: 12px 6px; }
+  .quick-card .quick-label { font-size: 11px; }
+}
+
+/* App switcher dropdown: posizionamento corretto su mobile (era assoluto, può uscire) */
+@media (max-width: 480px) {
+  .app-switcher-dropdown {
+    right: 12px !important;
+    left: 12px !important;
+    width: auto !important;
+    max-width: none !important;
+  }
+}
+
+/* Stato status badges nel modale messaggio admin: la riga canale email */
+@media (max-width: 480px) {
+  .modal-body .input-container { padding: 8px 10px; }
+}
+
+/* Banner-roma: testo wrap pulito */
+@media (max-width: 480px) {
+  .banner-roma { padding: 10px 12px; gap: 8px; }
+  .banner-roma p { font-size: 12px; }
+}
+
+/* Wallet hero (wallet.html): le 3 colonne di KPI si compattano */
+@media (max-width: 380px) {
+  .wallet-hero { padding: 16px; }
+  .wallet-hero .flex.justify-center { gap: 8px; }
+  .wallet-hero p[style*="font-size:22px"] { font-size: 18px !important; }
+}
+
+/* Tabs orizzontali (my-cures, book-care): scroll su mobile */
+@media (max-width: 480px) {
+  .tabs {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    white-space: nowrap;
+    scrollbar-width: none;
+  }
+  .tabs::-webkit-scrollbar { display: none; }
+  .tabs .tab { flex-shrink: 0; }
 }

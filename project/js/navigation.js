@@ -406,9 +406,22 @@ function setWizardStep(currentStep, totalSteps) {
 }
 
 // ---------- Init ----------
+// Hint UX: la console admin è completamente fruibile su mobile,
+// ma su desktop offre più contesto (tabelle complete, sidebar etichettata,
+// grafici più larghi). Mostriamo un toast 1 volta per sessione su mobile
+// per chi entra dalla console admin.
+function maybeAdminMobileHint() {
+  if (!document.body.classList.contains('admin-page')) return;
+  if (window.innerWidth > 760) return;
+  if (sessionStorage.getItem('aureacare_admin_hint_seen')) return;
+  sessionStorage.setItem('aureacare_admin_hint_seen', '1');
+  setTimeout(() => showToast('Console admin ottimizzata anche per mobile. Per più contesto e tabelle estese, prova da desktop.', 'info'), 500);
+}
+
 document.addEventListener('DOMContentLoaded', () => {
   // app switcher trigger if present
   document.querySelectorAll('[data-app-switcher]').forEach(el => mountAppSwitcher(el));
+  maybeAdminMobileHint();
 
   // active bottom nav link
   const path = location.pathname.split('/').pop();

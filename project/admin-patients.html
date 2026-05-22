@@ -92,7 +92,7 @@
             </div>
           </div>
 
-          <table class="data-table">
+          <table class="data-table data-table--cards">
             <thead>
               <tr>
                 <th>Paziente</th>
@@ -211,7 +211,7 @@
       const initials = p.name.split(' ').map(s => s[0]).join('');
       const [docCls, docLabel] = docMap[p.docs_status];
       return `<tr data-id="${p.id}">
-        <td onclick="openP('${p.id}')" style="cursor:pointer">
+        <td data-th="Paziente" onclick="openP('${p.id}')" style="cursor:pointer">
           <div class="flex items-center gap-12">
             <span class="avatar-sm" style="background:linear-gradient(135deg, ${c1}, ${c2})">${initials}</span>
             <div>
@@ -220,13 +220,13 @@
             </div>
           </div>
         </td>
-        <td><span class="font-mono" style="font-size:12px">${p.cf}</span></td>
-        <td>${p.phone}</td>
-        <td><strong>€${p.wallet}</strong></td>
-        <td>${p.completed}</td>
-        <td><span class="doc-pill ${docCls}">${aIcon(docCls==='ok'?'check-circle':docCls==='partial'?'alert':'clock',{size:12})}${docLabel}</span></td>
-        <td>${p.last_login}</td>
-        <td>
+        <td data-th="CF"><span class="font-mono" style="font-size:12px">${p.cf}</span></td>
+        <td data-th="Contatto">${p.phone}</td>
+        <td data-th="Wallet"><strong>€${p.wallet}</strong></td>
+        <td data-th="Cure"><span style="font-weight:600">${p.completed}</span></td>
+        <td data-th="Documenti"><span class="doc-pill ${docCls}">${aIcon(docCls==='ok'?'check-circle':docCls==='partial'?'alert':'clock',{size:12})}${docLabel}</span></td>
+        <td data-th="Ultimo accesso">${p.last_login}</td>
+        <td data-th="Azioni">
           <div class="actions">
             <button class="btn btn--ghost btn--sm" title="Apri" onclick="openP('${p.id}')">${aIcon('eye',{size:14})}</button>
             <button class="btn btn--ghost btn--sm" title="Messaggio" onclick="openMessageFor('${p.id}')">${aIcon('message-square',{size:14})}</button>

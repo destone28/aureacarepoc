@@ -154,7 +154,7 @@
             <a href="admin-approvals.html" class="btn btn--secondary btn--sm">Coda approvazioni →</a>
           </div>
 
-          <table class="data-table">
+          <table class="data-table data-table--cards">
             <thead>
               <tr>
                 <th>ID</th>
@@ -222,14 +222,14 @@
           </div>`
         : `<a class="btn btn--ghost btn--sm" href="admin-approvals.html#${r.id}">Dettagli</a>`;
       return `<tr>
-        <td><strong class="font-mono" style="font-size:12px">${r.id}</strong></td>
-        <td><div style="font-weight:700">${r.patient}</div><div class="cell-sub">${r.cf}</div></td>
-        <td>${r.service}</td>
-        <td>${r.structure}</td>
-        <td><div>${r.date}</div><div class="cell-sub">inv. ${r.submitted}</div></td>
-        <td><strong>€${r.cost}</strong></td>
-        <td><span class="badge ${b}"><span class="dot"></span>${l}</span></td>
-        <td>${action}</td>
+        <td data-th="ID"><strong class="font-mono" style="font-size:12px">${r.id}</strong></td>
+        <td data-th="Paziente"><div style="font-weight:700">${r.patient}</div><div class="cell-sub">${r.cf}</div></td>
+        <td data-th="Prestazione">${r.service}</td>
+        <td data-th="Struttura">${r.structure}</td>
+        <td data-th="Data"><div>${r.date}</div><div class="cell-sub">inv. ${r.submitted}</div></td>
+        <td data-th="Costo"><strong>€${r.cost}</strong></td>
+        <td data-th="Stato"><span class="badge ${b}"><span class="dot"></span>${l}</span></td>
+        <td data-th="Azione">${action}</td>
       </tr>`;
     });
     document.getElementById('req-rows').innerHTML = rows.join('');
