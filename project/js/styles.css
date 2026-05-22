@@ -77,6 +77,8 @@ html, body {
   background: var(--bg-page);
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
+  /* Previene scroll orizzontale globale dovuto a popup/elementi assoluti mal posizionati */
+  overflow-x: hidden;
 }
 
 a { color: inherit; text-decoration: none; }
@@ -1603,13 +1605,42 @@ textarea.input { resize: vertical; min-height: 80px; }
   .quick-card .quick-label { font-size: 11px; }
 }
 
-/* App switcher dropdown: posizionamento corretto su mobile (era assoluto, può uscire) */
+/* Toast container: su mobile occupa tutta la larghezza disponibile */
 @media (max-width: 480px) {
+  #toast-container {
+    top: 16px;
+    left: 12px;
+    right: 12px;
+    max-width: none;
+  }
+  .toast { font-size: 13px; padding: 12px 14px; }
+}
+
+/* App switcher dropdown: su mobile diventa un bottom-sheet ancorato al viewport,
+   non al wrapper relativo (che altrimenti lo spinge fuori schermo a destra).
+   Usiamo position:fixed con left/right/top per ancorare al viewport. */
+@media (max-width: 640px) {
   .app-switcher-dropdown {
+    position: fixed !important;
+    top: 64px !important;
     right: 12px !important;
     left: 12px !important;
+    bottom: auto !important;
     width: auto !important;
     max-width: none !important;
+    max-height: calc(100vh - 140px);
+    overflow-y: auto;
+    box-shadow: 0 16px 60px rgba(0,0,0,.25);
+    z-index: 9000;
+  }
+  /* Backdrop semi-trasparente per il dropdown su mobile */
+  .app-switcher-dropdown.open::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,.18);
+    z-index: -1;
+    animation: fadeIn 160ms ease;
   }
 }
 
