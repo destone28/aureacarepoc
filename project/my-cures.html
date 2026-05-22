@@ -242,7 +242,7 @@
 
     function cancel() {
       closeModal();
-      showConfirmDialog('Annullare la prenotazione?', 'L\\'importo verrà riaccreditato sul wallet entro 24h.',
+      showConfirmDialog('Annullare la prenotazione?', "L'importo verrà riaccreditato sul wallet entro 24h.",
         () => showToast('Prenotazione annullata · rimborso in corso','info'),
         { confirmLabel: 'Sì, annulla', danger: true });
     }
