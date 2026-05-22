@@ -1673,3 +1673,115 @@ textarea.input { resize: vertical; min-height: 80px; }
   .tabs::-webkit-scrollbar { display: none; }
   .tabs .tab { flex-shrink: 0; }
 }
+
+/* ============================================================
+   Sponsor strip — mostrata sotto le sezioni "Il tuo impatto"
+   in home.html e profile.html. Comunica chi sostiene il POC,
+   coerente col design system (card bianca, border-soft, radius).
+   ============================================================ */
+.sponsor-block {
+  background: #fff;
+  border: 1px solid var(--border-soft);
+  border-radius: var(--r-md);
+  padding: 16px 18px;
+  margin-top: 12px;
+}
+.sponsor-block .sponsor-eyebrow {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--medium-gray);
+  margin-bottom: 4px;
+}
+.sponsor-block .sponsor-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--ink);
+  margin-bottom: 12px;
+  line-height: 1.4;
+}
+.sponsor-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+}
+.sponsor-item {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: #FAFAFA;
+  border: 1px solid var(--border-soft);
+  border-radius: var(--r-sm);
+  padding: 14px 12px;
+  min-height: 64px;
+  text-decoration: none;
+  color: var(--ink);
+  transition: all .15s ease;
+}
+.sponsor-item:hover {
+  border-color: var(--care-blue);
+  background: #fff;
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-sm);
+}
+.sponsor-item .sponsor-logo {
+  height: 28px;
+  width: auto;
+  max-width: 100%;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+.sponsor-item .sponsor-name {
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.2;
+  text-align: center;
+}
+.sponsor-item .sponsor-name .role {
+  display: block;
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--medium-gray);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-top: 2px;
+}
+.sponsor-disclaimer {
+  font-size: 11px;
+  color: var(--medium-gray);
+  margin-top: 10px;
+  line-height: 1.5;
+  text-align: center;
+}
+.sponsor-disclaimer a {
+  color: var(--care-blue);
+  font-weight: 600;
+}
+/* Su micro-mobile (≤380px) gli item diventano 1 per riga per leggibilità */
+@media (max-width: 380px) {
+  .sponsor-grid { grid-template-columns: 1fr; }
+  .sponsor-item { min-height: 56px; }
+}
+
+/* SVG logo 3DSprinted: glifo "W" + testo. Stile mono-cromatico nero. */
+.logo-3dsp {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 28px;
+}
+.logo-3dsp .glyph {
+  height: 26px;
+  width: auto;
+  flex-shrink: 0;
+}
+.logo-3dsp .text {
+  font-family: 'Open Sans', system-ui, sans-serif;
+  font-weight: 700;
+  font-size: 15px;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+  line-height: 1;
+}
