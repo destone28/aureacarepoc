@@ -66,14 +66,15 @@ window.MOCK = (function () {
   ];
 
   // ---------- Paziente loggato ----------
+  // Dati di contatto (email/phone) volutamente non mockati: il POC mostra
+  // solo info anagrafiche essenziali e residenza per non esporre pattern
+  // fittizi di dati personali identificativi.
   const patient = {
     id: 'PAT-00142',
     first_name: 'Lucia',
     last_name: 'Marchetti',
     cf: 'MRCLCU82M55H501T',
     birth: '15/08/1982',
-    phone: '+39 333 712 8439',
-    email: 'lucia.marchetti@example.it',
     address: 'Via Tuscolana 124, Roma',
     district: 'Tuscolano',
     avatar_initials: 'LM',
@@ -147,18 +148,18 @@ window.MOCK = (function () {
 
   // ---------- Admin: lista pazienti registrati (estratto 12) ----------
   const admin_patients = [
-    { id: 'PAT-00142', name: 'Lucia Marchetti',  cf: 'MRCLCU82M55H501T', phone: '+39 333 712 8439', wallet: 340, completed: 8, last_login: 'Oggi 09:14', docs_status: 'complete' },
-    { id: 'PAT-00141', name: 'Andrea Rossi',     cf: 'RSSNDR79H03H501Z', phone: '+39 348 220 1198', wallet: 800, completed: 12, last_login: 'Ieri 19:42', docs_status: 'complete' },
-    { id: 'PAT-00140', name: 'Giulia Bianchi',   cf: 'BNCGLI91D52H501W', phone: '+39 340 561 2287', wallet: 305, completed: 6, last_login: 'Ieri 15:08', docs_status: 'complete' },
-    { id: 'PAT-00139', name: 'Marco De Luca',    cf: 'DLCMRC85A12H501P', phone: '+39 347 808 4421', wallet: 235, completed: 9, last_login: '2 giorni fa', docs_status: 'partial' },
-    { id: 'PAT-00138', name: 'Sofia Ferri',      cf: 'FRRSFO88P54H501M', phone: '+39 349 123 7790', wallet: 295, completed: 3, last_login: '3 giorni fa', docs_status: 'complete' },
-    { id: 'PAT-00137', name: 'Paolo Esposito',   cf: 'SPSPLA72L08F839B', phone: '+39 333 991 1024', wallet: 240, completed: 14, last_login: '4 giorni fa', docs_status: 'complete' },
-    { id: 'PAT-00136', name: 'Chiara Romano',    cf: 'RMNCHR93T67H501S', phone: '+39 366 222 7811', wallet: 380, completed: 5, last_login: '5 giorni fa', docs_status: 'complete' },
-    { id: 'PAT-00135', name: 'Davide Greco',     cf: 'GRCDVD80E21H501Y', phone: '+39 345 612 7080', wallet: 255, completed: 7, last_login: '1 settimana fa', docs_status: 'partial' },
-    { id: 'PAT-00134', name: 'Elena Riva',       cf: 'RVELNE76C44H501R', phone: '+39 388 220 1144', wallet: 1125, completed: 22, last_login: 'Oggi 08:02', docs_status: 'complete' },
-    { id: 'PAT-00133', name: 'Roberto Conti',    cf: 'CNTRRT69M28H501F', phone: '+39 333 711 4488', wallet: 325, completed: 11, last_login: 'Ieri 22:00', docs_status: 'complete' },
-    { id: 'PAT-00132', name: 'Federica Santoro', cf: 'SNTFRC84S58H501J', phone: '+39 348 022 5610', wallet: 170, completed: 6, last_login: '2 giorni fa', docs_status: 'pending' },
-    { id: 'PAT-00131', name: 'Stefano Marino',   cf: 'MRNSFN77H15H501K', phone: '+39 347 117 2245', wallet: 940, completed: 16, last_login: '3 giorni fa', docs_status: 'complete' }
+    { id: 'PAT-00142', name: 'Lucia Marchetti',  cf: 'MRCLCU82M55H501T', wallet: 340, completed: 8, last_login: 'Oggi 09:14', docs_status: 'complete' },
+    { id: 'PAT-00141', name: 'Andrea Rossi',     cf: 'RSSNDR79H03H501Z', wallet: 800, completed: 12, last_login: 'Ieri 19:42', docs_status: 'complete' },
+    { id: 'PAT-00140', name: 'Giulia Bianchi',   cf: 'BNCGLI91D52H501W', wallet: 305, completed: 6, last_login: 'Ieri 15:08', docs_status: 'complete' },
+    { id: 'PAT-00139', name: 'Marco De Luca',    cf: 'DLCMRC85A12H501P', wallet: 235, completed: 9, last_login: '2 giorni fa', docs_status: 'partial' },
+    { id: 'PAT-00138', name: 'Sofia Ferri',      cf: 'FRRSFO88P54H501M', wallet: 295, completed: 3, last_login: '3 giorni fa', docs_status: 'complete' },
+    { id: 'PAT-00137', name: 'Paolo Esposito',   cf: 'SPSPLA72L08F839B', wallet: 240, completed: 14, last_login: '4 giorni fa', docs_status: 'complete' },
+    { id: 'PAT-00136', name: 'Chiara Romano',    cf: 'RMNCHR93T67H501S', wallet: 380, completed: 5, last_login: '5 giorni fa', docs_status: 'complete' },
+    { id: 'PAT-00135', name: 'Davide Greco',     cf: 'GRCDVD80E21H501Y', wallet: 255, completed: 7, last_login: '1 settimana fa', docs_status: 'partial' },
+    { id: 'PAT-00134', name: 'Elena Riva',       cf: 'RVELNE76C44H501R', wallet: 1125, completed: 22, last_login: 'Oggi 08:02', docs_status: 'complete' },
+    { id: 'PAT-00133', name: 'Roberto Conti',    cf: 'CNTRRT69M28H501F', wallet: 325, completed: 11, last_login: 'Ieri 22:00', docs_status: 'complete' },
+    { id: 'PAT-00132', name: 'Federica Santoro', cf: 'SNTFRC84S58H501J', wallet: 170, completed: 6, last_login: '2 giorni fa', docs_status: 'pending' },
+    { id: 'PAT-00131', name: 'Stefano Marino',   cf: 'MRNSFN77H15H501K', wallet: 940, completed: 16, last_login: '3 giorni fa', docs_status: 'complete' }
   ];
 
   // ---------- ESG: KPI aggregati + breakdown ----------

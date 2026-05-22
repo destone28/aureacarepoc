@@ -241,7 +241,7 @@
     function goNextStep() {
       if (step < TOTAL) { step++; renderStep(); window.scrollTo({ top: 0, behavior: 'smooth' }); }
       else {
-        setAuth({ email: 'lucia.marchetti@example.it', role: 'patient', patient_id: 'PAT-00142', name: 'Lucia Marchetti', apps: ['via','shuttle','care'] });
+        setAuth({ role: 'patient', patient_id: 'PAT-00142', name: 'Lucia Marchetti', apps: ['via','shuttle','care'] });
         showToast('Account creato. Benvenuta in AureaCare!', 'care');
         setTimeout(() => location.href = 'home.html', 900);
       }

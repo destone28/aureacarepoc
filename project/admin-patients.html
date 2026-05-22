@@ -97,7 +97,6 @@
               <tr>
                 <th>Paziente</th>
                 <th>CF</th>
-                <th>Contatto</th>
                 <th>Wallet</th>
                 <th>Cure completate</th>
                 <th>Documenti</th>
@@ -221,7 +220,6 @@
           </div>
         </td>
         <td data-th="CF"><span class="font-mono" style="font-size:12px">${p.cf}</span></td>
-        <td data-th="Contatto">${p.phone}</td>
         <td data-th="Wallet"><strong>€${p.wallet}</strong></td>
         <td data-th="Cure"><span style="font-weight:600">${p.completed}</span></td>
         <td data-th="Documenti"><span class="doc-pill ${docCls}">${aIcon(docCls==='ok'?'check-circle':docCls==='partial'?'alert':'clock',{size:12})}${docLabel}</span></td>
@@ -253,9 +251,9 @@
 
     // Esporta CSV (genera download client-side)
     function exportCSV() {
-      const header = ['ID','Nome','CF','Telefono','Wallet','Completate','Docs','UltimoAccesso'];
+      const header = ['ID','Nome','CF','Wallet','Completate','Docs','UltimoAccesso'];
       const lines = [header.join(',')].concat(
-        MOCK.admin_patients.map(p => [p.id, '"'+p.name+'"', p.cf, p.phone, p.wallet, p.completed, p.docs_status, '"'+p.last_login+'"'].join(','))
+        MOCK.admin_patients.map(p => [p.id, '"'+p.name+'"', p.cf, p.wallet, p.completed, p.docs_status, '"'+p.last_login+'"'].join(','))
       );
       const blob = new Blob([lines.join('\n')], { type: 'text/csv;charset=utf-8' });
       const url = URL.createObjectURL(blob);
@@ -272,7 +270,7 @@
     function openMessageFor(id) {
       currentPatient = MOCK.admin_patients.find(p => p.id === id);
       if (!currentPatient) return;
-      document.getElementById('msg-to').textContent = 'Destinatario: ' + currentPatient.name + ' · ' + currentPatient.phone;
+      document.getElementById('msg-to').textContent = 'Destinatario: ' + currentPatient.name + ' · ' + currentPatient.id;
       document.getElementById('msg-subj').value = '';
       document.getElementById('msg-body').value = '';
       openModal('msg-modal');
@@ -280,7 +278,7 @@
     function openMessage() {
       const title = document.getElementById('pm-title').textContent;
       currentPatient = MOCK.admin_patients.find(p => p.name === title) || MOCK.admin_patients[0];
-      document.getElementById('msg-to').textContent = 'Destinatario: ' + currentPatient.name + ' · ' + currentPatient.phone;
+      document.getElementById('msg-to').textContent = 'Destinatario: ' + currentPatient.name + ' · ' + currentPatient.id;
       closeModal('patient-modal');
       openModal('msg-modal');
     }
@@ -307,7 +305,7 @@
               <div>
                 <p style="font-weight:700;font-size:16px">${p.name}</p>
                 <p class="caption font-mono">${p.cf}</p>
-                <p class="caption">${p.phone}</p>
+                <p class="caption">${p.id}</p>
               </div>
             </div>
 

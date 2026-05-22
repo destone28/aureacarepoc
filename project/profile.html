@@ -89,8 +89,6 @@
       <div class="card card--padded mb-20">
         <div class="data-row"><span class="k">Codice fiscale</span><span class="v font-mono">MRCLCU82M55H501T</span></div>
         <div class="data-row"><span class="k">Data di nascita</span><span class="v">15/08/1982</span></div>
-        <div class="data-row"><span class="k">Telefono</span><span class="v">+39 333 712 8439</span></div>
-        <div class="data-row"><span class="k">Email</span><span class="v">lucia.marchetti@example.it</span></div>
         <div class="data-row"><span class="k">Indirizzo</span><span class="v" style="text-align:right">Via Tuscolana 124<br><span class="caption" style="font-weight:400">Tuscolano · Roma</span></span></div>
         <div class="data-row"><span class="k"></span><a href="#" class="link" style="color:var(--care-blue);font-weight:700;font-size:13px" onclick="event.preventDefault();openEditProfile()">Modifica anagrafica</a></div>
       </div>
@@ -135,35 +133,18 @@
         <p class="caption" style="line-height:1.55;border-top:1px dashed #C8E6CF;padding-top:12px">Grazie ad AureaCare hai contribuito a <strong style="color:#0F6E56">142kg di CO₂ evitata</strong>, <strong style="color:#0F6E56">28 ore di caregiver risparmiate</strong> e a <strong style="color:#0F6E56">3.2× SROI</strong> sull'investimento sociale della suite.</p>
       </div>
 
-      <!-- Sponsor / sostenitori -->
-      <div class="sponsor-block" style="margin-bottom:20px">
-        <p class="sponsor-eyebrow">Sostenuto da</p>
-        <p class="sponsor-title">Partner che rendono possibile il tuo impatto</p>
-        <div class="sponsor-grid">
-          <a class="sponsor-item" href="https://www.linkedin.com/in/emilio-destratis-3894b2119/" target="_blank" rel="noopener" title="3DSprinted · sviluppo tecnologico">
-            <img class="sponsor-logo" src="assets/3dsprinted-logo.png" alt="3DSprinted" onerror="this.style.display='none';this.nextElementSibling.style.display='inline-flex'">
-            <span class="logo-3dsp" style="display:none">
-              <svg class="glyph" viewBox="0 0 64 50" fill="currentColor" aria-hidden="true">
-                <path d="M2 4 L14 4 L26 44 L18 44 Z"/>
-                <path d="M14 4 L26 4 L18 28 L14 28 Z"/>
-                <path d="M38 4 L50 4 L62 44 L54 44 Z"/>
-                <path d="M50 4 L62 4 L54 28 L50 28 Z"/>
-                <path d="M26 4 L38 4 L32 22 Z"/>
-              </svg>
-              <span class="text">3DSprinted</span>
-            </span>
+      <!-- Sponsor / sostenitori del servizio -->
+      <div class="sponsor-strip" style="margin-bottom:20px">
+        <p class="sponsor-eyebrow">Con il sostegno di</p>
+        <div class="sponsor-row">
+          <a class="sponsor-slot filled" href="https://www.linkedin.com/in/emilio-destratis-3894b2119/" target="_blank" rel="noopener" aria-label="3DSprinted">
+            <img class="sponsor-logo" src="assets/3dsprinted-logo.png" alt="3DSprinted"
+                 onerror="this.style.display='none';this.nextElementSibling.style.display='inline'">
+            <span class="sponsor-wordmark" style="display:none">3DSprinted</span>
           </a>
-          <span class="sponsor-item" title="Comune di Roma · ente patrocinante (mock)">
-            <span class="sponsor-name">Comune di Roma<span class="role">Patrocinio</span></span>
-          </span>
-          <span class="sponsor-item" title="Regione Lazio · convenzione (mock)">
-            <span class="sponsor-name">Regione Lazio<span class="role">Convenzione</span></span>
-          </span>
-          <span class="sponsor-item" title="Fondazione Salute Sociale · sponsor (mock)">
-            <span class="sponsor-name">Fond. Salute Sociale<span class="role">Sponsor</span></span>
-          </span>
+          <div class="sponsor-slot empty">Spazio sponsor</div>
+          <div class="sponsor-slot empty">Spazio sponsor</div>
         </div>
-        <p class="sponsor-disclaimer">Loghi placeholder · partner mock per POC. 3DSprinted cura sviluppo e tecnologia.</p>
       </div>
 
       <!-- Settings -->
@@ -176,10 +157,8 @@
         <div class="setting-row danger" onclick="logout()"><div class="set-ico"><span id="s5"></span></div><span class="setting-label">Esci dall'account</span></div>
       </div>
 
-      <p class="caption text-center mb-20" style="line-height:1.6">
-        AureaCare v0.1 · Suite Aurea · POC Roma<br>
-        <span style="font-size:11px">Sviluppato da <a href="https://www.linkedin.com/in/emilio-destratis-3894b2119/" target="_blank" rel="noopener" style="color:var(--care-blue);font-weight:600">Emilio Destratis</a> · 3DSprinted</span>
-      </p>
+      <p class="caption text-center mb-20">AureaCare v0.1 · Suite Aurea · POC Roma</p>
+      <p class="dev-credit mb-20">Sviluppato da <a href="https://www.linkedin.com/in/emilio-destratis-3894b2119/" target="_blank" rel="noopener">3DSprinted</a> · Emilio Destratis</p>
     </div>
 
     <nav class="bottom-nav">
@@ -213,9 +192,7 @@
         <button class="modal-close" onclick="closeModal('edit-modal')"><span id="ico-x2"></span></button>
       </div>
       <div class="modal-body">
-        <p class="caption mb-16">Modifica i dati di contatto. CF e data di nascita non sono modificabili.</p>
-        <div class="field"><label class="field-label">Telefono</label><div class="input-container"><input class="input" id="ed-phone" value="+39 333 712 8439"></div></div>
-        <div class="field"><label class="field-label">Email</label><div class="input-container"><input class="input" id="ed-email" type="email" value="lucia.marchetti@example.it"></div></div>
+        <p class="caption mb-16">Modifica indirizzo di residenza. CF e data di nascita non sono modificabili.</p>
         <div class="field"><label class="field-label">Indirizzo</label><div class="input-container"><input class="input" id="ed-addr" value="Via Tuscolana 124"></div></div>
         <div class="field"><label class="field-label">CAP</label><div class="input-container"><input class="input" id="ed-cap" value="00181"></div></div>
       </div>
@@ -297,10 +274,9 @@
       help: () => ({
         title: 'Aiuto e supporto',
         html: `
-          <p class="caption mb-16">Risponde il team AureaCare entro 24 ore lavorative.</p>
-          <a class="list-row" href="mailto:supporto@aureacare.it">${aIcon('mail',{size:20})}<div class="row-body"><div class="row-title">supporto@aureacare.it</div><div class="row-meta">Risposta entro 24h</div></div></a>
-          <a class="list-row" href="tel:+390612345678">${aIcon('phone',{size:20})}<div class="row-body"><div class="row-title">+39 06 1234 5678</div><div class="row-meta">Lun–Ven · 9-18</div></div></a>
+          <p class="caption mb-16">Il team AureaCare risponde entro 24 ore lavorative dai canali in app.</p>
           <div class="list-row" onclick="showToast('Chat live: in arrivo','info')">${aIcon('message-square',{size:20})}<div class="row-body"><div class="row-title">Chat in app</div><div class="row-meta">In arrivo</div></div></div>
+          <div class="list-row" onclick="showToast('Ticket di supporto: in arrivo','info')">${aIcon('mail',{size:20})}<div class="row-body"><div class="row-title">Apri un ticket</div><div class="row-meta">Tracciato in app · risposta entro 24h</div></div></div>
           <div class="list-row" onclick="showToast('FAQ in arrivo · v0.2','info')">${aIcon('info',{size:20})}<div class="row-body"><div class="row-title">FAQ e guide</div><div class="row-meta">Domande frequenti</div></div></div>`
       })
     };
@@ -335,17 +311,17 @@
     // Modifica anagrafica
     function openEditProfile() { openModal('edit-modal'); }
     function saveProfile() {
-      const phone = document.getElementById('ed-phone').value.trim();
-      const email = document.getElementById('ed-email').value.trim();
-      if (!email.includes('@')) return showToast('Email non valida', 'error');
-      // Aggiorno la UI sopra
+      const addr = document.getElementById('ed-addr').value.trim();
+      const cap  = document.getElementById('ed-cap').value.trim();
+      if (!addr || !cap) return showToast('Indirizzo e CAP obbligatori', 'error');
+      // Aggiorno la riga Indirizzo nella anagrafica
       const dataRows = document.querySelectorAll('.data-row .v');
-      if (dataRows.length >= 4) {
-        dataRows[2].textContent = phone;
-        dataRows[3].textContent = email;
+      // Anagrafica: ora ha 3 righe (CF, data nascita, indirizzo). L'indirizzo è dataRows[2]
+      if (dataRows.length >= 3) {
+        dataRows[2].innerHTML = addr + '<br><span class="caption" style="font-weight:400">Tuscolano · Roma · ' + cap + '</span>';
       }
       closeModal('edit-modal');
-      showToast('Anagrafica aggiornata', 'success');
+      showToast('Indirizzo aggiornato', 'success');
     }
   </script>
 </body>

@@ -1675,113 +1675,95 @@ textarea.input { resize: vertical; min-height: 80px; }
 }
 
 /* ============================================================
-   Sponsor strip — mostrata sotto le sezioni "Il tuo impatto"
-   in home.html e profile.html. Comunica chi sostiene il POC,
-   coerente col design system (card bianca, border-soft, radius).
+   Sponsor strip — "Con il sostegno di"
+   Riusata sotto la card ESG (home paziente) e sotto la card
+   "Il tuo impatto sociale" (profilo paziente).
+   Design allineato con AureaShuttle POC per coerenza di suite.
    ============================================================ */
-.sponsor-block {
+.sponsor-strip {
   background: #fff;
   border: 1px solid var(--border-soft);
   border-radius: var(--r-md);
-  padding: 16px 18px;
-  margin-top: 12px;
+  padding: 14px 18px;
 }
-.sponsor-block .sponsor-eyebrow {
+.sponsor-strip .sponsor-eyebrow {
   font-size: 10px;
   font-weight: 700;
+  color: var(--medium-gray);
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: var(--medium-gray);
-  margin-bottom: 4px;
+  margin-bottom: 10px;
 }
-.sponsor-block .sponsor-title {
-  font-size: 14px;
-  font-weight: 700;
-  color: var(--ink);
-  margin-bottom: 12px;
-  line-height: 1.4;
-}
-.sponsor-grid {
+.sponsor-strip .sponsor-row {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 10px;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  align-items: center;
 }
-.sponsor-item {
+.sponsor-strip .sponsor-slot {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  background: #FAFAFA;
-  border: 1px solid var(--border-soft);
-  border-radius: var(--r-sm);
-  padding: 14px 12px;
-  min-height: 64px;
+  min-height: 48px;
+  padding: 8px 10px;
+  border-radius: 8px;
   text-decoration: none;
-  color: var(--ink);
-  transition: all .15s ease;
+  transition: background .15s ease;
 }
-.sponsor-item:hover {
-  border-color: var(--care-blue);
-  background: #fff;
-  transform: translateY(-1px);
-  box-shadow: var(--shadow-sm);
-}
-.sponsor-item .sponsor-logo {
-  height: 28px;
-  width: auto;
+.sponsor-strip .sponsor-slot.filled:hover { background: var(--light-gray); }
+.sponsor-strip .sponsor-logo {
+  max-height: 32px;
   max-width: 100%;
-  object-fit: contain;
-  flex-shrink: 0;
+  width: auto;
+  filter: grayscale(1);
+  opacity: 0.85;
+  transition: filter .15s ease, opacity .15s ease;
 }
-.sponsor-item .sponsor-name {
-  font-size: 12px;
+.sponsor-strip .sponsor-slot.filled:hover .sponsor-logo { filter: grayscale(0); opacity: 1; }
+/* Wordmark fallback se il PNG non carica */
+.sponsor-strip .sponsor-wordmark {
+  font-size: 14px;
   font-weight: 700;
-  line-height: 1.2;
-  text-align: center;
+  color: var(--ink);
+  letter-spacing: -0.01em;
 }
-.sponsor-item .sponsor-name .role {
-  display: block;
-  font-size: 10px;
-  font-weight: 600;
+.sponsor-strip .sponsor-slot.empty {
+  border: 1px dashed var(--border-gray);
+  background: #FAFAFA;
   color: var(--medium-gray);
-  text-transform: uppercase;
+  font-size: 11px;
+  font-weight: 600;
   letter-spacing: 0.04em;
-  margin-top: 2px;
+  text-transform: uppercase;
 }
-.sponsor-disclaimer {
+.sponsor-strip .sponsor-cta {
+  margin-top: 10px;
+  text-align: center;
   font-size: 11px;
   color: var(--medium-gray);
-  margin-top: 10px;
-  line-height: 1.5;
-  text-align: center;
 }
-.sponsor-disclaimer a {
-  color: var(--care-blue);
-  font-weight: 600;
+.sponsor-strip .sponsor-cta a {
+  color: var(--care-blue-dark);
+  font-weight: 700;
+  text-decoration: none;
 }
-/* Su micro-mobile (≤380px) gli item diventano 1 per riga per leggibilità */
-@media (max-width: 380px) {
-  .sponsor-grid { grid-template-columns: 1fr; }
-  .sponsor-item { min-height: 56px; }
+@media (max-width: 520px) {
+  .sponsor-strip .sponsor-row { grid-template-columns: 1fr; }
+  .sponsor-strip .sponsor-slot.empty { display: none; }
 }
 
-/* SVG logo 3DSprinted: glifo "W" + testo. Stile mono-cromatico nero. */
-.logo-3dsp {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  height: 28px;
+/* Dev credit — riga sobria "Sviluppato da 3DSprinted"
+   compare nel footer di admin-login. */
+.dev-credit {
+  text-align: center;
+  font-size: 11px;
+  color: var(--medium-gray);
+  margin-top: 12px;
 }
-.logo-3dsp .glyph {
-  height: 26px;
-  width: auto;
-  flex-shrink: 0;
-}
-.logo-3dsp .text {
-  font-family: 'Open Sans', system-ui, sans-serif;
-  font-weight: 700;
-  font-size: 15px;
-  letter-spacing: -0.01em;
+.dev-credit a {
   color: var(--ink);
-  line-height: 1;
+  font-weight: 700;
+  text-decoration: none;
+  border-bottom: 1px dotted var(--border-gray);
 }
+.dev-credit a:hover { color: var(--care-blue-dark); border-color: var(--care-blue); }
