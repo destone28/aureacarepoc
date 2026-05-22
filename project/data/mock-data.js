@@ -161,5 +161,108 @@ window.MOCK = (function () {
     { id: 'PAT-00131', name: 'Stefano Marino',   cf: 'MRNSFN77H15H501K', phone: '+39 347 117 2245', wallet: 940, completed: 16, last_login: '3 giorni fa', docs_status: 'complete' }
   ];
 
-  return { structures, services, patient, patient_location, roma_center, wallet, bookings, admin_requests, admin_kpi, admin_trend, admin_patients };
+  // ---------- ESG: KPI aggregati + breakdown ----------
+  // Numeri coerenti con admin_kpi (247 prestazioni mese, 142 pazienti attivi).
+  // Tutti i valori sono mock plausibili — il calcolo reale richiederebbe
+  // dataset di mobilità urbana, ISEE medio, ore caregiver dichiarate, ecc.
+  const esg = {
+    headline: {
+      sroi:           { value: 3.2,  unit: '×',   delta: +0.4, label: 'SROI sanitario' },
+      co2_saved:      { value: 4180, unit: 'kg',  delta: +18.2, label: 'CO₂ evitata (Q2)' },
+      caregiver_h:    { value: 824,  unit: 'h',   delta: +12.5, label: 'Ore caregiver risparmiate' },
+      fragile_served: { value: 38,   unit: '%',   delta: +4.1,  label: 'Pazienti fragili serviti' }
+    },
+
+    // Trend 7 mesi (allineato con admin_trend)
+    trend: {
+      labels:       ['Nov','Dic','Gen','Feb','Mar','Apr','Mag'],
+      sroi:         [2.3, 2.5, 2.7, 2.8, 3.0, 3.1, 3.2],
+      co2_kg:       [1820, 2240, 2510, 2960, 3340, 3760, 4180],
+      caregiver_h:  [340, 410, 480, 560, 640, 730, 824]
+    },
+
+    // ---------- Ambientale ----------
+    environmental: {
+      co2_per_visit_avg: 17.7,  // kg CO2 evitata per visita media (vs ospedale lontano)
+      km_avoided:        12480, // km totali risparmiati grazie a strutture in zona
+      shuttle_share:     54,    // % visite con trasporto AureaShuttle vs auto privata
+      shuttle_breakdown: [
+        { label: 'AureaShuttle (condiviso)', value: 54, color: 'var(--primary-orange)' },
+        { label: 'Mezzo pubblico',           value: 23, color: 'var(--care-blue)' },
+        { label: 'Auto privata',             value: 18, color: '#999' },
+        { label: 'A piedi / bici',           value: 5,  color: '#0F6E56' }
+      ],
+      // Confronto km medi per categoria
+      avg_km_per_visit:  { aureacare: 3.4, baseline_roma: 8.9 }
+    },
+
+    // ---------- Sociale ----------
+    social: {
+      fragile_categories: [
+        { label: 'ISEE < 15.000 €',    count: 42, pct: 30, color: '#3B82F6' },
+        { label: 'Over 70',            count: 35, pct: 25, color: '#0F6E56' },
+        { label: 'Patologia cronica',  count: 28, pct: 20, color: '#F59E0B' },
+        { label: 'Genitore single',    count: 12, pct: 8,  color: '#E91E63' },
+        { label: 'Disabilità motoria', count: 8,  pct: 6,  color: '#6366F1' }
+      ],
+      district_coverage: 14, // quartieri Roma coperti
+      total_districts:   22, // di cui obiettivo totale
+      district_top: [
+        { name: 'Tuscolano',       patients: 22, completed: 184 },
+        { name: 'EUR',             patients: 18, completed: 152 },
+        { name: 'Trionfale',       patients: 16, completed: 138 },
+        { name: 'Parioli',         patients: 14, completed: 119 },
+        { name: 'Monteverde',      patients: 12, completed: 98  },
+        { name: 'Pietralata',      patients: 11, completed: 84  },
+        { name: 'Trastevere',      patients: 10, completed: 79  },
+        { name: 'San Giovanni',    patients: 9,  completed: 71  },
+        { name: 'Gianicolo',       patients: 8,  completed: 62  },
+        { name: 'Aurelio',         patients: 7,  completed: 54  },
+        { name: 'Borgo',           patients: 6,  completed: 48  },
+        { name: 'Salario',         patients: 5,  completed: 39  },
+        { name: 'Tor Vergata',     patients: 3,  completed: 24  },
+        { name: 'Grottaferrata',   patients: 1,  completed: 8   }
+      ],
+      facilitated_access_rate: 87 // % di richieste approvate (accesso facilitato)
+    },
+
+    // ---------- Governance / Economico ----------
+    governance: {
+      sroi_breakdown: [
+        { label: 'Risparmio sanità pubblica',    value: 1.4 },
+        { label: 'Tempo caregiver liberato',     value: 0.8 },
+        { label: 'Mobilità evitata (CO₂)',       value: 0.5 },
+        { label: 'Accesso facilitato (welfare)', value: 0.5 }
+      ], // somma = 3.2×
+      value_disbursed_ytd: 91200, // €
+      tariff_avg_vs_market: { aureacare: 78, market: 105 }, // €
+      approval_rate: 87,
+      cost_per_outcome: 372 // € per cura completata
+    },
+
+    // ---------- Demografia paziente ----------
+    demographics: {
+      age_buckets: [
+        { label: '0-17',   count: 6,  pct: 4  },
+        { label: '18-30',  count: 18, pct: 13 },
+        { label: '31-45',  count: 32, pct: 23 },
+        { label: '46-60',  count: 38, pct: 27 },
+        { label: '61-75',  count: 34, pct: 24 },
+        { label: '76+',    count: 14, pct: 10 }
+      ],
+      gender_split: { female: 58, male: 41, other: 1 }, // %
+      top_specialties: [
+        { label: 'Cardiologia',     count: 64 },
+        { label: 'Ortopedia',       count: 52 },
+        { label: 'Fisioterapia',    count: 48 },
+        { label: 'Dermatologia',    count: 31 },
+        { label: 'Ginecologia',     count: 24 },
+        { label: 'Oculistica',      count: 18 },
+        { label: 'Endocrinologia',  count: 10 }
+      ],
+      recurrence: { single: 32, two_three: 45, four_plus: 23 } // % pazienti per # prenotazioni
+    }
+  };
+
+  return { structures, services, patient, patient_location, roma_center, wallet, bookings, admin_requests, admin_kpi, admin_trend, admin_patients, esg };
 })();

@@ -1,0 +1,706 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>AureaCare · KPI ESG</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="js/styles.css">
+  <style>
+    .esg-hero {
+      background: linear-gradient(135deg, #F4FBF6 0%, #E1F5EE 100%);
+      border: 1px solid #C8E6CF;
+      border-radius: var(--r-md);
+      padding: 22px;
+      margin-bottom: 24px;
+    }
+    .esg-hero-head {
+      display: flex; justify-content: space-between; align-items: flex-start;
+      gap: 16px; margin-bottom: 18px; flex-wrap: wrap;
+    }
+    .esg-hero h2 { font-size: 19px; font-weight: 700; color: #0F6E56; }
+    .esg-hero .caption { color: #486B5A; }
+
+    .esg-kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+    }
+    .esg-kpi {
+      background: #fff;
+      border-radius: var(--r-md);
+      padding: 14px;
+      box-shadow: var(--shadow-sm);
+    }
+    .esg-kpi .lbl {
+      font-size: 11px; font-weight: 700;
+      color: var(--medium-gray);
+      text-transform: uppercase; letter-spacing: 0.05em;
+      margin-bottom: 4px;
+    }
+    .esg-kpi .val {
+      font-size: 26px; font-weight: 700;
+      line-height: 1.1;
+      color: #0F6E56;
+    }
+    .esg-kpi .val .unit { font-size: 14px; font-weight: 600; color: #5a8175; margin-left: 4px; }
+    .esg-kpi .delta { font-size: 11px; color: #0F6E56; font-weight: 600; margin-top: 4px; display: flex; align-items: center; gap: 4px; }
+
+    /* Sezione blocchi */
+    .esg-section {
+      background: #fff;
+      border: 1px solid var(--border-soft);
+      border-radius: var(--r-md);
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+    .esg-section-head {
+      display: flex; align-items: center; gap: 10px;
+      margin-bottom: 18px;
+      flex-wrap: wrap;
+    }
+    .esg-section-head .ico-wrap {
+      width: 34px; height: 34px;
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .esg-section-head .ico-env  { background: #E1F5EE; color: #0F6E56; }
+    .esg-section-head .ico-soc  { background: #E6F1FB; color: var(--care-blue-dark); }
+    .esg-section-head .ico-gov  { background: #FFF6E8; color: #B45309; }
+    .esg-section-head .ico-dem  { background: #EBECFE; color: #4338CA; }
+    .esg-section-head h3 { font-size: 17px; font-weight: 700; flex: 1; min-width: 0; }
+    .esg-section-head .sub { font-size: 13px; color: var(--medium-gray); margin-top: 2px; }
+
+    .esg-grid-2 {
+      display: grid;
+      grid-template-columns: 1.2fr 1fr;
+      gap: 20px;
+    }
+    .esg-grid-3 {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+    }
+    @media (max-width: 760px) {
+      .esg-kpi-grid { grid-template-columns: repeat(2, 1fr); }
+      .esg-grid-2,
+      .esg-grid-3 { grid-template-columns: 1fr; }
+      .esg-section { padding: 16px; }
+      .esg-hero { padding: 16px; }
+      .esg-kpi .val { font-size: 22px; }
+    }
+
+    /* Bar chart riga (specialità, quartieri, fragili) */
+    .esg-bar {
+      display: grid;
+      grid-template-columns: 120px 1fr 60px;
+      align-items: center;
+      gap: 10px;
+      padding: 7px 0;
+      font-size: 13px;
+    }
+    .esg-bar .bar-lbl { color: var(--ink); font-weight: 600; }
+    .esg-bar .bar-track {
+      height: 8px;
+      background: var(--light-gray);
+      border-radius: 999px;
+      overflow: hidden;
+      position: relative;
+    }
+    .esg-bar .bar-fill {
+      height: 100%;
+      border-radius: 999px;
+      background: var(--care-blue);
+      transition: width 800ms ease-out;
+    }
+    .esg-bar .bar-val { font-weight: 700; text-align: right; color: var(--ink); font-size: 12px; }
+    @media (max-width: 480px) {
+      .esg-bar { grid-template-columns: 100px 1fr 50px; font-size: 12px; }
+    }
+
+    /* Donut SVG style */
+    .donut-wrap { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+    .donut { flex-shrink: 0; }
+    .donut-legend { font-size: 13px; display: grid; gap: 8px; min-width: 0; }
+    .donut-legend .row { display: flex; align-items: center; gap: 8px; }
+    .donut-legend .dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+    .donut-legend .lbl { color: var(--ink); flex: 1; min-width: 0; }
+    .donut-legend .val { font-weight: 700; }
+
+    /* SROI breakdown stacked */
+    .sroi-stack {
+      display: flex;
+      width: 100%;
+      height: 24px;
+      border-radius: 999px;
+      overflow: hidden;
+      background: var(--light-gray);
+      margin-bottom: 12px;
+    }
+    .sroi-stack .seg { height: 100%; }
+
+    /* Confronto km */
+    .compare-box {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-top: 12px;
+    }
+    .compare-cell {
+      padding: 14px;
+      border-radius: 10px;
+      background: var(--light-gray);
+      text-align: center;
+    }
+    .compare-cell.highlight { background: #E1F5EE; }
+    .compare-cell .v { font-size: 22px; font-weight: 700; }
+    .compare-cell .l { font-size: 11px; color: var(--medium-gray); font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; }
+
+    /* Heat-map quartieri */
+    .heat-list {
+      display: grid;
+      gap: 6px;
+      max-height: 380px;
+      overflow-y: auto;
+      padding-right: 4px;
+    }
+    .heat-row {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 12px;
+      border-radius: 8px;
+      background: #FAFAFA;
+      font-size: 13px;
+    }
+    .heat-row .name { font-weight: 600; min-width: 0; }
+    .heat-row .stats { font-size: 12px; color: var(--medium-gray); display: flex; gap: 10px; flex-shrink: 0; }
+    .heat-row .stats strong { color: var(--ink); }
+    .heat-row .heat-bar {
+      grid-column: 1 / -1;
+      height: 4px;
+      background: var(--light-gray);
+      border-radius: 999px;
+      overflow: hidden;
+      margin-top: 2px;
+    }
+    .heat-row .heat-bar > div { height: 100%; background: var(--care-blue); border-radius: 999px; }
+
+    /* Footer disclaimer */
+    .esg-disclaimer {
+      padding: 14px 18px;
+      background: #FAFAFA;
+      border-radius: var(--r-md);
+      font-size: 12px;
+      color: var(--medium-gray);
+      line-height: 1.55;
+      border: 1px dashed var(--border-soft);
+    }
+  </style>
+</head>
+<body class="admin-page">
+  <div class="admin-shell">
+    <aside class="admin-sidebar">
+      <div class="logo">A</div>
+      <a class="sb-item" href="admin-dashboard.html" data-label="Dashboard"><span id="sb1"></span></a>
+      <a class="sb-item" href="admin-approvals.html" data-label="Approvazioni"><span id="sb2"></span></a>
+      <a class="sb-item" href="admin-structures.html" data-label="Strutture"><span id="sb3"></span></a>
+      <a class="sb-item" href="admin-patients.html" data-label="Pazienti"><span id="sb4"></span></a>
+      <a class="sb-item active" href="admin-esg.html" data-label="KPI ESG"><span id="sb5"></span></a>
+      <div class="spacer"></div>
+      <button class="sb-item" data-label="Impostazioni" onclick="showToast('Impostazioni console: in arrivo','info')"><span id="sb6"></span></button>
+      <button class="sb-item" data-label="Esci" onclick="logout()"><span id="sb7"></span></button>
+    </aside>
+
+    <div class="admin-main">
+      <header class="admin-topbar">
+        <h1>KPI ESG · Impatto sociale</h1>
+        <span class="badge badge--approved" style="font-size:13px;padding:6px 12px"><strong>SROI 3.2×</strong></span>
+        <button class="icon-btn" style="width:38px;height:38px;background:var(--light-gray);border:none;border-radius:10px" onclick="exportESG()"><span id="ico-dl"></span></button>
+        <button class="icon-btn" style="width:38px;height:38px;background:var(--light-gray);border:none;border-radius:10px" onclick="showToast('Report completo in PDF: in arrivo','info')"><span id="ico-bell"></span></button>
+        <div class="avatar">FR</div>
+      </header>
+
+      <div class="admin-content">
+        <div class="crumbs mb-16" style="font-size:13px;color:var(--medium-gray)">
+          Console &rsaquo; <strong style="color:var(--ink)">KPI ESG</strong> · ultimi 12 mesi · 142 pazienti attivi
+        </div>
+
+        <!-- HERO: 4 KPI principali -->
+        <div class="esg-hero">
+          <div class="esg-hero-head">
+            <div>
+              <h2>Impatto AureaCare · Q2 2026</h2>
+              <p class="caption">Indicatori di sostenibilità ambientale, sociale ed economica. Aggiornati settimanalmente.</p>
+            </div>
+            <button class="btn btn--secondary btn--sm" onclick="showToast('Periodo: ultimi 12 mesi','info')">Periodo: 12 mesi ▾</button>
+          </div>
+          <div class="esg-kpi-grid" id="hero-kpi"></div>
+        </div>
+
+        <!-- TREND CHART: SROI / CO2 / Caregiver -->
+        <div class="esg-section">
+          <div class="esg-section-head">
+            <div class="ico-wrap ico-gov"><span id="ico-trend"></span></div>
+            <div style="flex:1;min-width:0">
+              <h3>Trend ESG mensile</h3>
+              <p class="sub">SROI sanitario, CO₂ evitata e ore caregiver risparmiate · ultimi 7 mesi</p>
+            </div>
+            <div class="tabs" id="trend-metric" style="background:#fff;border:1px solid var(--border-soft);padding:2px">
+              <button class="tab active" data-metric="sroi">SROI</button>
+              <button class="tab" data-metric="co2">CO₂</button>
+              <button class="tab" data-metric="caregiver">Caregiver</button>
+            </div>
+          </div>
+          <svg id="esg-trend" width="100%" height="260" viewBox="0 0 800 260" preserveAspectRatio="none">
+            <defs>
+              <linearGradient id="esgFill" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#0F6E56" stop-opacity="0.22"/>
+                <stop offset="100%" stop-color="#0F6E56" stop-opacity="0"/>
+              </linearGradient>
+            </defs>
+            <g stroke="#F0F0F0" stroke-width="1">
+              <line x1="50" y1="40"  x2="780" y2="40"/>
+              <line x1="50" y1="100" x2="780" y2="100"/>
+              <line x1="50" y1="160" x2="780" y2="160"/>
+              <line x1="50" y1="220" x2="780" y2="220"/>
+            </g>
+            <g id="trend-y-labels" font-family="Open Sans" font-size="11" fill="#999" text-anchor="end"></g>
+            <path id="trend-area" fill="url(#esgFill)" d=""/>
+            <polyline id="trend-line" fill="none" stroke="#0F6E56" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" points=""/>
+            <g id="trend-dots" fill="#0F6E56"></g>
+            <g id="trend-x-labels" font-family="Open Sans" font-size="12" fill="#666" text-anchor="middle"></g>
+          </svg>
+        </div>
+
+        <!-- AMBIENTALE -->
+        <div class="esg-section">
+          <div class="esg-section-head">
+            <div class="ico-wrap ico-env"><span id="ico-env"></span></div>
+            <div style="flex:1;min-width:0">
+              <h3>Ambientale</h3>
+              <p class="sub">Mobilità evitata, emissioni e quota trasporto sostenibile</p>
+            </div>
+          </div>
+          <div class="esg-grid-2">
+            <div>
+              <p class="eyebrow mb-8">Distribuzione modalità trasporto verso le strutture</p>
+              <div class="donut-wrap">
+                <svg class="donut" id="env-donut" width="180" height="180" viewBox="0 0 100 100"></svg>
+                <div class="donut-legend" id="env-legend" style="flex:1"></div>
+              </div>
+              <div class="compare-box">
+                <div class="compare-cell">
+                  <div class="v" style="color:#666">8.9 km</div>
+                  <div class="l">Media Roma</div>
+                </div>
+                <div class="compare-cell highlight">
+                  <div class="v" style="color:#0F6E56">3.4 km</div>
+                  <div class="l">Pazienti AureaCare</div>
+                </div>
+              </div>
+              <p class="caption mt-8">In media i pazienti AureaCare percorrono <strong>5.5 km in meno per visita</strong> grazie alla prossimità delle strutture convenzionate.</p>
+            </div>
+            <div>
+              <p class="eyebrow mb-8">KPI ambientali</p>
+              <div style="display:grid;gap:10px">
+                <div style="padding:14px;background:#F4FBF6;border-radius:10px">
+                  <div class="flex justify-between items-center"><span class="text-muted">Km evitati (Q2)</span><strong style="font-size:18px;color:#0F6E56">12.480 km</strong></div>
+                </div>
+                <div style="padding:14px;background:#F4FBF6;border-radius:10px">
+                  <div class="flex justify-between items-center"><span class="text-muted">CO₂ evitata / visita</span><strong style="font-size:18px;color:#0F6E56">17.7 kg</strong></div>
+                </div>
+                <div style="padding:14px;background:#F4FBF6;border-radius:10px">
+                  <div class="flex justify-between items-center"><span class="text-muted">Quota trasporto Shuttle</span><strong style="font-size:18px;color:var(--primary-orange)">54%</strong></div>
+                </div>
+                <div style="padding:14px;background:#F4FBF6;border-radius:10px">
+                  <div class="flex justify-between items-center"><span class="text-muted">Equivalente alberi piantati*</span><strong style="font-size:18px;color:#0F6E56">≈ 198</strong></div>
+                  <p class="caption" style="margin-top:4px;font-size:11px">*Calcolo: 21 kg CO₂/anno per albero adulto</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- SOCIALE -->
+        <div class="esg-section">
+          <div class="esg-section-head">
+            <div class="ico-wrap ico-soc"><span id="ico-soc"></span></div>
+            <div style="flex:1;min-width:0">
+              <h3>Sociale</h3>
+              <p class="sub">Accesso facilitato, fragilità servite, copertura territoriale</p>
+            </div>
+          </div>
+
+          <div class="esg-grid-3 mb-20">
+            <div style="padding:14px;background:var(--care-blue-bg);border:1px solid #DCE7F4;border-radius:10px;text-align:center">
+              <p style="font-size:11px;color:var(--care-blue-dark);font-weight:700;letter-spacing:.05em;text-transform:uppercase">Quartieri coperti</p>
+              <p style="font-size:26px;font-weight:700;color:var(--care-blue-dark);margin-top:4px"><span id="dc-cov">14</span> <span style="font-size:14px;color:var(--medium-gray);font-weight:600">/ 22</span></p>
+              <p class="caption">obiettivo Roma 2026</p>
+            </div>
+            <div style="padding:14px;background:#F4FBF6;border:1px solid #C8E6CF;border-radius:10px;text-align:center">
+              <p style="font-size:11px;color:#0F6E56;font-weight:700;letter-spacing:.05em;text-transform:uppercase">Tasso accesso facilitato</p>
+              <p style="font-size:26px;font-weight:700;color:#0F6E56;margin-top:4px">87%</p>
+              <p class="caption">richieste approvate</p>
+            </div>
+            <div style="padding:14px;background:#FFF6E8;border:1px solid var(--bg-warm-br);border-radius:10px;text-align:center">
+              <p style="font-size:11px;color:#B45309;font-weight:700;letter-spacing:.05em;text-transform:uppercase">Ore caregiver liberate</p>
+              <p style="font-size:26px;font-weight:700;color:#B45309;margin-top:4px">824h</p>
+              <p class="caption">questo trimestre</p>
+            </div>
+          </div>
+
+          <div class="esg-grid-2">
+            <div>
+              <p class="eyebrow mb-8">Fragilità servite (categorie di vulnerabilità)</p>
+              <div id="fragile-bars"></div>
+              <p class="caption mt-8">Il 38% dei pazienti rientra in almeno una categoria di fragilità sanitaria o economica.</p>
+            </div>
+            <div>
+              <p class="eyebrow mb-8">Top quartieri Roma per copertura</p>
+              <div class="heat-list" id="heat-list"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- GOVERNANCE / ECONOMICO -->
+        <div class="esg-section">
+          <div class="esg-section-head">
+            <div class="ico-wrap ico-gov"><span id="ico-gov"></span></div>
+            <div style="flex:1;min-width:0">
+              <h3>Governance & impatto economico</h3>
+              <p class="sub">SROI breakdown, valore erogato, tariffe convenzionate</p>
+            </div>
+          </div>
+
+          <div class="esg-grid-2">
+            <div>
+              <p class="eyebrow mb-8">Composizione SROI <strong style="color:var(--ink);font-weight:700">3.2×</strong></p>
+              <div class="sroi-stack" id="sroi-stack"></div>
+              <div id="sroi-legend" class="donut-legend"></div>
+              <p class="caption mt-12">Per ogni euro investito nella convenzione AureaCare, si generano <strong>€3.20 di valore sociale</strong> distribuito su risparmio SSN, tempo liberato e accesso.</p>
+            </div>
+            <div>
+              <p class="eyebrow mb-8">Indicatori economici</p>
+              <div style="display:grid;gap:10px">
+                <div style="padding:14px;background:#FAFAFA;border-radius:10px">
+                  <div class="flex justify-between items-center"><span class="text-muted">Valore erogato YTD</span><strong style="font-size:18px;color:var(--care-blue-dark)">€91.200</strong></div>
+                </div>
+                <div style="padding:14px;background:#FAFAFA;border-radius:10px">
+                  <div class="flex justify-between items-center"><span class="text-muted">% approvazione media</span><strong style="font-size:18px">87%</strong></div>
+                </div>
+                <div style="padding:14px;background:#FAFAFA;border-radius:10px">
+                  <div class="flex justify-between items-center"><span class="text-muted">Costo per cura completata</span><strong style="font-size:18px;color:var(--ink)">€372</strong></div>
+                </div>
+                <div class="compare-box" style="margin-top:0">
+                  <div class="compare-cell">
+                    <div class="v" style="color:#999">€105</div>
+                    <div class="l">Tariffa media mercato</div>
+                  </div>
+                  <div class="compare-cell highlight">
+                    <div class="v" style="color:#0F6E56">€78</div>
+                    <div class="l">Tariffa convenzionata</div>
+                  </div>
+                </div>
+                <p class="caption">Risparmio medio per il paziente: <strong style="color:#0F6E56">−26% vs mercato libero</strong>.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- DEMOGRAFIA PAZIENTE -->
+        <div class="esg-section">
+          <div class="esg-section-head">
+            <div class="ico-wrap ico-dem"><span id="ico-dem"></span></div>
+            <div style="flex:1;min-width:0">
+              <h3>Demografia pazienti</h3>
+              <p class="sub">Età, genere, prestazioni più richieste, ricorrenza</p>
+            </div>
+          </div>
+
+          <div class="esg-grid-2">
+            <div>
+              <p class="eyebrow mb-8">Distribuzione per età</p>
+              <div id="age-bars"></div>
+
+              <p class="eyebrow mt-20 mb-8">Distribuzione per genere</p>
+              <div class="donut-wrap">
+                <svg class="donut" id="gender-donut" width="140" height="140" viewBox="0 0 100 100"></svg>
+                <div class="donut-legend" id="gender-legend" style="flex:1"></div>
+              </div>
+            </div>
+            <div>
+              <p class="eyebrow mb-8">Specialità più richieste</p>
+              <div id="spec-bars"></div>
+
+              <p class="eyebrow mt-20 mb-8">Ricorrenza prenotazioni paziente</p>
+              <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;text-align:center">
+                <div style="padding:14px;background:#FAFAFA;border-radius:10px">
+                  <p style="font-size:22px;font-weight:700;color:var(--ink)">32%</p>
+                  <p class="caption">1 prenotazione</p>
+                </div>
+                <div style="padding:14px;background:#FAFAFA;border-radius:10px">
+                  <p style="font-size:22px;font-weight:700;color:var(--care-blue-dark)">45%</p>
+                  <p class="caption">2-3 prenotaz.</p>
+                </div>
+                <div style="padding:14px;background:#FAFAFA;border-radius:10px">
+                  <p style="font-size:22px;font-weight:700;color:#0F6E56">23%</p>
+                  <p class="caption">4+ prenotaz.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- DISCLAIMER -->
+        <div class="esg-disclaimer">
+          <strong>Metodologia:</strong> i KPI ESG sono calcolati sui dati operativi AureaCare degli ultimi 12 mesi.
+          Il <strong>SROI</strong> segue lo standard <em>Social Value International</em> (2023) usando proxy finanziari per
+          tempo caregiver liberato (€18/h), CO₂ evitata (€85/tCO₂), risparmio sanitario (tariffe regionali Lazio).
+          La metrica <em>fragilità servita</em> aggrega ISEE, età, condizioni croniche dichiarate in onboarding.
+          Tutti i dati sono <strong>aggregati e anonimizzati</strong>: nessuna informazione paziente individuale è esposta.
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <div id="toast-container"></div>
+
+  <script src="data/mock-data.js"></script>
+  <script src="js/icons.js"></script>
+  <script src="js/navigation.js"></script>
+  <script>
+    requireAdmin();
+
+    // ---- Sidebar icons ----
+    document.getElementById('sb1').outerHTML = aIcon('bar-chart', { size: 20 });
+    document.getElementById('sb2').outerHTML = aIcon('check-circle', { size: 20 });
+    document.getElementById('sb3').outerHTML = aIcon('building', { size: 20 });
+    document.getElementById('sb4').outerHTML = aIcon('users', { size: 20 });
+    document.getElementById('sb5').outerHTML = aIcon('leaf', { size: 20 });
+    document.getElementById('sb6').outerHTML = aIcon('settings', { size: 20 });
+    document.getElementById('sb7').outerHTML = aIcon('log-out', { size: 20 });
+    document.getElementById('ico-bell').outerHTML = aIcon('info', { size: 18 });
+    document.getElementById('ico-dl').outerHTML = aIcon('upload', { size: 18 });
+
+    // ---- Section icons ----
+    document.getElementById('ico-trend').outerHTML = aIcon('trending-up', { size: 18 });
+    document.getElementById('ico-env').outerHTML = aIcon('leaf', { size: 18 });
+    document.getElementById('ico-soc').outerHTML = aIcon('users', { size: 18 });
+    document.getElementById('ico-gov').outerHTML = aIcon('wallet', { size: 18 });
+    document.getElementById('ico-dem').outerHTML = aIcon('user', { size: 18 });
+
+    const E = MOCK.esg;
+
+    // ---- HERO KPI ----
+    const heroEl = document.getElementById('hero-kpi');
+    const heroOrder = ['sroi','co2_saved','caregiver_h','fragile_served'];
+    heroEl.innerHTML = heroOrder.map(k => {
+      const m = E.headline[k];
+      const sign = m.delta >= 0 ? '+' : '';
+      return `<div class="esg-kpi">
+        <div class="lbl">${m.label}</div>
+        <div class="val">${m.value.toLocaleString('it-IT')}<span class="unit">${m.unit}</span></div>
+        <div class="delta">${aIcon('trending-up',{size:12})} ${sign}${m.delta}${k==='sroi'||k==='fragile_served'?'':' %'} vs Q1</div>
+      </div>`;
+    }).join('');
+
+    // ---- TREND CHART (toggleable) ----
+    const chartCfg = {
+      sroi:      { color: '#0F6E56', yMax: 4,    yTicks: [4,3,2,1],          fmt: v => v.toFixed(1)+'×',     suffix: ' SROI' },
+      co2:       { color: '#0F6E56', yMax: 5000, yTicks: [5000,3750,2500,1250], fmt: v => (v/1000).toFixed(1)+'k', suffix: ' kg CO₂' },
+      caregiver: { color: '#0F6E56', yMax: 1000, yTicks: [1000,750,500,250],  fmt: v => v.toFixed(0)+'h',     suffix: ' ore caregiver' }
+    };
+    const dataByMetric = { sroi: E.trend.sroi, co2: E.trend.co2_kg, caregiver: E.trend.caregiver_h };
+
+    function renderTrend(metric) {
+      const cfg = chartCfg[metric];
+      const data = dataByMetric[metric];
+      const labels = E.trend.labels;
+      const xs = [100,200,300,400,500,600,700];
+      const yMin = 40, yMax = 220;
+      const ys = data.map(v => yMin + (1 - v / cfg.yMax) * (yMax - yMin));
+
+      // Y labels
+      document.getElementById('trend-y-labels').innerHTML = cfg.yTicks.map((tk,i) => {
+        const yPos = 44 + i * 60;
+        return `<text x="42" y="${yPos}">${cfg.fmt(tk)}</text>`;
+      }).join('');
+
+      // X labels
+      document.getElementById('trend-x-labels').innerHTML = labels.map((l,i) => {
+        const isLast = i === labels.length - 1;
+        return `<text x="${xs[i]}" y="250" ${isLast?'font-weight="700" fill="#0F6E56"':''}>${l}</text>`;
+      }).join('');
+
+      // Line + area
+      const points = xs.map((x,i) => `${x},${ys[i].toFixed(1)}`).join(' ');
+      document.getElementById('trend-line').setAttribute('points', points);
+      const areaPath = `M ${xs[0]} ${ys[0].toFixed(1)} ` +
+        xs.slice(1).map((x,i) => `L ${x} ${ys[i+1].toFixed(1)}`).join(' ') +
+        ` L ${xs[xs.length-1]} 220 L ${xs[0]} 220 Z`;
+      document.getElementById('trend-area').setAttribute('d', areaPath);
+
+      // Dots
+      document.getElementById('trend-dots').innerHTML = xs.map((x,i) => {
+        const r = i === xs.length-1 ? 6 : 5;
+        const extra = i === xs.length-1 ? ' stroke="#fff" stroke-width="2"' : '';
+        return `<circle cx="${x}" cy="${ys[i].toFixed(1)}" r="${r}"${extra}/>`;
+      }).join('');
+    }
+    renderTrend('sroi');
+
+    document.getElementById('trend-metric').addEventListener('click', (e) => {
+      const t = e.target.closest('.tab'); if (!t) return;
+      document.querySelectorAll('#trend-metric .tab').forEach(x => x.classList.remove('active'));
+      t.classList.add('active');
+      renderTrend(t.dataset.metric);
+    });
+
+    // ---- DONUT helper ----
+    function renderDonut(svgEl, segments, total) {
+      // segments: [{label, value, color}]
+      const cx = 50, cy = 50, r = 35;
+      const circ = 2 * Math.PI * r;
+      let cum = 0;
+      svgEl.innerHTML = `<circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="#F0F0F0" stroke-width="14"/>`;
+      segments.forEach(s => {
+        const pct = s.value / total;
+        const len = pct * circ;
+        const dash = `${len} ${circ - len}`;
+        const offset = -(cum / total) * circ + circ * 0.25; // start at top
+        svgEl.innerHTML += `<circle cx="${cx}" cy="${cy}" r="${r}" fill="none"
+          stroke="${s.color}" stroke-width="14"
+          stroke-dasharray="${dash}" stroke-dashoffset="${offset.toFixed(2)}"
+          transform="rotate(-90 ${cx} ${cy})"/>`;
+        cum += s.value;
+      });
+    }
+
+    // ---- AMBIENTALE: donut trasporto ----
+    const envTotal = E.environmental.shuttle_breakdown.reduce((a,b) => a + b.value, 0);
+    renderDonut(document.getElementById('env-donut'),
+      E.environmental.shuttle_breakdown.map(b => ({ ...b, color: b.color.startsWith('var') ? getCss(b.color) : b.color })),
+      envTotal
+    );
+    document.getElementById('env-legend').innerHTML = E.environmental.shuttle_breakdown.map(b =>
+      `<div class="row"><span class="dot" style="background:${b.color}"></span><span class="lbl">${b.label}</span><span class="val">${b.value}%</span></div>`
+    ).join('');
+
+    function getCss(varRef) {
+      const v = varRef.match(/var\((.*?)\)/);
+      if (!v) return varRef;
+      return getComputedStyle(document.documentElement).getPropertyValue(v[1]).trim() || '#3B82F6';
+    }
+
+    // ---- SOCIALE: bar fragilità ----
+    function renderBars(elId, items, accent) {
+      const max = Math.max(...items.map(i => i.pct || i.count));
+      document.getElementById(elId).innerHTML = items.map(i => {
+        const val = i.pct != null ? i.pct : i.count;
+        const w = (val / max) * 100;
+        const color = i.color || accent || 'var(--care-blue)';
+        const suffix = i.pct != null ? '%' : '';
+        return `<div class="esg-bar">
+          <div class="bar-lbl">${i.label}</div>
+          <div class="bar-track"><div class="bar-fill" style="width:${w.toFixed(1)}%;background:${color}"></div></div>
+          <div class="bar-val">${val}${suffix}</div>
+        </div>`;
+      }).join('');
+    }
+    renderBars('fragile-bars', E.social.fragile_categories);
+
+    // ---- SOCIALE: heat-list quartieri ----
+    const maxDist = Math.max(...E.social.district_top.map(d => d.completed));
+    document.getElementById('heat-list').innerHTML = E.social.district_top.map(d => {
+      const pct = (d.completed / maxDist) * 100;
+      return `<div class="heat-row">
+        <span class="name">${d.name}</span>
+        <span class="stats"><span><strong>${d.patients}</strong> paz.</span><span><strong>${d.completed}</strong> cure</span></span>
+        <div class="heat-bar"><div style="width:${pct.toFixed(1)}%"></div></div>
+      </div>`;
+    }).join('');
+
+    // ---- GOVERNANCE: SROI stacked ----
+    const sroiTotal = E.governance.sroi_breakdown.reduce((a,b) => a + b.value, 0);
+    const sroiColors = ['#0F6E56','#3B82F6','#F59E0B','#6366F1'];
+    document.getElementById('sroi-stack').innerHTML = E.governance.sroi_breakdown.map((s, i) => {
+      const w = (s.value / sroiTotal) * 100;
+      return `<div class="seg" style="width:${w.toFixed(2)}%;background:${sroiColors[i % sroiColors.length]}" title="${s.label}: ${s.value}×"></div>`;
+    }).join('');
+    document.getElementById('sroi-legend').innerHTML = E.governance.sroi_breakdown.map((s,i) =>
+      `<div class="row"><span class="dot" style="background:${sroiColors[i % sroiColors.length]}"></span><span class="lbl">${s.label}</span><span class="val">${s.value.toFixed(1)}×</span></div>`
+    ).join('');
+
+    // ---- DEMOGRAFIA: età, genere, specialità ----
+    renderBars('age-bars', E.demographics.age_buckets.map(a => ({ label: a.label + ' anni', pct: a.pct })), '#4338CA');
+    renderBars('spec-bars', E.demographics.top_specialties, '#3B82F6');
+
+    // Donut genere
+    const genderSegs = [
+      { label: 'Femmine', value: E.demographics.gender_split.female, color: '#E91E63' },
+      { label: 'Maschi',  value: E.demographics.gender_split.male,   color: '#3B82F6' },
+      { label: 'Altro',   value: E.demographics.gender_split.other,  color: '#999' }
+    ];
+    renderDonut(document.getElementById('gender-donut'), genderSegs, 100);
+    document.getElementById('gender-legend').innerHTML = genderSegs.map(g =>
+      `<div class="row"><span class="dot" style="background:${g.color}"></span><span class="lbl">${g.label}</span><span class="val">${g.value}%</span></div>`
+    ).join('');
+
+    // ---- EXPORT report ESG (CSV mock) ----
+    function exportESG() {
+      const lines = [
+        'REPORT ESG AureaCare · Q2 2026',
+        '',
+        'KPI HEADLINE',
+        'SROI sanitario,' + E.headline.sroi.value + '×',
+        'CO2 evitata (kg),' + E.headline.co2_saved.value,
+        'Ore caregiver risparmiate,' + E.headline.caregiver_h.value,
+        'Pazienti fragili serviti (%),' + E.headline.fragile_served.value,
+        '',
+        'AMBIENTALE',
+        'Km evitati Q2,' + E.environmental.km_avoided,
+        'CO2 per visita (kg),' + E.environmental.co2_per_visit_avg,
+        'Quota Shuttle (%),' + E.environmental.shuttle_share,
+        'Km medio per visita AureaCare,' + E.environmental.avg_km_per_visit.aureacare,
+        'Km medio baseline Roma,' + E.environmental.avg_km_per_visit.baseline_roma,
+        '',
+        'SOCIALE',
+        'Quartieri coperti,' + E.social.district_coverage + '/' + E.social.total_districts,
+        'Tasso accesso facilitato (%),' + E.social.facilitated_access_rate,
+        '',
+        'Fragilità servite:',
+        ...E.social.fragile_categories.map(f => f.label + ',' + f.count + ' (' + f.pct + '%)'),
+        '',
+        'Top quartieri Roma:',
+        ...E.social.district_top.map(d => d.name + ',' + d.patients + ' pazienti,' + d.completed + ' cure'),
+        '',
+        'GOVERNANCE',
+        'Valore erogato YTD (€),' + E.governance.value_disbursed_ytd,
+        '% approvazione,' + E.governance.approval_rate,
+        'Costo per cura (€),' + E.governance.cost_per_outcome,
+        'Tariffa convenzionata (€),' + E.governance.tariff_avg_vs_market.aureacare,
+        'Tariffa mercato (€),' + E.governance.tariff_avg_vs_market.market,
+        '',
+        'SROI breakdown:',
+        ...E.governance.sroi_breakdown.map(s => s.label + ',' + s.value + '×'),
+        '',
+        '— Generato da AureaCare admin console · ' + new Date().toLocaleString('it-IT')
+      ];
+      const blob = new Blob([lines.join('\n')], { type: 'text/csv;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'aureacare_esg_' + new Date().toISOString().slice(0,10) + '.csv';
+      document.body.appendChild(a); a.click(); a.remove();
+      URL.revokeObjectURL(url);
+      showToast('Report ESG esportato in CSV', 'success');
+    }
+  </script>
+</body>
+</html>
