@@ -1767,3 +1767,34 @@ textarea.input { resize: vertical; min-height: 80px; }
   border-bottom: 1px dotted var(--border-gray);
 }
 .dev-credit a:hover { color: var(--care-blue-dark); border-color: var(--care-blue); }
+
+/* Switch view admin → login paziente: link mini nella topbar admin */
+.admin-topbar .switch-view {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--medium-gray);
+  background: var(--light-gray);
+  padding: 6px 10px;
+  border-radius: 8px;
+  text-decoration: none;
+  border: none;
+  cursor: pointer;
+  transition: all .15s ease;
+  white-space: nowrap;
+}
+.admin-topbar .switch-view:hover {
+  background: #fff;
+  color: var(--ink);
+  box-shadow: var(--shadow-sm);
+}
+.admin-topbar .switch-view .ico { width: 14px; height: 14px; }
+@media (max-width: 480px) {
+  .admin-topbar .switch-view {
+    font-size: 11px;
+    padding: 5px 8px;
+  }
+  .admin-topbar .switch-view .label-full { display: none; }
+}

@@ -47,6 +47,7 @@
         <h1>Pazienti registrati</h1>
         <span class="badge badge--info" style="font-size:13px;padding:6px 12px">142 attivi · 12 nuovi questo mese</span>
         <button class="icon-btn" style="width:38px;height:38px;background:var(--light-gray);border:none;border-radius:10px" onclick="showToast('12 nuovi pazienti questo mese','info')"><span id="ico-bell"></span></button>
+        <button class="switch-view" onclick="switchToPatientLogin()" title="Vai al login paziente"><span class="ico-sv"></span><span class="label-full">Vista paziente</span></button>
         <div class="avatar">FR</div>
       </header>
 
@@ -88,7 +89,7 @@
                 <span id="ico-search"></span>
                 <input class="input" placeholder="Cerca nome o CF…">
               </div>
-              <button class="btn btn--secondary" onclick="exportCSV()">${''}<span id="ico-export"></span>Esporta CSV</button>
+              <button class="btn btn--secondary" onclick="exportCSV()"><span id="ico-export"></span>Esporta CSV</button>
             </div>
           </div>
 
@@ -140,7 +141,7 @@
     <div class="modal">
       <div class="modal-header">
         <div class="modal-title">Invia messaggio al paziente</div>
-        <button class="modal-close" onclick="closeModal('msg-modal')">${''}<span id="ico-x2"></span></button>
+        <button class="modal-close" onclick="closeModal('msg-modal')"><span id="ico-x2"></span></button>
       </div>
       <div class="modal-body">
         <p class="caption mb-12" id="msg-to">Destinatario: …</p>

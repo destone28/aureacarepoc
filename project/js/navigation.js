@@ -37,6 +37,15 @@ function logout() {
   );
 }
 
+// Switch dalla console admin al login paziente.
+// Pulisce auth admin e atterra sulla index. Senza dialog: è un'azione
+// veloce ("voglio vedere il flusso paziente") che il dialog completo
+// di logout interromperebbe inutilmente.
+function switchToPatientLogin() {
+  localStorage.removeItem(AUTH_KEY);
+  window.location.href = 'index.html';
+}
+
 // ---------- Toast ----------
 function showToast(message, type = 'info') {
   let container = document.getElementById('toast-container');
@@ -422,6 +431,11 @@ document.addEventListener('DOMContentLoaded', () => {
   // app switcher trigger if present
   document.querySelectorAll('[data-app-switcher]').forEach(el => mountAppSwitcher(el));
   maybeAdminMobileHint();
+
+  // Inietta SVG icona "switch view" (admin → login paziente) dove presente
+  document.querySelectorAll('.switch-view .ico-sv').forEach(el => {
+    if (typeof aIcon === 'function') el.outerHTML = aIcon('log-out', { size: 14 });
+  });
 
   // active bottom nav link
   const path = location.pathname.split('/').pop();

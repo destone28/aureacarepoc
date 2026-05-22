@@ -58,6 +58,7 @@
         <h1>Strutture convenzionate</h1>
         <span class="badge badge--info" style="font-size:13px;padding:6px 12px">18 strutture · 17 attive</span>
         <button class="icon-btn" style="width:38px;height:38px;background:var(--light-gray);border:none;border-radius:10px" onclick="showToast('Nessuna notifica struttura','info')"><span id="ico-bell"></span></button>
+        <button class="switch-view" onclick="switchToPatientLogin()" title="Vai al login paziente"><span class="ico-sv"></span><span class="label-full">Vista paziente</span></button>
         <div class="avatar">FR</div>
       </header>
 
@@ -118,7 +119,7 @@
     <div class="modal modal--wide">
       <div class="modal-header">
         <div class="modal-title" id="dm-title">Dettagli struttura</div>
-        <button class="modal-close" onclick="closeModal('detail-modal')">${''}<span id="ico-x2"></span></button>
+        <button class="modal-close" onclick="closeModal('detail-modal')"><span id="ico-x2"></span></button>
       </div>
       <div class="modal-body" id="dm-body"></div>
       <div class="modal-footer">
