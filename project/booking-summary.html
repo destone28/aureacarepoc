@@ -262,11 +262,11 @@
               <div style="display:flex;justify-content:space-between"><span class="text-muted">Quando</span><strong>${day} mag · 13:30</strong></div>
               <div style="display:flex;justify-content:space-between"><span class="text-muted">Stima</span><strong style="color:var(--primary-orange)">€18 · ~22 min</strong></div>
             </div>
-            <p class="caption mt-12">In produzione qui si aprirebbe la app AureaShuttle. Per ora vedi il riepilogo che riceverà.</p>
+            <p class="caption mt-12">Questi sono i dati che verranno passati ad AureaShuttle. Clicca <strong>Vai ad AureaShuttle</strong> per aprire l'app gemella e completare la richiesta.</p>
           </div>
           <div class="modal-footer">
             <button class="btn btn--secondary" onclick="this.closest('.modal-overlay').remove()">Chiudi</button>
-            <button class="btn btn--primary-grad" onclick="this.closest('.modal-overlay').remove();showToast('Dati inviati ad AureaShuttle','care')">Conferma handoff</button>
+            <a class="btn btn--primary-grad" href="https://aureashuttlepoc.vercel.app" target="_blank" rel="noopener" onclick="showToast('Apertura AureaShuttle in nuova scheda','care')">Vai ad AureaShuttle ${aIcon('arrow-right',{size:14})}</a>
           </div>
         </div>`;
       overlay.onclick = (e) => { if (e.target === overlay) overlay.remove(); };

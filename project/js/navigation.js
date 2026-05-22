@@ -117,10 +117,10 @@ function appSwitcherCards() {
         <div class="app-tag">NCC &amp; taxi premium</div>
       </div>
     </a>
-    <a class="app-card shuttle" href="#" onclick="event.preventDefault(); showToast('AureaShuttle: in arrivo','info');">
+    <a class="app-card shuttle" href="https://aureashuttlepoc.vercel.app" target="_blank" rel="noopener">
       <div class="app-dot">S</div>
       <div>
-        <div class="app-name">AureaShuttle <span class="app-coming">Coming soon</span></div>
+        <div class="app-name">AureaShuttle</div>
         <div class="app-tag">Trasporto sanitario</div>
       </div>
     </a>
