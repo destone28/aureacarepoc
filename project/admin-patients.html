@@ -26,6 +26,13 @@
     .doc-pill.ok { background: var(--b-approved-bg); color: var(--b-approved-tx); }
     .doc-pill.partial { background: var(--b-pending-bg); color: var(--b-pending-tx); }
     .doc-pill.pending { background: var(--b-cancelled-bg); color: var(--b-cancelled-tx); }
+    /* Mini-pill livello di accesso Carelink (1/2/3) */
+    .lvl-pill {
+      display: inline-flex; align-items: center;
+      padding: 2px 8px; border-radius: 999px;
+      font-size: 11px; font-weight: 700;
+      background: #E1F5EE; color: #0F6E56;
+    }
   </style>
 </head>
 <body class="admin-page">
@@ -99,6 +106,7 @@
                 <th>Paziente</th>
                 <th>CF</th>
                 <th>Voucher residui</th>
+                <th>Livello accesso</th>
                 <th>Cure completate</th>
                 <th>Documenti</th>
                 <th>Ultimo accesso</th>
@@ -206,10 +214,14 @@
       pending:  ['pending', 'In attesa']
     };
 
+    // Lookup livello di accesso Carelink (1 urgenza · 2 ISEE · 3 due diligence)
+    const accessLevelOf = lvl => MOCK.access_levels.find(a => a.level === lvl);
+
     const rows = MOCK.admin_patients.map((p, i) => {
       const [c1, c2] = palettes[i % palettes.length];
       const initials = p.name.split(' ').map(s => s[0]).join('');
       const [docCls, docLabel] = docMap[p.docs_status];
+      const al = accessLevelOf(p.access_level);
       return `<tr data-id="${p.id}">
         <td data-th="Paziente" onclick="openP('${p.id}')" style="cursor:pointer">
           <div class="flex items-center gap-12">
@@ -222,6 +234,7 @@
         </td>
         <td data-th="CF"><span class="font-mono" style="font-size:12px">${p.cf}</span></td>
         <td data-th="Voucher residui"><strong>${p.vouchers_left}</strong> <span class="cell-sub" style="display:inline">su 12</span></td>
+        <td data-th="Livello accesso"><span class="lvl-pill" title="${al.desc}">L${al.level}</span> <span class="cell-sub" style="display:inline">${al.label}</span></td>
         <td data-th="Cure"><span style="font-weight:600">${p.completed}</span></td>
         <td data-th="Documenti"><span class="doc-pill ${docCls}">${aIcon(docCls==='ok'?'check-circle':docCls==='partial'?'alert':'clock',{size:12})}${docLabel}</span></td>
         <td data-th="Ultimo accesso">${p.last_login}</td>
@@ -296,6 +309,7 @@
       if (!p) return;
       const initials = p.name.split(' ').map(s => s[0]).join('');
       const [c1, c2] = palettes[MOCK.admin_patients.indexOf(p) % palettes.length];
+      const al = accessLevelOf(p.access_level);
       document.getElementById('pm-title').textContent = p.name;
       const docPatient = MOCK.bookings.slice(0,5);
       document.getElementById('pm-body').innerHTML = `
@@ -312,6 +326,8 @@
 
             <p class="eyebrow mb-8">Voucher ESG & cure</p>
             <div style="display:grid;gap:8px;font-size:13px;background:#FAFAFA;padding:14px;border-radius:10px">
+              <div style="display:flex;justify-content:space-between;align-items:center"><span class="text-muted">Livello di accesso</span><span><span class="lvl-pill">Livello ${al.level}</span> <strong style="color:#0F6E56">${al.label}</strong></span></div>
+              <div style="display:flex;justify-content:space-between"><span class="text-muted">Requisito</span><strong>${al.desc} · verificato</strong></div>
               <div style="display:flex;justify-content:space-between"><span class="text-muted">Voucher residui</span><strong style="color:var(--care-blue-dark)">${p.vouchers_left} su 12</strong></div>
               <div style="display:flex;justify-content:space-between"><span class="text-muted">Prestazioni completate</span><strong>${p.completed}</strong></div>
               <div style="display:flex;justify-content:space-between"><span class="text-muted">Approvazioni</span><strong>${Math.floor(p.completed*0.95)} su ${p.completed+1}</strong></div>

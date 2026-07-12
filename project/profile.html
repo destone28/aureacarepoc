@@ -84,6 +84,19 @@
         <p class="caption mt-4"><span class="badge badge--approved"><span class="dot"></span>Documenti verificati</span></p>
       </div>
 
+      <!-- Programma Carelink · livello di accesso -->
+      <div class="divider-eyebrow"><span>Programma Carelink</span><span class="line"></span></div>
+      <div class="card card--padded mb-20" style="background:#F4FBF6;border-color:#C8E6CF">
+        <div style="display:flex;gap:12px;align-items:flex-start">
+          <div class="doc-ico" style="background:#DCEFE6;color:#0F6E56"><span id="pc-ico"></span></div>
+          <div style="flex:1">
+            <p style="font-weight:700;font-size:14px;color:#0F6E56">Livello di accesso 2 · ISEE &lt; €20.000</p>
+            <p class="caption mt-4">Requisito documentato con <strong>Modello ISEE 2026</strong> · verificato dal <strong>Coordinatore Alphio</strong> il 02/02/2026</p>
+            <p class="mt-8"><span class="badge badge--approved"><span class="dot"></span>Requisito verificato</span></p>
+          </div>
+        </div>
+      </div>
+
       <!-- Anagrafica -->
       <div class="divider-eyebrow"><span>Anagrafica</span><span class="line"></span></div>
       <div class="card card--padded mb-20">
@@ -119,6 +132,11 @@
           <div class="doc-ico"><span id="dr4"></span></div>
           <div style="flex:1"><p style="font-weight:700;font-size:14px">SPID</p><p class="caption">Login federato attivo</p></div>
           <span class="badge badge--approved"><span class="dot"></span>Attivo</span>
+        </div>
+        <div class="doc-row">
+          <div class="doc-ico" style="background:var(--light-gray);color:var(--medium-gray)"><span id="dr5"></span></div>
+          <div style="flex:1"><p style="font-weight:700;font-size:14px">Certificato urgenza SSN/MMG</p><p class="caption">Non necessario per il livello di accesso 2</p></div>
+          <span class="badge" style="background:var(--light-gray);color:var(--medium-gray)">Non richiesto</span>
         </div>
       </div>
 
@@ -214,6 +232,8 @@
     document.getElementById('ico-x').outerHTML    = aIcon('x', { size: 16 });
     document.getElementById('ico-x2').outerHTML   = aIcon('x', { size: 16 });
     ['dr1','dr2','dr3','dr4'].forEach((id,i) => { document.getElementById(id).outerHTML = aIcon(i===3 ? 'shield-check' : 'file-check', { size: 18 }); });
+    document.getElementById('dr5').outerHTML = aIcon('file', { size: 18 });
+    document.getElementById('pc-ico').outerHTML = aIcon('shield-check', { size: 18 });
     document.getElementById('s1').outerHTML = aIcon('bell', { size: 18 });
     document.getElementById('s2').outerHTML = aIcon('message-square', { size: 18 });
     document.getElementById('s3').outerHTML = aIcon('shield', { size: 18 });
