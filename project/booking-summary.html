@@ -92,8 +92,8 @@
             <span id="ico-heart"></span>
           </div>
           <div style="flex:1">
-            <p style="font-weight:700">Visita cardiologica</p>
-            <p class="caption">Cardiologia · 30 min</p>
+            <p style="font-weight:700">Prima visita cardiologica</p>
+            <p class="caption">Cardiologia · Fascia A · 40 min</p>
           </div>
         </div>
         <div class="kv-row"><span class="k">Struttura</span><span class="v">Policlinico Gemelli<br><span class="caption" style="font-weight:400">Largo A. Gemelli 8 · Trionfale</span></span></div>
@@ -108,10 +108,10 @@
       <!-- Recap costo -->
       <div class="recap-block">
         <h3>Pagamento</h3>
-        <div class="kv-row"><span class="k">Tariffa convenzionata</span><span class="v">€95</span></div>
+        <div class="kv-row"><span class="k">Tariffa ESG (listino −15%)</span><span class="v">€150</span></div>
         <div class="kv-row" id="row-shuttle-fee" style="display:none"><span class="k">Trasporto AureaShuttle</span><span class="v">€18</span></div>
         <div class="kv-row"><span class="k">Wallet attuale</span><span class="v">€340 · 8 prestazioni</span></div>
-        <div class="kv-row"><span class="k" style="color:var(--ink);font-weight:700">Saldo dopo conferma</span><span class="v" style="color:var(--care-blue-dark);font-size:16px" id="balance-after">€245 · 7 prestazioni</span></div>
+        <div class="kv-row"><span class="k" style="color:var(--ink);font-weight:700">Saldo dopo conferma</span><span class="v" style="color:var(--care-blue-dark);font-size:16px" id="balance-after">€190 · 7 prestazioni</span></div>
       </div>
 
       <!-- Handoff: pre-flagged (chosen variant) -->
@@ -154,7 +154,7 @@
     document.getElementById('kv-time').textContent = time;
     if (shuttle) {
       document.getElementById('row-shuttle-fee').style.display = 'flex';
-      document.getElementById('balance-after').textContent = '€227 · 7 prestazioni';
+      document.getElementById('balance-after').textContent = '€172 · 7 prestazioni';
     }
 
     // Handoff variant (read from localStorage; pre-flagged is default per user)

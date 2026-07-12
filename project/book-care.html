@@ -34,6 +34,20 @@
     .srv-meta { font-size: 12px; color: var(--medium-gray); margin-top: 2px; }
     .srv-price { font-weight: 700; font-size: 14px; }
     .srv-price-sub { font-size: 11px; color: var(--medium-gray); }
+    .srv-list-strike { font-size: 11px; color: var(--medium-gray); text-decoration: line-through; }
+    .srv-pill {
+      display: inline-block; margin-top: 4px;
+      padding: 2px 8px; border-radius: 999px;
+      background: #E9F4F0; color: #0F6E56;
+      font-size: 10px; font-weight: 700; letter-spacing: .02em;
+      white-space: nowrap;
+    }
+    .srv-cta {
+      display: inline-flex; align-items: center; gap: 6px;
+      margin-top: 8px; padding: 7px 12px; border-radius: 8px;
+      background: #0F6E56; color: #fff;
+      font-size: 12px; font-weight: 700;
+    }
   </style>
 </head>
 <body>
@@ -47,6 +61,9 @@
     </header>
 
     <div class="patient-content">
+      <!-- Sottotitolo convenzione -->
+      <p class="caption mb-12">Prestazioni convenzionate · strutture private certificate · sconto fisso 15%</p>
+
       <!-- Search -->
       <div class="input-container mb-16">
         <span id="ico-search"></span>
@@ -55,13 +72,13 @@
 
       <!-- Tabs -->
       <div class="tabs mb-16">
-        <button class="tab active" data-kind="visita">Visite</button>
-        <button class="tab" data-kind="terapia">Terapie</button>
-        <button class="tab" data-kind="ciclo">Cicli di cura</button>
+        <button class="tab active" data-kind="visita">Visite specialistiche (Fascia A)</button>
+        <button class="tab" data-kind="diagnostica">Diagnostica (Fascia B)</button>
+        <button class="tab" data-kind="ciclo">Cure ricorsive (trasporto)</button>
       </div>
 
       <!-- Summary -->
-      <p class="caption mb-12" id="summary-line">Mostro tutte le visite specialistiche convenzionate.</p>
+      <p class="caption mb-12" id="summary-line">Mostro tutte le visite specialistiche in convenzione (Fascia A).</p>
 
       <div id="srv-list"></div>
     </div>
@@ -109,35 +126,49 @@
         return true;
       });
 
+      const fmtEur = v => Number.isInteger(v) ? String(v) : v.toFixed(2).replace('.', ',');
+
       filtered.forEach(s => {
         const card = document.createElement('a');
         card.className = 'srv-card';
         card.href = `structures.html?service=${s.id}`;
         const avail = structuresAvailable(s.cat);
-        const priceLine = s.kind === 'ciclo'
-          ? `€${s.price_from}–${s.price_to} <span class="srv-price-sub">/ ciclo ${s.sessions} sed.</span>`
-          : `€${s.price_from}–${s.price_to}`;
-        card.innerHTML = `
-          <div class="srv-icon">${aIcon(s.icon || 'heart', { size: 22 })}</div>
-          <div class="srv-body">
-            <div class="srv-name">${s.name}</div>
-            <div class="srv-meta">${s.cat} · ${s.duration} min${s.kind==='ciclo' ? ' · '+s.sessions+' sedute' : ''}</div>
-            <div class="srv-meta" style="color:var(--care-blue);font-weight:600;margin-top:4px">${avail} strutture disponibili a Roma</div>
-          </div>
-          <div class="text-right">
-            <div class="srv-price">${priceLine}</div>
-            <div class="srv-price-sub">tariffa convenzionata</div>
-          </div>`;
+        if (s.kind === 'ciclo') {
+          // Cure ricorsive Layer 1: nessun prezzo, il programma copre il trasporto
+          card.innerHTML = `
+            <div class="srv-icon" style="background:#E9F4F0;color:#0F6E56">${aIcon(s.icon || 'heart', { size: 22 })}</div>
+            <div class="srv-body">
+              <div class="srv-name">${s.name}</div>
+              <div class="srv-meta">${s.cat} · ${s.sessions} sedute · ${s.duration} min/seduta · ${s.rides} tratte A/R</div>
+              <div class="srv-meta" style="color:#0F6E56;font-weight:600;margin-top:4px;display:flex;align-items:center;gap:5px">${aIcon('truck', { size: 13 })} Trasporto gratuito porta-a-porta per tutte le sedute · Layer 1</div>
+              <div class="srv-meta" style="color:var(--care-blue);font-weight:600;margin-top:2px">${avail} strutture disponibili a Roma</div>
+              <span class="srv-cta">Attiva trasporto per il ciclo ${aIcon('arrow-right', { size: 14 })}</span>
+            </div>`;
+        } else {
+          card.innerHTML = `
+            <div class="srv-icon">${aIcon(s.icon || 'heart', { size: 22 })}</div>
+            <div class="srv-body">
+              <div class="srv-name">${s.name}</div>
+              <div class="srv-meta">${s.cat} · ${s.duration} min</div>
+              <div class="srv-meta" style="color:var(--care-blue);font-weight:600;margin-top:4px">${avail} strutture disponibili a Roma</div>
+            </div>
+            <div class="text-right">
+              <div class="srv-list-strike">Listino €${fmtEur(s.price_list_from)}–${fmtEur(s.price_list_to)}</div>
+              <div class="srv-price">€${fmtEur(s.price_esg_from)}–${fmtEur(s.price_esg_to)}</div>
+              <div class="srv-price-sub">Tariffa ESG · −15%</div>
+              <span class="srv-pill">1 voucher</span>
+            </div>`;
+        }
         list.appendChild(card);
       });
 
       const summary = {
-        visita: 'visite specialistiche',
-        terapia: 'terapie e sedute singole',
-        ciclo: 'cicli di cura strutturati'
+        visita: 'visite specialistiche in convenzione (Fascia A)',
+        diagnostica: 'esami di diagnostica strumentale in convenzione (Fascia B)',
+        ciclo: 'cure ricorsive con trasporto gratuito (Layer 1)'
       };
       document.getElementById('summary-line').textContent =
-        `${filtered.length} ${summary[currentKind]} convenzionate.` +
+        `${filtered.length} ${summary[currentKind]}.` +
         (searchQuery ? ` Filtro: "${searchQuery}".` : '');
     }
 
