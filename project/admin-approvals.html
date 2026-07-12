@@ -110,8 +110,8 @@
                 <th>Prestazione</th>
                 <th>Struttura</th>
                 <th>Data prevista</th>
-                <th>Costo</th>
-                <th>Wallet (post)</th>
+                <th>Tariffa ESG</th>
+                <th>Voucher</th>
                 <th>Stato</th>
                 <th style="width:220px">Azioni</th>
               </tr>
@@ -145,7 +145,7 @@
         <button class="btn btn--secondary" onclick="closeModal('approve-modal')">Chiudi</button>
         <button class="btn btn--danger" onclick="actReject()">Rifiuta</button>
         <button class="btn btn--ghost" onclick="actInfo()" style="color:var(--warning)">Richiedi info</button>
-        <button class="btn btn--success" onclick="actApprove()">Approva richiesta</button>
+        <button class="btn btn--success" onclick="actApprove()">Valida voucher</button>
       </div>
     </div>
   </div>
@@ -198,8 +198,8 @@
         <td data-th="Prestazione">${r.service}</td>
         <td data-th="Struttura">${r.structure}</td>
         <td data-th="Data prevista"><div>${r.date}</div><div class="cell-sub">inv. ${r.submitted}</div></td>
-        <td data-th="Costo"><strong>€${r.cost}</strong></td>
-        <td data-th="Wallet (post)">€${r.wallet_after} <span class="cell-sub" style="margin-top:0;display:inline">res.</span></td>
+        <td data-th="Tariffa ESG">${r.voucher_id ? `<strong>€${r.esg_price}</strong><div class="cell-sub"><s>listino €${r.list_price}</s> · −15%</div>` : `<strong>€0</strong><div class="cell-sub">trasporto L1</div>`}</td>
+        <td data-th="Voucher">${r.voucher_id ? `<span class="font-mono" style="font-size:12px;font-weight:700">${r.voucher_id}</span><div class="cell-sub">${r.vouchers_left} residui</div>` : `<span class="cell-sub" style="display:inline">nessun voucher · L1</span>`}</td>
         <td data-th="Stato"><span class="badge ${b}"><span class="dot"></span>${l}</span></td>
         <td data-th="Azioni">${action}</td>
       </tr>`;
@@ -231,10 +231,21 @@
               <div style="display:flex;justify-content:space-between"><span class="text-muted">Prestazione</span><strong>${r.service}</strong></div>
               <div style="display:flex;justify-content:space-between"><span class="text-muted">Struttura</span><strong>${r.structure}</strong></div>
               <div style="display:flex;justify-content:space-between"><span class="text-muted">Data prevista</span><strong>${r.date}</strong></div>
-              <div style="display:flex;justify-content:space-between"><span class="text-muted">Tariffa convenzionata</span><strong>€${r.cost}</strong></div>
-              <div style="display:flex;justify-content:space-between"><span class="text-muted">Wallet dopo addebito</span><strong style="color:var(--care-blue-dark)">€${r.wallet_after}</strong></div>
               <div style="display:flex;justify-content:space-between"><span class="text-muted">Inviata</span><strong>${r.submitted}</strong></div>
             </div>
+
+            <p class="eyebrow mt-16 mb-8">Voucher ESG</p>
+            ${r.voucher_id ? `
+            <div style="display:grid;gap:8px;font-size:13px;background:var(--care-blue-light,#E6F1FB);padding:14px;border-radius:10px">
+              <div style="display:flex;justify-content:space-between"><span class="text-muted">Voucher</span><strong class="font-mono">${r.voucher_id}</strong></div>
+              <div style="display:flex;justify-content:space-between"><span class="text-muted">Valore coperto dal Fondo</span><strong style="color:var(--care-blue-dark)">€${r.esg_price} <span style="font-weight:400;color:var(--medium-gray)">(listino €${r.list_price} −15%)</span></strong></div>
+              <div style="display:flex;justify-content:space-between"><span class="text-muted">Quota paziente</span><strong>€0</strong></div>
+              <div style="display:flex;justify-content:space-between"><span class="text-muted">Residui dopo validazione</span><strong>${Math.max(0, r.vouchers_left - 1)} su 12</strong></div>
+            </div>` : `
+            <div style="display:grid;gap:8px;font-size:13px;background:var(--bg-warm);padding:14px;border-radius:10px">
+              <div style="display:flex;justify-content:space-between"><span class="text-muted">Copertura</span><strong>Trasporto Layer 1 · nessun voucher consumato</strong></div>
+              <div style="display:flex;justify-content:space-between"><span class="text-muted">Quota paziente</span><strong>€0</strong></div>
+            </div>`}
 
             <p class="eyebrow mt-20 mb-8">Note admin</p>
             <div class="input-container"><textarea class="input" placeholder="Aggiungi nota visibile al paziente (opzionale)"></textarea></div>
@@ -315,7 +326,7 @@
         () => showToast('Richiesta ' + id + ' rifiutata', 'info'),
         { confirmLabel: 'Sì, rifiuta', danger: true });
     }
-    function actApprove() { closeModal('approve-modal'); showToast('Richiesta ' + currentReqId + ' approvata · paziente notificato', 'success'); }
+    function actApprove() { closeModal('approve-modal'); showToast('Voucher validato per ' + currentReqId + ' · paziente notificato', 'success'); }
     function actReject()  { closeModal('approve-modal'); showToast('Richiesta ' + currentReqId + ' rifiutata', 'info'); }
     function actInfo()    { closeModal('approve-modal'); showToast('Richiesta info inviata al paziente', 'info'); }
   </script>

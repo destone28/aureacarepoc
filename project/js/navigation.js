@@ -1,6 +1,6 @@
 /* AureaCare — global navigation & utilities
    Estende il pattern di AureaVia (toast, confirm dialog, mobile menu)
-   Aggiunge: SSO simulato, app switcher, wallet ring renderer.
+   Aggiunge: SSO simulato, app switcher, voucher ring renderer.
    ============================================================ */
 
 // ---------- Auth (simulato, condiviso con AureaVia) ----------
@@ -31,7 +31,7 @@ function logout() {
     'Sei sicuro di voler uscire dal tuo account Aurea?',
     () => {
       localStorage.removeItem(AUTH_KEY);
-      // wallet/booking restano salvati in locale per riprendere alla prossima visita
+      // voucher/booking restano salvati in locale per riprendere alla prossima visita
       window.location.href = 'index.html';
     }
   );
@@ -190,13 +190,18 @@ function openAppSwitcherSheet() {
   backdrop.onclick = close;
 }
 
-// ---------- Wallet ring (segmented by default, variants supported) ----------
+// ---------- Voucher ring (segmented by default, variants supported) ----------
+// Rappresenta il plafond di voucher ESG assegnato dal Coordinatore Alphio:
+//   segmented → 1 tacca = 1 voucher (usati vs residui)
+//   single    → numero grande di voucher residui
+//   dual      → voucher residui + valore coperto dal Fondo YTD
+// opts: { total: assegnati, used: usati, covered: € coperti YTD, coveredMax, size }
 function renderWalletRing(el, opts) {
   if (!el) return;
   const variant = localStorage.getItem('aureacare_wallet_variant') || (opts && opts.variant) || 'segmented';
   const total = opts.total || 12;
   const used = opts.used || 0;
-  const credit = opts.credit || 0;
+  const covered = opts.covered || 0;
   const size = opts.size || 220;
   el.innerHTML = '';
 
@@ -238,8 +243,8 @@ function renderWalletRing(el, opts) {
                 stroke-dashoffset="${((1-pct)*2*Math.PI*42).toFixed(2)}"/>
       </svg>`;
   } else if (variant === 'dual') {
-    // two concentric rings (€ outer, prestazioni inner)
-    const pctC = Math.max(0, Math.min(1, credit / (opts.creditMax || 500)));
+    // two concentric rings (valore coperto dal Fondo outer, voucher residui inner)
+    const pctC = Math.max(0, Math.min(1, covered / (opts.coveredMax || 1000)));
     const pctP = Math.max(0, Math.min(1, (total - used) / total));
     wrap.innerHTML = `
       <svg viewBox="0 0 100 100">
@@ -259,14 +264,14 @@ function renderWalletRing(el, opts) {
   center.className = 'ring-center';
   if (variant === 'dual') {
     center.innerHTML = `
-      <div class="ring-eyebrow">Wallet</div>
-      <div class="ring-amount" style="font-size:26px">€${credit}</div>
-      <div class="ring-sub">${total - used} di ${total} prestazioni</div>`;
+      <div class="ring-eyebrow">Voucher ESG</div>
+      <div class="ring-amount" style="font-size:26px">${total - used}</div>
+      <div class="ring-sub">residui su ${total} · €${covered} coperti dal Fondo</div>`;
   } else {
     center.innerHTML = `
-      <div class="ring-eyebrow">Wallet AureaCare</div>
-      <div class="ring-amount">€${credit}</div>
-      <div class="ring-sub">${total - used} di ${total} prestazioni</div>`;
+      <div class="ring-eyebrow">Voucher ESG</div>
+      <div class="ring-amount">${total - used}</div>
+      <div class="ring-sub">residui su ${total} assegnati</div>`;
   }
   wrap.appendChild(center);
   el.appendChild(wrap);

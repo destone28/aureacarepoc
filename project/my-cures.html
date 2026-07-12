@@ -68,7 +68,7 @@
     <nav class="bottom-nav">
       <a class="nav-item" href="home.html"><span id="nv-home"></span>Home</a>
       <a class="nav-item active" href="my-cures.html"><span id="nv-cure"></span>Cure</a>
-      <a class="nav-item" href="wallet.html"><span id="nv-wallet"></span>Wallet</a>
+      <a class="nav-item" href="wallet.html"><span id="nv-wallet"></span>Voucher</a>
       <a class="nav-item" href="profile.html"><span id="nv-profile"></span>Profilo</a>
     </nav>
   </div>
@@ -131,8 +131,8 @@
               <div class="cure-meta">${b.date} · ${b.time}</div>
             </div>
             <div class="text-right">
-              <p style="font-weight:700">€${b.cost}</p>
-              <p class="caption">wallet</p>
+              <p style="font-weight:700">${b.voucher_id ? '€' + b.esg_price : '€0'}</p>
+              <p class="caption">${b.voucher_id ? 'coperti dal Fondo' : 'trasporto L1'}</p>
             </div>
           </div>
           ${b.shuttle ? `<div class="cure-bar"><span style="color:var(--primary-orange);font-weight:600;display:flex;align-items:center;gap:6px">${aIcon('truck',{size:14})} Trasporto AureaShuttle</span><span class="caption">${b.status==='completed' ? 'Effettuato' : 'In agenda'}</span></div>` : ''}`;
@@ -174,7 +174,13 @@
           <div style="display:flex;justify-content:space-between"><span class="text-muted">Data</span><strong>${b.date}</strong></div>
           <div style="display:flex;justify-content:space-between"><span class="text-muted">Orario</span><strong>${b.time}</strong></div>
           <div style="display:flex;justify-content:space-between"><span class="text-muted">Riferimento</span><strong class="font-mono">${b.id}</strong></div>
-          <div style="display:flex;justify-content:space-between"><span class="text-muted">Costo</span><strong>€${b.cost}</strong></div>
+          ${b.voucher_id ? `
+          <div style="display:flex;justify-content:space-between"><span class="text-muted">Listino struttura</span><span style="text-decoration:line-through;color:var(--medium-gray)">€${b.list_price}</span></div>
+          <div style="display:flex;justify-content:space-between"><span class="text-muted">Tariffa ESG (−15%)</span><strong>€${b.esg_price}</strong></div>
+          <div style="display:flex;justify-content:space-between"><span class="text-muted">Coperto dal Fondo ESG</span><strong style="color:#0F6E56">€${b.esg_price}</strong></div>
+          <div style="display:flex;justify-content:space-between"><span class="text-muted">A tuo carico</span><strong style="color:var(--care-blue-dark)">€0</strong></div>
+          <div style="display:flex;justify-content:space-between"><span class="text-muted">Voucher ESG</span><strong class="font-mono">${b.voucher_id}</strong></div>` : `
+          <div style="display:flex;justify-content:space-between"><span class="text-muted">Copertura</span><strong>Trasporto Layer 1 gratuito · nessun voucher</strong></div>`}
           ${b.shuttle ? `<div style="display:flex;justify-content:space-between"><span class="text-muted">Trasporto</span><strong style="color:var(--primary-orange)">AureaShuttle ✓</strong></div>` : ''}
         </div>
 
@@ -215,9 +221,13 @@
         'Prestazione:  ' + b.service_name,
         'Struttura:    ' + b.structure_name,
         'Medico:       ' + b.doctor,
-        'Importo:      €' + b.cost + ' (tariffa convenzionata)',
+        'Listino ufficiale:  €' + b.list_price,
+        'Tariffa ESG (−15%): €' + b.esg_price,
+        'Coperto dal Fondo ESG Territoriale Roma: €' + b.esg_price,
+        'Quota paziente:     €0,00',
+        'Voucher:            ' + (b.voucher_id || '— (trasporto Layer 1)'),
         '',
-        'Modalità pagamento: Wallet AureaCare',
+        'Copertura: Voucher ESG · Fondo ESG Territoriale di Roma',
         'Status:             ' + b.status,
         '',
         '— Documento generato dal POC AureaCare —'
@@ -242,8 +252,8 @@
 
     function cancel() {
       closeModal();
-      showConfirmDialog('Annullare la prenotazione?', "L'importo verrà riaccreditato sul wallet entro 24h.",
-        () => showToast('Prenotazione annullata · rimborso in corso','info'),
+      showConfirmDialog('Annullare la prenotazione?', 'Il voucher ESG tornerà disponibile nel tuo plafond entro 24h.',
+        () => showToast('Prenotazione annullata · voucher in riaccredito','info'),
         { confirmLabel: 'Sì, annulla', danger: true });
     }
 

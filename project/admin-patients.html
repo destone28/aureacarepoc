@@ -67,9 +67,9 @@
             <p class="caption">90.1% conformità</p>
           </div>
           <div class="kpi-card">
-            <p class="kpi-label">Wallet medio</p>
-            <p class="kpi-value">€385</p>
-            <p class="caption">+€42 vs mese precedente</p>
+            <p class="kpi-label">Voucher residui (media)</p>
+            <p class="kpi-value">5.0</p>
+            <p class="caption">su plafond di 12 assegnati</p>
           </div>
           <div class="kpi-card">
             <p class="kpi-label">Cure medie/paz.</p>
@@ -98,7 +98,7 @@
               <tr>
                 <th>Paziente</th>
                 <th>CF</th>
-                <th>Wallet</th>
+                <th>Voucher residui</th>
                 <th>Cure completate</th>
                 <th>Documenti</th>
                 <th>Ultimo accesso</th>
@@ -221,7 +221,7 @@
           </div>
         </td>
         <td data-th="CF"><span class="font-mono" style="font-size:12px">${p.cf}</span></td>
-        <td data-th="Wallet"><strong>€${p.wallet}</strong></td>
+        <td data-th="Voucher residui"><strong>${p.vouchers_left}</strong> <span class="cell-sub" style="display:inline">su 12</span></td>
         <td data-th="Cure"><span style="font-weight:600">${p.completed}</span></td>
         <td data-th="Documenti"><span class="doc-pill ${docCls}">${aIcon(docCls==='ok'?'check-circle':docCls==='partial'?'alert':'clock',{size:12})}${docLabel}</span></td>
         <td data-th="Ultimo accesso">${p.last_login}</td>
@@ -252,9 +252,9 @@
 
     // Esporta CSV (genera download client-side)
     function exportCSV() {
-      const header = ['ID','Nome','CF','Wallet','Completate','Docs','UltimoAccesso'];
+      const header = ['ID','Nome','CF','VoucherResidui','LivelloAccesso','Completate','Docs','UltimoAccesso'];
       const lines = [header.join(',')].concat(
-        MOCK.admin_patients.map(p => [p.id, '"'+p.name+'"', p.cf, p.wallet, p.completed, p.docs_status, '"'+p.last_login+'"'].join(','))
+        MOCK.admin_patients.map(p => [p.id, '"'+p.name+'"', p.cf, p.vouchers_left, p.access_level, p.completed, p.docs_status, '"'+p.last_login+'"'].join(','))
       );
       const blob = new Blob([lines.join('\n')], { type: 'text/csv;charset=utf-8' });
       const url = URL.createObjectURL(blob);
@@ -310,9 +310,9 @@
               </div>
             </div>
 
-            <p class="eyebrow mb-8">Wallet & cure</p>
+            <p class="eyebrow mb-8">Voucher ESG & cure</p>
             <div style="display:grid;gap:8px;font-size:13px;background:#FAFAFA;padding:14px;border-radius:10px">
-              <div style="display:flex;justify-content:space-between"><span class="text-muted">Credito wallet</span><strong style="color:var(--care-blue-dark)">€${p.wallet}</strong></div>
+              <div style="display:flex;justify-content:space-between"><span class="text-muted">Voucher residui</span><strong style="color:var(--care-blue-dark)">${p.vouchers_left} su 12</strong></div>
               <div style="display:flex;justify-content:space-between"><span class="text-muted">Prestazioni completate</span><strong>${p.completed}</strong></div>
               <div style="display:flex;justify-content:space-between"><span class="text-muted">Approvazioni</span><strong>${Math.floor(p.completed*0.95)} su ${p.completed+1}</strong></div>
               <div style="display:flex;justify-content:space-between"><span class="text-muted">Cliente da</span><strong>04/01/2026</strong></div>
@@ -337,7 +337,7 @@
                   <span class="caption">${b.structure_name} · ${b.date} ${b.time}</span>
                 </div>
                 <div style="text-align:right">
-                  <strong>€${b.cost}</strong><br>
+                  <strong>€${b.esg_price}</strong><br>
                   <span class="badge badge--${b.status === 'completed' ? 'completed' : b.status === 'pending' ? 'pending' : b.status === 'cancelled' ? 'cancelled' : 'approved'}"><span class="dot"></span>${b.status}</span>
                 </div>
               </div>`).join('')}

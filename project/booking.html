@@ -146,18 +146,21 @@
         </div>
       </div>
 
-      <!-- Riepilogo prezzo -->
+      <!-- Riepilogo copertura ESG -->
       <div class="divider-eyebrow"><span>Riepilogo</span><span class="line"></span></div>
-      <div class="pricing-row mb-8"><span>Prima visita cardiologica <span class="caption">— tariffa ESG (−15%)</span></span><strong>€150</strong></div>
+      <div class="pricing-row mb-8"><span>Listino struttura</span><span style="text-decoration:line-through;color:var(--medium-gray)">€176</span></div>
+      <div class="pricing-row mb-8"><span>Tariffa ESG <span class="caption">— sconto fisso −15%</span></span><strong>€150</strong></div>
+      <div class="pricing-row mb-8"><span>Coperto dal Fondo ESG Territoriale</span><strong style="color:#0F6E56">€150</strong></div>
+      <div class="pricing-row mb-8"><span>Voucher ESG</span><strong style="color:var(--care-blue-dark)">1 voucher</strong></div>
       <div class="pricing-row mb-8" id="row-shuttle" style="display:none;background:var(--bg-warm);border-color:var(--bg-warm-br)">
         <span>Trasporto AureaShuttle <span class="caption">— preventivo</span></span>
         <strong>€18</strong>
       </div>
       <div class="pricing-row" style="border:none;background:transparent;padding:8px 0">
-        <strong>Totale</strong>
-        <strong id="total" style="color:var(--care-blue-dark);font-size:18px">€150</strong>
+        <strong>A tuo carico</strong>
+        <strong id="total" style="color:var(--care-blue-dark);font-size:18px">€0</strong>
       </div>
-      <p class="caption">Sarà scalato dal tuo wallet AureaCare (€340) dopo conferma admin.</p>
+      <p class="caption">La richiesta sarà validata dal Coordinatore Alphio (entro 2-4 ore lavorative).</p>
 
       <button class="btn btn--care btn--block btn--lg mt-20" onclick="proceed()" id="proceed-btn" disabled style="opacity:.5">
         Seleziona uno slot
@@ -167,7 +170,7 @@
     <nav class="bottom-nav">
       <a class="nav-item" href="home.html"><span id="nv-home"></span>Home</a>
       <a class="nav-item active" href="my-cures.html"><span id="nv-cure"></span>Cure</a>
-      <a class="nav-item" href="wallet.html"><span id="nv-wallet"></span>Wallet</a>
+      <a class="nav-item" href="wallet.html"><span id="nv-wallet"></span>Voucher</a>
       <a class="nav-item" href="profile.html"><span id="nv-profile"></span>Profilo</a>
     </nav>
   </div>
@@ -291,7 +294,7 @@
     function updatePricing() {
       const on = document.getElementById('shuttle-toggle').classList.contains('on');
       document.getElementById('row-shuttle').style.display = on ? 'flex' : 'none';
-      document.getElementById('total').textContent = on ? '€168' : '€150';
+      document.getElementById('total').textContent = on ? '€18' : '€0';
     }
     function proceed() {
       const shuttle = document.getElementById('shuttle-toggle').classList.contains('on');

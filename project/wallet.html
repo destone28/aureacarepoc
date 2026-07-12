@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <title>AureaCare · Wallet</title>
+  <title>AureaCare · Voucher ESG</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
@@ -17,52 +17,39 @@
       text-align: center;
       margin-bottom: 16px;
     }
-    .pkg-grid {
-      display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px;
+    .how-card {
+      background: linear-gradient(135deg, #FBFDF8, #E1F5EE);
+      border: 1px solid #C8E6CF;
+      border-radius: var(--r-md);
+      padding: 16px;
       margin-bottom: 16px;
     }
-    .pkg-card {
+    .how-row {
+      display: flex; gap: 12px; align-items: flex-start;
+      padding: 8px 0;
+      font-size: 13px;
+    }
+    .how-row .ico-wrap {
+      width: 34px; height: 34px;
+      border-radius: 10px;
       background: #fff;
-      border: 1.5px solid var(--border-soft);
-      border-radius: var(--r-md);
-      padding: 14px;
-      text-align: center;
-      cursor: pointer;
-      transition: all .15s ease;
+      color: #0F6E56;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
     }
-    .pkg-card:hover { border-color: var(--care-blue); transform: translateY(-1px); }
-    .pkg-card.selected { border-color: var(--care-blue); background: var(--care-blue-bg); }
-    .pkg-amount { font-size: 22px; font-weight: 700; }
-    .pkg-sub { font-size: 11px; color: var(--medium-gray); margin-top: 2px; }
-    .pkg-badge {
-      display: inline-block; margin-top: 6px;
-      background: var(--care-blue-light); color: var(--care-blue-dark);
-      font-size: 10px; font-weight: 700; padding: 2px 6px;
-      border-radius: 4px; letter-spacing: 0.04em;
+    .vch-price-old {
+      text-decoration: line-through;
+      color: var(--medium-gray);
+      font-weight: 400;
+      font-size: 12px;
     }
-    .pay-grid {
-      display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px;
-      margin-bottom: 16px;
-    }
-    .pay-card {
-      background: #fff;
-      border: 1.5px solid var(--border-soft);
-      border-radius: var(--r-md);
-      padding: 14px 8px;
-      cursor: pointer;
-      text-align: center;
-      transition: all .15s ease;
-    }
-    .pay-card:hover { border-color: var(--care-blue); }
-    .pay-card.selected { border-color: var(--primary-orange); background: #FFF6E8; }
-    .pay-card .pay-name { font-size: 12px; font-weight: 700; margin-top: 6px; }
   </style>
 </head>
 <body>
   <div class="patient-app">
     <header class="patient-header">
       <button class="icon-btn" onclick="history.back()" aria-label="Indietro"><span id="ico-back"></span></button>
-      <div class="brand" style="font-size:15px">Wallet AureaCare</div>
+      <div class="brand" style="font-size:15px">I miei voucher ESG</div>
       <div class="app-switcher-wrap">
         <button class="icon-btn" data-app-switcher aria-label="App suite"><span id="ico-grid"></span></button>
       </div>
@@ -76,78 +63,86 @@
         </div>
         <div class="flex justify-center gap-12 mt-16">
           <div>
-            <p style="font-size:22px;font-weight:700;color:var(--care-blue-dark)">€340</p>
-            <p class="caption">credito</p>
+            <p style="font-size:22px;font-weight:700;color:var(--care-blue-dark)">8</p>
+            <p class="caption">voucher residui</p>
           </div>
           <div style="width:1px;background:var(--border-soft)"></div>
           <div>
-            <p style="font-size:22px;font-weight:700">8 / 12</p>
-            <p class="caption">prestazioni</p>
+            <p style="font-size:22px;font-weight:700">4 / 12</p>
+            <p class="caption">usati / assegnati</p>
           </div>
           <div style="width:1px;background:var(--border-soft)"></div>
           <div>
-            <p style="font-size:22px;font-weight:700">€42</p>
-            <p class="caption">media / pres.</p>
+            <p style="font-size:22px;font-weight:700;color:#0F6E56">€486</p>
+            <p class="caption">coperti dal Fondo</p>
           </div>
         </div>
       </div>
 
-      <!-- Ricarica -->
-      <div class="divider-eyebrow"><span>Ricarica wallet</span><span class="line"></span></div>
-
-      <p class="caption mb-8">Scegli un pacchetto</p>
-      <div class="pkg-grid">
-        <div class="pkg-card" onclick="selectPkg(this, 100)">
-          <div class="pkg-amount">€100</div>
-          <div class="pkg-sub">~ 2-3 prestazioni</div>
+      <!-- Come funziona -->
+      <div class="divider-eyebrow"><span>Come funziona</span><span class="line"></span></div>
+      <div class="how-card">
+        <div class="how-row">
+          <div class="ico-wrap"><span id="ico-how1"></span></div>
+          <div><strong>Voucher finanziati dal Fondo ESG Territoriale di Roma.</strong><br><span class="caption">Il Coordinatore Alphio ti assegna un plafond di voucher: 1 prestazione (visita Fascia A o esame Fascia B) = 1 voucher.</span></div>
         </div>
-        <div class="pkg-card selected" onclick="selectPkg(this, 250)">
-          <div class="pkg-amount">€250</div>
-          <div class="pkg-sub">~ 6-7 prestazioni</div>
-          <span class="pkg-badge">Più popolare</span>
+        <div class="how-row">
+          <div class="ico-wrap"><span id="ico-how2"></span></div>
+          <div><strong>Sconto fisso 15% sul listino ufficiale.</strong><br><span class="caption">Il Fondo copre la tariffa ESG delle strutture private certificate ISO 9001/JCI convenzionate.</span></div>
         </div>
-        <div class="pkg-card" onclick="selectPkg(this, 500)">
-          <div class="pkg-amount">€500</div>
-          <div class="pkg-sub">~ 12-14 prestazioni</div>
-        </div>
-        <div class="pkg-card" onclick="selectPkg(this, 'custom')">
-          <div class="pkg-amount">Custom</div>
-          <div class="pkg-sub">scegli l'importo</div>
+        <div class="how-row">
+          <div class="ico-wrap"><span id="ico-how3"></span></div>
+          <div><strong>Quota a tuo carico: €0.</strong><br><span class="caption">Nessuna ricarica, nessun pagamento: ogni prestazione è interamente coperta dal programma Carelink.</span></div>
         </div>
       </div>
 
-      <p class="caption mb-8">Metodo di pagamento</p>
-      <div class="pay-grid">
-        <div class="pay-card selected" onclick="selectPay(this)">
-          <span id="ico-pay1"></span>
-          <div class="pay-name">Stripe</div>
-        </div>
-        <div class="pay-card" onclick="selectPay(this)">
-          <span id="ico-pay2"></span>
-          <div class="pay-name">PayPal</div>
-        </div>
-        <div class="pay-card" onclick="selectPay(this)">
-          <span id="ico-pay3"></span>
-          <div class="pay-name">Google Pay</div>
-        </div>
-      </div>
-
-      <button class="btn btn--primary-grad btn--block btn--lg mb-12" onclick="topUp()">
-        Ricarica <strong id="topup-amount">€250</strong>
+      <button class="btn btn--care btn--block btn--lg mb-20" onclick="openVoucherRequest()">
+        <span id="ico-req"></span>
+        Richiedi voucher aggiuntivi al Coordinatore
       </button>
-      <p class="caption text-center mb-20">Pagamento sicuro, tokenizzato. Nessun dato di pagamento è memorizzato da AureaCare.</p>
 
-      <!-- Movimenti -->
-      <div class="divider-eyebrow"><span>Storico movimenti</span><span class="line"></span></div>
+      <!-- Storico voucher -->
+      <div class="divider-eyebrow"><span>Storico voucher</span><span class="line"></span></div>
       <div id="movements"></div>
     </div>
 
     <nav class="bottom-nav">
       <a class="nav-item" href="home.html"><span id="nv-home"></span>Home</a>
       <a class="nav-item" href="my-cures.html"><span id="nv-cure"></span>Cure</a>
-      <a class="nav-item active" href="wallet.html"><span id="nv-wallet"></span>Wallet</a>
+      <a class="nav-item active" href="wallet.html"><span id="nv-wallet"></span>Voucher</a>
       <a class="nav-item" href="profile.html"><span id="nv-profile"></span>Profilo</a>
     </nav>
+  </div>
+
+  <!-- Modale richiesta voucher aggiuntivi -->
+  <div class="modal-overlay" id="req-modal" onclick="if(event.target===this) closeModal('req-modal')">
+    <div class="modal">
+      <div class="modal-header">
+        <div class="modal-title">Richiedi voucher aggiuntivi</div>
+        <button class="modal-close" onclick="closeModal('req-modal')"><span id="ico-x"></span></button>
+      </div>
+      <div class="modal-body">
+        <p class="caption mb-12">La richiesta viene inviata al <strong>Coordinatore Alphio</strong>, che valuta il tuo percorso di cura e il livello di accesso al programma prima di assegnare nuovi voucher dal Fondo ESG.</p>
+        <div class="field">
+          <label class="field-label">Quanti voucher richiedi?</label>
+          <div class="input-container">
+            <select class="input" id="req-count">
+              <option>2 voucher</option>
+              <option selected>4 voucher</option>
+              <option>6 voucher</option>
+            </select>
+          </div>
+        </div>
+        <div class="field">
+          <label class="field-label">Motivazione (opzionale)</label>
+          <div class="input-container"><textarea class="input" id="req-note" rows="3" placeholder="Es. proseguimento del percorso oncologico…"></textarea></div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn--secondary" onclick="closeModal('req-modal')">Annulla</button>
+        <button class="btn btn--care" onclick="sendVoucherRequest()">Invia richiesta</button>
+      </div>
+    </div>
   </div>
 
   <div id="toast-container"></div>
@@ -158,53 +153,45 @@
   <script>
     document.getElementById('ico-back').outerHTML = aIcon('arrow-left', { size: 20 });
     document.getElementById('ico-grid').outerHTML = aIcon('grid', { size: 20 });
-    document.getElementById('ico-pay1').outerHTML = aIcon('credit-card', { size: 22 });
-    document.getElementById('ico-pay2').outerHTML = '<svg class="ico" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#003087" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 11h4a3 3 0 0 0 0-6H8a1 1 0 0 0-1 1v14"/><path d="M11 11h3a3 3 0 0 1 0 6h-3"/></svg>';
-    document.getElementById('ico-pay3').outerHTML = '<svg class="ico" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#4285F4" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v8M8 12h8"/></svg>';
+    document.getElementById('ico-how1').outerHTML = aIcon('shield-check', { size: 18 });
+    document.getElementById('ico-how2').outerHTML = aIcon('award', { size: 18 });
+    document.getElementById('ico-how3').outerHTML = aIcon('check-circle', { size: 18 });
+    document.getElementById('ico-req').outerHTML = aIcon('plus', { size: 18 });
+    document.getElementById('ico-x').outerHTML = aIcon('x', { size: 16 });
     document.getElementById('nv-home').outerHTML   = aIcon('home',    { size: 22 });
     document.getElementById('nv-cure').outerHTML   = aIcon('heart',   { size: 22 });
     document.getElementById('nv-wallet').outerHTML = aIcon('wallet',  { size: 22 });
     document.getElementById('nv-profile').outerHTML= aIcon('user',    { size: 22 });
 
+    const V = MOCK.vouchers;
     renderWalletRing(document.getElementById('wallet-ring-big'), {
-      total: 12, used: 4, credit: 340, size: 200, creditMax: 500
+      total: V.assigned, used: V.used, covered: V.covered_value_ytd, size: 200, coveredMax: 1000
     });
 
-    let selectedPkg = 250;
-    function selectPkg(el, amount) {
-      document.querySelectorAll('.pkg-card').forEach(x => x.classList.remove('selected'));
-      el.classList.add('selected');
-      selectedPkg = amount;
-      document.getElementById('topup-amount').textContent = amount === 'custom' ? '(personalizzato)' : '€' + amount;
-    }
-    function selectPay(el) {
-      document.querySelectorAll('.pay-card').forEach(x => x.classList.remove('selected'));
-      el.classList.add('selected');
-    }
-    function topUp() {
-      showConfirmDialog(
-        'Conferma ricarica',
-        `Stai per ricaricare il tuo wallet di ${selectedPkg === 'custom' ? 'un importo personalizzato' : '€' + selectedPkg}. Vuoi procedere?`,
-        () => showToast('Ricarica completata · €' + selectedPkg, 'success'),
-        { confirmLabel: 'Procedi' }
-      );
+    function openVoucherRequest() { openModal('req-modal'); }
+    function sendVoucherRequest() {
+      const count = document.getElementById('req-count').value;
+      closeModal('req-modal');
+      showToast('Richiesta di ' + count + ' inviata al Coordinatore Alphio', 'success');
     }
 
-    // Movements
+    // Storico voucher
     const mv = document.getElementById('movements');
-    MOCK.wallet.movements.forEach(m => {
-      const isTop = m.type === 'topup';
+    V.movements.forEach(m => {
+      const isUsed = m.status === 'usato';
+      const hasPrices = m.list_price != null;
       const row = document.createElement('div');
       row.className = 'list-row';
       row.innerHTML = `
-        <div class="row-icon ${isTop ? 'success' : ''}">${aIcon(isTop ? 'plus' : 'heart', { size: 18 })}</div>
+        <div class="row-icon ${isUsed ? '' : 'success'}">${aIcon(isUsed ? 'heart' : 'file-check', { size: 18 })}</div>
         <div class="row-body">
           <div class="row-title">${m.label}</div>
-          <div class="row-meta">${m.date}${m.method ? ' · '+m.method : ''} · <span class="font-mono">${m.ref}</span></div>
+          <div class="row-meta">${m.date} · <span class="font-mono">${m.id}</span>${m.ref !== '—' ? ' · rif. <span class="font-mono">' + m.ref + '</span>' : ''}</div>
+          ${hasPrices ? `<div class="row-meta"><span class="vch-price-old">Listino €${m.list_price}</span> · Tariffa ESG €${m.esg_price} · coperto dal Fondo €${m.covered}</div>` : ''}
         </div>
         <div class="row-right">
-          <div class="row-amount ${isTop ? 'pos' : 'neg'}">${isTop ? '+' : ''}€${Math.abs(m.amount)}</div>
-          <div class="caption">${isTop ? 'ricarica' : 'addebito'}</div>
+          <div class="row-amount ${isUsed ? '' : 'pos'}" style="${isUsed ? 'color:var(--care-blue-dark)' : ''}">€${m.patient_paid} a tuo carico</div>
+          <div class="caption">${m.status}</div>
         </div>`;
       mv.appendChild(row);
     });

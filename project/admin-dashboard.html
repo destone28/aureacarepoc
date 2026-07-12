@@ -42,13 +42,13 @@
         <div class="kpi-grid">
           <div class="kpi-card">
             <div class="kpi-icon blue"><span id="k1"></span></div>
-            <p class="kpi-label">Prestazioni mese</p>
+            <p class="kpi-label">Voucher validati (mese)</p>
             <p class="kpi-value">247</p>
             <p class="kpi-delta up"><span id="t1"></span> +12.5% vs Apr</p>
           </div>
           <div class="kpi-card">
             <div class="kpi-icon green"><span id="k2"></span></div>
-            <p class="kpi-label">Valore erogato</p>
+            <p class="kpi-label">Valore coperto dal Fondo (mese)</p>
             <p class="kpi-value">€18.4k</p>
             <p class="kpi-delta up"><span id="t2"></span> +8.7% vs Apr</p>
           </div>
@@ -163,7 +163,7 @@
                 <th>Prestazione</th>
                 <th>Struttura</th>
                 <th>Data</th>
-                <th>Costo</th>
+                <th>Tariffa ESG</th>
                 <th>Stato</th>
                 <th style="width:160px">Azione</th>
               </tr>
@@ -228,7 +228,7 @@
         <td data-th="Prestazione">${r.service}</td>
         <td data-th="Struttura">${r.structure}</td>
         <td data-th="Data"><div>${r.date}</div><div class="cell-sub">inv. ${r.submitted}</div></td>
-        <td data-th="Costo"><strong>€${r.cost}</strong></td>
+        <td data-th="Tariffa ESG">${r.voucher_id ? `<strong>€${r.esg_price}</strong><div class="cell-sub"><s>listino €${r.list_price}</s></div>` : `<strong>€0</strong><div class="cell-sub">trasporto L1</div>`}</td>
         <td data-th="Stato"><span class="badge ${b}"><span class="dot"></span>${l}</span></td>
         <td data-th="Azione">${action}</td>
       </tr>`;
