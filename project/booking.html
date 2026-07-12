@@ -106,7 +106,7 @@
         </div>
         <div class="text-right">
           <p style="font-weight:700" id="rec-price">€150</p>
-          <p class="caption">tariffa ESG</p>
+          <p class="caption" id="rec-price-cap">tariffa ESG</p>
         </div>
       </div>
 
@@ -139,22 +139,24 @@
         <div class="row">
           <div class="ico-wrap"><span id="ico-amb"></span></div>
           <div style="flex:1">
-            <p style="font-weight:700;font-size:14px">Serve trasporto sanitario?</p>
-            <p class="caption">Lo gestiamo con AureaShuttle. Conferma ora per pre-compilare la richiesta dopo la prenotazione.</p>
+            <p style="font-weight:700;font-size:14px" id="shuttle-title">Trasporto sanitario gratuito porta-a-porta</p>
+            <p class="caption" id="shuttle-copy">Layer 1 del programma Carelink. Erogato da Samarcanda Scarl (ISO 9001:2015), coordinato via AureaShuttle. Costo a tuo carico: €0.</p>
           </div>
-          <div class="toggle" id="shuttle-toggle" onclick="this.classList.toggle('on');updatePricing()"></div>
+          <div class="toggle" id="shuttle-toggle" onclick="toggleShuttle()"></div>
         </div>
       </div>
 
       <!-- Riepilogo copertura ESG -->
       <div class="divider-eyebrow"><span>Riepilogo</span><span class="line"></span></div>
-      <div class="pricing-row mb-8"><span>Listino struttura</span><span style="text-decoration:line-through;color:var(--medium-gray)">€176</span></div>
-      <div class="pricing-row mb-8"><span>Tariffa ESG <span class="caption">— sconto fisso −15%</span></span><strong>€150</strong></div>
-      <div class="pricing-row mb-8"><span>Coperto dal Fondo ESG Territoriale</span><strong style="color:#0F6E56">€150</strong></div>
-      <div class="pricing-row mb-8"><span>Voucher ESG</span><strong style="color:var(--care-blue-dark)">1 voucher</strong></div>
+      <div id="esg-rows">
+        <div class="pricing-row mb-8"><span>Listino struttura</span><span style="text-decoration:line-through;color:var(--medium-gray)">€176</span></div>
+        <div class="pricing-row mb-8"><span>Tariffa ESG <span class="caption">— sconto fisso −15%</span></span><strong>€150</strong></div>
+        <div class="pricing-row mb-8"><span>Coperto dal Fondo ESG Territoriale</span><strong style="color:#0F6E56">€150</strong></div>
+        <div class="pricing-row mb-8"><span>Voucher ESG</span><strong style="color:var(--care-blue-dark)">1 voucher</strong></div>
+      </div>
       <div class="pricing-row mb-8" id="row-shuttle" style="display:none;background:var(--bg-warm);border-color:var(--bg-warm-br)">
-        <span>Trasporto AureaShuttle <span class="caption">— preventivo</span></span>
-        <strong>€18</strong>
+        <span>Trasporto AureaShuttle <span class="caption">— Samarcanda · Layer 1</span></span>
+        <strong style="color:#0F6E56">Gratuito</strong>
       </div>
       <div class="pricing-row" style="border:none;background:transparent;padding:8px 0">
         <strong>A tuo carico</strong>
@@ -204,6 +206,26 @@
     const selected = MOCK.structures.find(s => s.id === sid) || MOCK.structures[0];
     document.getElementById('rec-meta').textContent =
       `${selected.name} · ${selected.distance_km.toFixed(1)} km · ★ ${selected.rating.toFixed(1)}`;
+
+    // Servizio selezionato (inoltrato da book-care → structures). Se è un ciclo
+    // (cure ricorsive Layer 1) il trasporto è incluso e preselezionato.
+    const svcId = urlParams.get('service');
+    const service = MOCK.services.find(s => s.id === svcId) || null;
+    const isCycle = !!(service && service.kind === 'ciclo');
+    if (isCycle) {
+      document.getElementById('rec-eyebrow').textContent = 'CURE RICORSIVE · LAYER 1';
+      document.getElementById('rec-service').textContent = service.name;
+      document.getElementById('rec-price').textContent = '€0';
+      document.getElementById('rec-price-cap').textContent = 'a tuo carico';
+      document.getElementById('sheet-sub').textContent = `${service.name} · ${selected.name}`;
+      document.getElementById('shuttle-title').textContent = 'Trasporto incluso per tutto il ciclo';
+      document.getElementById('shuttle-copy').textContent =
+        `Per le cure ricorsive il trasporto porta-a-porta è incluso per tutte le ${service.sessions} sedute (2 tratte a seduta). Erogato da Samarcanda Scarl (ISO 9001:2015), coordinato via AureaShuttle. Costo a tuo carico: €0.`;
+      document.getElementById('esg-rows').innerHTML = `
+        <div class="pricing-row mb-8"><span>Sedute del ciclo</span><strong>${service.sessions} sedute</strong></div>
+        <div class="pricing-row mb-8"><span>Trasporto porta-a-porta <span class="caption">— ${service.rides} tratte A/R</span></span><strong style="color:#0F6E56">Gratuito</strong></div>
+        <div class="pricing-row mb-8"><span>Voucher ESG</span><strong style="color:var(--care-blue-dark)">Non richiesto · Layer 1</strong></div>`;
+    }
 
     // Mini mappa con la struttura + casa paziente + linea tratteggiata
     aMap.init('booking-map', {
@@ -291,16 +313,32 @@
       btn.style.opacity = 1;
       btn.innerHTML = `Procedi · ${selectedDay} mag · ${selectedTime} ` + aIcon('arrow-right', {size:16});
     }
-    function updatePricing() {
-      const on = document.getElementById('shuttle-toggle').classList.contains('on');
+    // Il trasporto Layer 1 è gratuito: nessuna somma entra mai nel totale (€0 sempre).
+    function setShuttle(on) {
+      document.getElementById('shuttle-toggle').classList.toggle('on', on);
       document.getElementById('row-shuttle').style.display = on ? 'flex' : 'none';
-      document.getElementById('total').textContent = on ? '€18' : '€0';
     }
+    function toggleShuttle() {
+      const on = document.getElementById('shuttle-toggle').classList.contains('on');
+      if (on && isCycle) {
+        showConfirmDialog(
+          'Disattivare il trasporto incluso?',
+          `Per le cure ricorsive il trasporto porta-a-porta è incluso per tutte le ${service.sessions} sedute (2 tratte a seduta), senza alcun costo. Vuoi davvero rinunciare?`,
+          () => setShuttle(false),
+          { confirmLabel: 'Sì, rinuncia', danger: true }
+        );
+        return;
+      }
+      setShuttle(!on);
+    }
+    if (isCycle) setShuttle(true);
+
     function proceed() {
       const shuttle = document.getElementById('shuttle-toggle').classList.contains('on');
       const params = new URLSearchParams({
         day: selectedDay, time: selectedTime, shuttle: shuttle ? '1' : '0'
       });
+      if (svcId) params.set('service', svcId);
       location.href = 'booking-summary.html?' + params;
     }
   </script>

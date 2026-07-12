@@ -135,7 +135,7 @@
               <p class="caption">${b.voucher_id ? 'coperti dal Fondo' : 'trasporto L1'}</p>
             </div>
           </div>
-          ${b.shuttle ? `<div class="cure-bar"><span style="color:var(--primary-orange);font-weight:600;display:flex;align-items:center;gap:6px">${aIcon('truck',{size:14})} Trasporto AureaShuttle</span><span class="caption">${b.status==='completed' ? 'Effettuato' : 'In agenda'}</span></div>` : ''}`;
+          ${b.shuttle ? `<div class="cure-bar"><span style="color:var(--primary-orange);font-weight:600;display:flex;align-items:center;gap:6px">${aIcon('truck',{size:14})} Trasporto AureaShuttle <span class="badge badge--approved" style="font-weight:600">Samarcanda · gratuito</span></span><span class="caption">${b.status==='completed' ? 'Effettuato' : 'In agenda'}</span></div>` : ''}`;
         list.appendChild(card);
       });
       if (!filtered.length) {
@@ -181,7 +181,7 @@
           <div style="display:flex;justify-content:space-between"><span class="text-muted">A tuo carico</span><strong style="color:var(--care-blue-dark)">€0</strong></div>
           <div style="display:flex;justify-content:space-between"><span class="text-muted">Voucher ESG</span><strong class="font-mono">${b.voucher_id}</strong></div>` : `
           <div style="display:flex;justify-content:space-between"><span class="text-muted">Copertura</span><strong>Trasporto Layer 1 gratuito · nessun voucher</strong></div>`}
-          ${b.shuttle ? `<div style="display:flex;justify-content:space-between"><span class="text-muted">Trasporto</span><strong style="color:var(--primary-orange)">AureaShuttle ✓</strong></div>` : ''}
+          ${b.shuttle ? `<div style="display:flex;justify-content:space-between"><span class="text-muted">Trasporto</span><strong style="color:var(--primary-orange)">AureaShuttle · Samarcanda · gratuito</strong></div>` : ''}
         </div>
 
         <div class="flex gap-8 mt-16">

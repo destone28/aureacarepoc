@@ -153,6 +153,10 @@
     const list = document.getElementById('str-list');
     const allActive = MOCK.structures.filter(s => s.active);
 
+    // Inoltra il servizio scelto in book-care a booking.html (serve per i cicli Layer 1)
+    const svcParam = new URLSearchParams(location.search).get('service');
+    const svcQS = svcParam ? '&service=' + encodeURIComponent(svcParam) : '';
+
     let currentFilter = 'all';
     let currentSort = 'distance';
 
@@ -193,7 +197,7 @@
       filtered.forEach(s => {
         const row = document.createElement('a');
         row.className = 'str-row';
-        row.href = `booking.html?structure=${s.id}`;
+        row.href = `booking.html?structure=${s.id}${svcQS}`;
         const tagsHtml = s.specialties.slice(0,3).map(sp => `<span class="str-tag">${sp}</span>`).join('');
         row.innerHTML = `
           <div class="str-thumb">struttura</div>
@@ -223,7 +227,7 @@
       mapInstance = aMap.init('strs-map', {
         structures: items,
         showPatient: true,
-        onPick: (s) => location.href = 'booking.html?structure=' + s.id
+        onPick: (s) => location.href = 'booking.html?structure=' + s.id + svcQS
       });
     }
 

@@ -92,8 +92,8 @@
             <span id="ico-heart"></span>
           </div>
           <div style="flex:1">
-            <p style="font-weight:700">Prima visita cardiologica</p>
-            <p class="caption">Cardiologia · Fascia A · 40 min</p>
+            <p style="font-weight:700" id="sum-service">Prima visita cardiologica</p>
+            <p class="caption" id="sum-service-meta">Cardiologia · Fascia A · 40 min</p>
           </div>
         </div>
         <div class="kv-row"><span class="k">Struttura</span><span class="v">Policlinico Gemelli<br><span class="caption" style="font-weight:400">Largo A. Gemelli 8 · Trionfale</span></span></div>
@@ -107,12 +107,14 @@
 
       <!-- Recap copertura ESG -->
       <div class="recap-block">
-        <h3>Copertura ESG</h3>
-        <div class="kv-row"><span class="k">Listino struttura</span><span class="v" style="text-decoration:line-through;color:var(--medium-gray);font-weight:400">€176</span></div>
-        <div class="kv-row"><span class="k">Tariffa ESG (−15%)</span><span class="v">€150</span></div>
-        <div class="kv-row"><span class="k">Coperto dal Fondo ESG Territoriale</span><span class="v" style="color:#0F6E56">€150</span></div>
-        <div class="kv-row" id="row-shuttle-fee" style="display:none"><span class="k">Trasporto AureaShuttle</span><span class="v">€18</span></div>
-        <div class="kv-row"><span class="k">Voucher ESG</span><span class="v" style="color:var(--care-blue-dark)">1 voucher · 7 residui dopo la validazione</span></div>
+        <h3 id="esg-block-title">Copertura ESG</h3>
+        <div id="esg-block-rows">
+          <div class="kv-row"><span class="k">Listino struttura</span><span class="v" style="text-decoration:line-through;color:var(--medium-gray);font-weight:400">€176</span></div>
+          <div class="kv-row"><span class="k">Tariffa ESG (−15%)</span><span class="v">€150</span></div>
+          <div class="kv-row"><span class="k">Coperto dal Fondo ESG Territoriale</span><span class="v" style="color:#0F6E56">€150</span></div>
+          <div class="kv-row"><span class="k">Voucher ESG</span><span class="v" style="color:var(--care-blue-dark)">1 voucher · 7 residui dopo la validazione</span></div>
+        </div>
+        <div class="kv-row" id="row-shuttle-fee" style="display:none"><span class="k">Trasporto AureaShuttle</span><span class="v" style="color:#0F6E56">Gratuito — coperto dal Fondo ESG<br><span class="caption" style="font-weight:400">costo al programma €72/corsa</span></span></div>
         <div class="kv-row"><span class="k" style="color:var(--ink);font-weight:700">A tuo carico</span><span class="v" style="color:var(--care-blue-dark);font-size:16px">€0</span></div>
       </div>
 
@@ -158,6 +160,20 @@
       document.getElementById('row-shuttle-fee').style.display = 'flex';
     }
 
+    // Cure ricorsive (Layer 1): il riepilogo mostra trasporto incluso, nessun voucher
+    const svcId = params.get('service');
+    const svc = MOCK.services.find(s => s.id === svcId) || null;
+    const isCycle = !!(svc && svc.kind === 'ciclo');
+    if (isCycle) {
+      document.getElementById('sum-service').textContent = svc.name;
+      document.getElementById('sum-service-meta').textContent = `${svc.cat} · Cure ricorsive · Layer 1 · ${svc.sessions} sedute`;
+      document.getElementById('esg-block-title').textContent = 'Copertura Layer 1';
+      document.getElementById('esg-block-rows').innerHTML = `
+        <div class="kv-row"><span class="k">Sedute del ciclo</span><span class="v">${svc.sessions} sedute</span></div>
+        <div class="kv-row"><span class="k">Trasporto porta-a-porta</span><span class="v" style="color:#0F6E56">Gratuito · ${svc.rides} tratte A/R</span></div>
+        <div class="kv-row"><span class="k">Voucher ESG</span><span class="v" style="color:var(--care-blue-dark)">Non richiesto · Layer 1</span></div>`;
+    }
+
     // Handoff variant (read from localStorage; pre-flagged is default per user)
     const handoffMode = localStorage.getItem('aureacare_handoff_mode') || 'prefilled';
     const zone = document.getElementById('handoff-zone');
@@ -174,7 +190,7 @@
           <div class="handoff-icon">${aIcon('ambulance', { size: 24 })}</div>
           <div class="handoff-body">
             <div class="handoff-title">Hai bisogno del trasporto sanitario?</div>
-            <p class="handoff-sub">Prenota con AureaShuttle: i dati della visita sono già precompilati. Il servizio scala dal tuo wallet pacchetti corse.</p>
+            <p class="handoff-sub">Prenota con AureaShuttle: i dati della visita sono già precompilati. Corsa gratuita, erogata da Samarcanda Scarl · certificata ISO 9001:2015 — coperta dal Fondo ESG.</p>
             <div class="handoff-actions">
               <a class="btn btn--primary-grad" href="#" onclick="event.preventDefault();openShuttleSim()">Sì, apri AureaShuttle</a>
               <button class="btn btn--secondary" onclick="declineShuttle(this)">No, grazie</button>
@@ -187,14 +203,14 @@
           <div class="visual-head">
             <div class="ambo-illo">${aIcon('ambulance', { size: 28 })}</div>
             <div>
-              <p style="font-weight:700">Aggiungi trasporto sanitario</p>
-              <p class="caption" style="color:#856404">AureaShuttle ti porta a destinazione, già precompilato.</p>
+              <p style="font-weight:700">Aggiungi trasporto sanitario gratuito</p>
+              <p class="caption" style="color:#856404">AureaShuttle ti porta a destinazione, già precompilato. A tuo carico: €0.</p>
             </div>
           </div>
           <div class="step3">
             <div class="row"><span class="num">1</span><span><strong>Conferma qui</strong>: i dati della visita passano ad AureaShuttle.</span></div>
             <div class="row"><span class="num">2</span><span>Scegli orario di ritiro su AureaShuttle (suggerito 1h prima).</span></div>
-            <div class="row"><span class="num">3</span><span>Il costo scala dal <strong>wallet pacchetti corse</strong> AureaShuttle, non dai tuoi voucher ESG.</span></div>
+            <div class="row"><span class="num">3</span><span>La corsa è <strong>gratuita</strong>: erogata da Samarcanda Scarl · certificata ISO 9001:2015, coperta dal Fondo ESG (costo al programma €72/corsa).</span></div>
           </div>
           <div class="handoff-actions" style="display:flex;gap:8px;margin-top:12px">
             <a class="btn btn--primary-grad" href="#" onclick="event.preventDefault();openShuttleSim()" style="flex:1">Apri AureaShuttle</a>
@@ -214,8 +230,9 @@
                 <div class="row"><span>Da</span><span>Via Tuscolana 124, Roma</span></div>
                 <div class="row"><span>A</span><span>Policlinico Gemelli</span></div>
                 <div class="row"><span>Arrivo richiesto</span><span>${day} mag · 14:15</span></div>
-                <div class="row"><span>Stima</span><span style="color:var(--primary-orange);font-weight:700">€18 · ~22 min</span></div>
-                <div class="row"><span>Pacchetto corse</span><span>12 corse residue</span></div>
+                <div class="row"><span>Costo</span><span style="color:#0F6E56;font-weight:700">Gratuito · ~22 min</span></div>
+                <div class="row"><span>Corsa</span><span>Erogata da Samarcanda Scarl · certificata ISO 9001:2015</span></div>
+                <div class="row"><span>Percorso di cura</span><span>Corse illimitate · coperte dal programma</span></div>
               </div>
               <div class="handoff-actions">
                 <a class="btn btn--primary-grad btn--sm" href="#" onclick="event.preventDefault();openShuttleSim()">Conferma su AureaShuttle ${aIcon('arrow-right',{size:14})}</a>
@@ -228,8 +245,8 @@
           <div class="handoff">
             <div class="handoff-icon">${aIcon('ambulance', { size: 24 })}</div>
             <div class="handoff-body">
-              <div class="handoff-title">Vuoi aggiungere il trasporto?</div>
-              <p class="handoff-sub">Non l'hai richiesto in fase di prenotazione. Puoi aggiungerlo ora: i dati passano automaticamente ad AureaShuttle.</p>
+              <div class="handoff-title">Vuoi aggiungere il trasporto gratuito?</div>
+              <p class="handoff-sub">Non l'hai richiesto in fase di prenotazione. Puoi aggiungerlo ora: i dati passano automaticamente ad AureaShuttle. Corsa erogata da Samarcanda Scarl · certificata ISO 9001:2015, coperta dal Fondo ESG.</p>
               <div class="handoff-actions">
                 <a class="btn btn--primary-grad btn--sm" href="#" onclick="event.preventDefault();openShuttleSim()">Sì, apri AureaShuttle</a>
                 <button class="btn btn--secondary btn--sm" onclick="declineShuttle(this)">No, grazie</button>
@@ -261,7 +278,8 @@
               <div style="display:flex;justify-content:space-between"><span class="text-muted">Da</span><strong>Via Tuscolana 124</strong></div>
               <div style="display:flex;justify-content:space-between"><span class="text-muted">A</span><strong>Policlinico Gemelli</strong></div>
               <div style="display:flex;justify-content:space-between"><span class="text-muted">Quando</span><strong>${day} mag · 13:30</strong></div>
-              <div style="display:flex;justify-content:space-between"><span class="text-muted">Stima</span><strong style="color:var(--primary-orange)">€18 · ~22 min</strong></div>
+              <div style="display:flex;justify-content:space-between"><span class="text-muted">Costo</span><strong style="color:#0F6E56">Gratuito · ~22 min</strong></div>
+              <div style="display:flex;justify-content:space-between"><span class="text-muted">Corsa</span><strong>Samarcanda Scarl · ISO 9001:2015</strong></div>
             </div>
             <p class="caption mt-12">Questi sono i dati che verranno passati ad AureaShuttle. Clicca <strong>Vai ad AureaShuttle</strong> per aprire l'app gemella e completare la richiesta.</p>
           </div>
