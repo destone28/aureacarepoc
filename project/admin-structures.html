@@ -37,6 +37,12 @@
     }
     .toggle-mini.on { background: var(--success); }
     .toggle-mini.on::after { transform: translateX(14px); }
+    .cert-badge {
+      display: inline-flex; align-items: center; gap: 4px;
+      font-size: 11px; font-weight: 700; white-space: nowrap;
+      color: var(--care-blue-dark); background: var(--care-blue-light);
+      padding: 3px 10px; border-radius: 999px;
+    }
   </style>
 </head>
 <body class="admin-page">
@@ -68,7 +74,7 @@
         <div class="flex justify-between items-center mb-16">
           <div>
             <h2 style="font-size:17px;font-weight:700">Partner sanitari Roma</h2>
-            <p class="caption">Pubbliche e private convenzionate · area Comune di Roma</p>
+            <p class="caption">Rete Layer 2 · solo strutture private certificate ISO 9001 o JCI · sconto fisso 15% documentato contrattualmente</p>
           </div>
           <div class="flex gap-8">
             <div class="input-container" style="padding:8px 12px;min-width:240px">
@@ -101,7 +107,7 @@
                 <th>Struttura</th>
                 <th>Indirizzo</th>
                 <th>Specializzazioni</th>
-                <th>Coeff. tariffa</th>
+                <th>Certificazione</th>
                 <th>Orari</th>
                 <th>Stato</th>
                 <th style="width:140px">Azioni</th>
@@ -139,12 +145,12 @@
       <div class="modal-body">
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
           <div class="field"><label class="field-label">Nome struttura</label><div class="input-container"><input class="input" placeholder="Es. Policlinico Gemelli"></div></div>
-          <div class="field"><label class="field-label">Tipo</label><div class="input-container"><select class="input"><option>Pubblico convenzionato</option><option>Privato convenzionato</option></select></div></div>
+          <div class="field"><label class="field-label">Tipo</label><div class="input-container"><select class="input"><option>Privato convenzionato</option></select></div><p class="field-hint">Il Layer 2 convenziona solo strutture private certificate</p></div>
           <div class="field" style="grid-column:1/-1"><label class="field-label">Indirizzo</label><div class="input-container"><input class="input" placeholder="Via, civico, quartiere"></div></div>
           <div class="field"><label class="field-label">CAP</label><div class="input-container"><input class="input" placeholder="00181"></div></div>
           <div class="field"><label class="field-label">Quartiere</label><div class="input-container"><input class="input" placeholder="Trionfale"></div></div>
           <div class="field" style="grid-column:1/-1"><label class="field-label">Specializzazioni (separa con virgola)</label><div class="input-container"><input class="input" placeholder="Cardiologia, Ortopedia, Dermatologia"></div></div>
-          <div class="field"><label class="field-label">Coefficiente tariffario</label><div class="input-container"><input class="input" placeholder="1.00"></div><p class="field-hint">Moltiplica le tariffe standard del catalogo (range 0.85 – 1.15)</p></div>
+          <div class="field"><label class="field-label">Certificazione</label><div class="input-container"><select class="input"><option>ISO 9001</option><option>JCI</option><option>ISO 9001 + JCI</option></select></div><p class="field-hint">Requisito di ingresso · sconto fisso 15% sul listino ufficiale depositato</p></div>
           <div class="field"><label class="field-label">Orari di apertura</label><div class="input-container"><input class="input" placeholder="08:00 – 20:00"></div></div>
           <div class="field" style="grid-column:1/-1"><label class="field-label">Note interne</label><div class="input-container"><textarea class="input" rows="3" placeholder="Convenzione firmata, condizioni particolari, contatto referente…"></textarea></div></div>
         </div>
@@ -196,7 +202,7 @@
             <div class="cell-sub">${s.district} · ${s.area}</div>
           </td>
           <td data-th="Specializzazioni" style="max-width:280px">${tags}${more}</td>
-          <td data-th="Coeff. tariffa"><strong>${s.tariff_factor.toFixed(2)}×</strong></td>
+          <td data-th="Certificazione"><span class="cert-badge">${aIcon('award',{size:12})}${s.cert}</span></td>
           <td data-th="Orari">${s.weekly_open}</td>
           <td data-th="Stato">
             <div class="flex items-center gap-8">
@@ -261,7 +267,7 @@
               <div class="field"><label class="field-label">Indirizzo</label><div class="input-container"><input class="input" ${ro} value="${s.address}"></div></div>
               <div class="field"><label class="field-label">Quartiere</label><div class="input-container"><input class="input" ${ro} value="${s.district}"></div></div>
               <div class="field"><label class="field-label">Tipo</label><div class="input-container"><input class="input" ${ro} value="${s.type}"></div></div>
-              <div class="field"><label class="field-label">Coeff. tariffario</label><div class="input-container"><input class="input" ${ro} value="${s.tariff_factor.toFixed(2)}"></div></div>
+              <div class="field"><label class="field-label">Certificazione</label><div class="input-container"><input class="input" ${ro} value="${s.cert}"></div></div>
               <div class="field"><label class="field-label">Orari</label><div class="input-container"><input class="input" ${ro} value="${s.weekly_open}"></div></div>
             </div>
 
@@ -272,7 +278,11 @@
             <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;text-align:center">
               <div style="padding:12px;background:#FAFAFA;border-radius:10px"><p style="font-size:18px;font-weight:700">★ ${s.rating.toFixed(1)}</p><p class="caption">${s.reviews} recensioni</p></div>
               <div style="padding:12px;background:#FAFAFA;border-radius:10px"><p style="font-size:18px;font-weight:700;color:var(--care-blue-dark)">${s.distance_km.toFixed(1)} km</p><p class="caption">da centro Roma</p></div>
-              <div style="padding:12px;background:#FAFAFA;border-radius:10px"><p style="font-size:18px;font-weight:700">${s.tariff_factor.toFixed(2)}×</p><p class="caption">coeff. tariffa</p></div>
+              <div style="padding:12px;background:#FAFAFA;border-radius:10px"><p style="font-size:18px;font-weight:700;display:flex;align-items:center;justify-content:center;gap:4px">${aIcon('award',{size:16})}<span style="font-size:14px">${s.cert}</span></p><p class="caption">certificazione</p></div>
+            </div>
+
+            <div class="mt-12" style="display:flex;align-items:center;gap:8px;padding:10px 12px;background:var(--care-blue-light);border-radius:10px;color:var(--care-blue-dark);font-size:12px;font-weight:600">
+              ${aIcon('file-check',{size:16})} Listino ufficiale verificato · sconto contrattuale −15%
             </div>
           </div>
 

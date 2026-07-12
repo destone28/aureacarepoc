@@ -54,6 +54,12 @@
     .str-row .str-tags { display: flex; gap: 4px; flex-wrap: wrap; margin-top: 6px; }
     .str-row .str-tag { font-size: 10px; background: var(--light-gray); color: var(--medium-gray); padding: 2px 6px; border-radius: 4px; font-weight: 600; }
     .str-meta-row { display: flex; align-items: center; gap: 8px; margin-top: 6px; }
+    .str-cert {
+      display: inline-flex; align-items: center; gap: 4px;
+      font-size: 10px; font-weight: 700;
+      color: var(--care-blue-dark); background: var(--care-blue-light);
+      padding: 2px 8px; border-radius: 999px; flex-shrink: 0;
+    }
     .star-mini { color: #F59E0B; font-weight: 700; font-size: 12px; }
     .map-pin-2 { position: absolute; }
   </style>
@@ -94,7 +100,7 @@
         <button class="chip" data-filter="derma">Dermatologia</button>
         <button class="chip" data-filter="near">≤ 5 km</button>
         <button class="chip" data-filter="today">Disponibile oggi</button>
-        <button class="chip" data-filter="cheap">Tariffa bassa</button>
+        <button class="chip" data-filter="jci">Certificate JCI</button>
       </div>
     </div>
 
@@ -115,7 +121,7 @@
       <div class="slots" id="sort-opts" style="grid-template-columns:1fr">
         <button class="slot selected" data-sort="distance">Distanza · più vicina prima</button>
         <button class="slot" data-sort="rating">Valutazione · migliore prima</button>
-        <button class="slot" data-sort="tariff">Tariffa convenzionata · più bassa</button>
+        <button class="slot" data-sort="cert">Certificazione</button>
         <button class="slot" data-sort="slot">Disponibilità · slot più vicino</button>
       </div>
       <button class="btn btn--care btn--block btn--lg mt-16" onclick="applySort()">Applica ordine</button>
@@ -158,12 +164,14 @@
       derma:  s => s.specialties.some(x => /dermat/i.test(x)),
       near:   s => s.distance_km <= 5,
       today:  s => /oggi|domani/i.test(s.next_slot),
-      cheap:  s => s.tariff_factor <= 0.95
+      jci:    s => /JCI/.test(s.cert)
     };
+    // Rank certificazione: ISO 9001 + JCI > JCI > ISO 9001
+    const certRank = s => s.cert === 'ISO 9001 + JCI' ? 0 : (s.cert === 'JCI' ? 1 : 2);
     const sortFns = {
       distance: (a, b) => a.distance_km - b.distance_km,
       rating:   (a, b) => b.rating - a.rating,
-      tariff:   (a, b) => a.tariff_factor - b.tariff_factor,
+      cert:     (a, b) => certRank(a) - certRank(b),
       slot:     (a, b) => (/(oggi|domani)/i.test(a.next_slot) ? 0 : 1) - (/(oggi|domani)/i.test(b.next_slot) ? 0 : 1)
     };
 
@@ -199,6 +207,10 @@
               <span class="caption" style="color:var(--care-blue);font-weight:600">${s.distance_km.toFixed(1)} km</span>
             </div>
             <div class="str-tags">${tagsHtml}${s.specialties.length>3 ? '<span class="str-tag">+'+(s.specialties.length-3)+'</span>' : ''}</div>
+            <div class="str-meta-row">
+              <span class="str-cert">${aIcon('award',{size:12})}${s.cert}</span>
+              <span class="caption" style="color:var(--care-blue-dark);font-weight:600">Sconto ESG fisso −15% sul listino</span>
+            </div>
             <div class="str-meta" style="margin-top:6px"><span style="color:var(--b-approved-tx);font-weight:600">${s.next_slot}</span> · prossimo slot</div>
           </div>`;
         list.appendChild(row);
