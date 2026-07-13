@@ -1,50 +1,10 @@
 # AureaCare — Guida rapida al mockup
 
-**Programma ESG Carelink · promosso da Alphio APS**
-Piattaforma di accesso alle cure · versione POC · Roma, anno 1
-
----
-
 ## Che cos'è questo documento
 
 Una guida illustrata a **tutte le funzionalità** del mockup AureaCare, schermata per schermata, con immagini catturate dal prototipo reale. Serve a far capire il prodotto a chi non l'ha mai visto, a mostrare come ogni schermata risponde a un requisito del programma Carelink, e a rendere evidenti le scelte ancora aperte.
 
-Il mockup è un **prototipo navigabile**, non un prodotto. Alla fine della guida trovi una tabella esplicita di **cosa è reale e cosa è simulato**: leggerla prima di una demo evita fraintendimenti.
-
----
-
-## Il modello Carelink in una pagina
-
-Il programma affronta due cause concrete di rinuncia alle cure: **non riuscire ad arrivare** in ospedale e **non potersi permettere** il privato quando la lista d'attesa pubblica è incompatibile con l'urgenza clinica.
-
-**Layer 1 — Mobilità sanitaria assistita.** Trasporto **gratuito porta a porta** per pazienti fragili in cure ricorsive (oncologia, dialisi, neurologia, pediatria). Erogato da **Samarcanda Scarl** (certificata ISO 9001:2015), coordinato dalla piattaforma e passato ad AureaShuttle. Costa al fondo €72 a corsa: **mai al paziente**.
-
-**Layer 2 — Accesso alle cure.** Ogni visita specialistica (Fascia A) o esame diagnostico (Fascia B) consuma **1 voucher ESG**. Il fondo paga la **tariffa ESG**, cioè il listino ufficiale della struttura con uno **sconto fisso del 15%** stabilito per contratto e verificabile su ogni fattura dal revisore CSRD. Le strutture sono **private e certificate** ISO 9001 o JCI.
-
-**Quota a carico del paziente: €0.** Sempre, per entrambi i layer.
-
-Si entra nel programma per uno di **tre canali alternativi**: urgenza clinica certificata da SSN/MMG, ISEE sotto la soglia del programma, oppure due diligence del Comitato ESG. I pazienti arrivano **segnalati da Comuni e Regione Lazio**, che li indirizzano alle Associazioni; il **Coordinatore Alphio** ne cura l'ingresso, valida i voucher e rendiconta l'impatto.
-
-> **Nota di lettura.** Il denaro esiste nel programma ma **non nell'app del paziente**: chi è in cura non vede prezzi, sconti o voucher, perché non paga nulla. Tutto l'apparato economico vive nella console del Coordinatore, dove serve al revisore e agli sponsor.
-
----
-
-## Come aprire il mockup
-
-Serve un server locale: aprendo i file con doppio clic il browser blocca il caricamento dei dati.
-
-```bash
-cd project
-python3 -m http.server 8090
-```
-
-| Cosa | Indirizzo |
-|---|---|
-| Hub di review (tutte le schermate) | `http://localhost:8090/canvas.html` |
-| App paziente | `http://localhost:8090/index.html` |
-| Console Coordinatore | `http://localhost:8090/admin-login.html` |
-
-L'accesso è simulato: **qualsiasi email e password funzionano**.
+Il mockup è un **prototipo navigabile**, non un prodotto.
 
 ---
 
@@ -52,23 +12,23 @@ L'accesso è simulato: **qualsiasi email e password funzionano**.
 
 # Parte 1 — L'app del paziente
 
-Dieci schermate, pensate per il telefono. Il filo conduttore: il paziente deve poter prenotare una cura senza mai incontrare un numero che somigli a un costo.
-
 ## 1.1 Accesso: credenziali, SPID o CIE
 
 ![Schermata di login](img/01-login.png)
 
-La schermata di ingresso dichiara subito di cosa si tratta — *Programma ESG Carelink, promosso da Alphio APS* — e spiega perché il programma esiste: le liste d'attesa incompatibili con l'urgenza, il costo di una visita privata, il fatto che oltre metà dei pazienti oncologici non possa permettersela.
+La schermata di ingresso dichiara subito di cosa si tratta.
 
 Oltre alle credenziali sono disponibili **due accessi istituzionali, SPID e CIE**: è l'ipotesi di autenticazione che il cliente ha chiesto di valutare, resa qui visibile e navigabile.
 
 ![Modale SPID](img/02-login-spid.png)
 
-Il click su *Entra con SPID* apre la conferma di reindirizzamento all'Identity Provider. Nel mockup il flusso è **simulato**: non c'è un IdP reale dietro, ma la posizione, il testo e il comportamento sono quelli che avrebbe l'integrazione vera.
+Il click su *Entra con SPID* apre la conferma di reindirizzamento all'Identity Provider.
 
 ![Password dimenticata](img/27-login-password-dimenticata.png)
 
 È presente anche il **recupero della password**, con invio simulato del link di reset.
+
+<div class="page-break"></div>
 
 ## 1.2 Registrazione: un wizard in 5 passi
 
@@ -76,7 +36,7 @@ La registrazione raccoglie ciò che serve al Coordinatore per decidere, e nulla 
 
 ![Onboarding step 1](img/03-onboarding-step1.png)
 
-**Passo 1 — Dati e provenienza.** Oltre all'anagrafica si chiede *come sei arrivato al programma*: segnalazione del Comune, della Regione Lazio, di un'Associazione o del medico di base. Non è una domanda di cortesia: nel modello Carelink l'ingresso è **mediato dalle istituzioni**, e nel sistema reale questa informazione arriva fino alla scheda che il Coordinatore consulta. *(Nel prototipo le due schermate mostrano lo stesso dato ma non sono collegate: la scelta non viene salvata.)*
+**Passo 1 — Dati e provenienza.** Oltre all'anagrafica si chiede *come sei arrivato al programma*.
 
 ![Precompilazione da SPID](img/04-onboarding-spid-prefill.png)
 
@@ -86,11 +46,9 @@ Se il paziente ha SPID, l'anagrafica si **precompila** invece di essere digitata
 
 **Passo 2 — Livello di accesso e documenti.** Qui il paziente dichiara **per quale dei tre canali** entra nel programma: urgenza clinica certificata da SSN/MMG, ISEE sotto la soglia, oppure due diligence del Comitato. La scelta **marca dinamicamente come richiesto** il documento corrispondente: chi sceglie l'urgenza vede diventare necessario il certificato SSN/MMG, chi sceglie la due diligence la documentazione aggiuntiva per il Comitato.
 
-Si noti la formulazione: *«ISEE sotto la soglia del programma»*, senza cifre. La soglia esiste — è €20.000 — ma il paziente non ha bisogno di leggerla per capire se è idoneo; la vede il Coordinatore, che è chi decide.
-
 ![ISEE bloccante](img/06-onboarding-isee-bloccante.png)
 
-**Il Modello ISEE è obbligatorio e blocca davvero.** Non è un'etichetta decorativa: senza il caricamento la registrazione non prosegue. La scheda si evidenzia in rosso, compare l'errore in linea e un avviso spiega perché ci si è fermati. È il requisito che il cliente ha chiesto esplicitamente, ed è obbligatorio **per tutti**, qualunque sia il livello di accesso scelto.
+**Il Modello ISEE è obbligatorio e il suo caricamento è bloccante.** Non è un'etichetta decorativa: senza il caricamento la registrazione non prosegue. La scheda si evidenzia in rosso, compare l'errore in linea e un avviso spiega perché ci si è fermati.
 
 ![Onboarding step 3](img/07-onboarding-step3-indirizzo.png)
 
@@ -102,8 +60,6 @@ Si noti la formulazione: *«ISEE sotto la soglia del programma»*, senza cifre. 
 
 Chiude il **consenso al trattamento dei dati sanitari**, che è a sua volta **bloccante**: senza, il wizard non prosegue.
 
-> Il badge **«Bozza · da validare con il cliente»** è deliberato: il questionario non esisteva e questa è una **proposta**, da confermare con Alphio APS prima di considerarla definitiva.
-
 ![Dichiarazioni obbligatorie](img/09-onboarding-step5-dichiarazioni.png)
 
 **Passo 5 — Privacy e dichiarazioni.** Le due dichiarazioni richieste dal cliente: il paziente **dichiara che la documentazione caricata è veritiera** e **autorizza il contatto con le autorità competenti** per eventuali verifiche. Il testo è esplicito sulle conseguenze di una dichiarazione mendace: esclusione dal programma e revoca delle prestazioni già autorizzate.
@@ -112,7 +68,7 @@ Chiude il **consenso al trattamento dei dati sanitari**, che è a sua volta **bl
 
 Anche queste **bloccano**: senza entrambe le spunte la registrazione non si completa.
 
-Nel modello, le dichiarazioni vanno **storicizzate** — data, ora e versione del testo accettato — perché una dichiarazione senza traccia non ha valore in una verifica. *Il mockup mostra questo storico nel profilo e nella console (vedi §1.10 e §2.5), ma non lo scrive al momento della registrazione: la traccia è un dato dimostrativo, non ancora una funzione persistente.*
+Nel modello, le dichiarazioni vanno **storicizzate** — data, ora e versione del testo accettato — perché una dichiarazione senza traccia non ha valore in una verifica.
 
 ## 1.3 Home: lo stato del programma, non un saldo
 
@@ -140,7 +96,7 @@ Il catalogo espone **esattamente** ciò che la Convenzione Terzo Settore prevede
 
 ![Fascia B](img/13-catalogo-fascia-b.png)
 
-**Fascia B — diagnostica strumentale.** RMN cranio/rachide, TC total body, ecografia addome, PET scan oncologico, scintigrafia ossea. Sono le prestazioni economicamente più pesanti — una PET arriva a 1.400 euro di listino — ed è qui che il voucher pesa di più. Il paziente, di nuovo, non lo vede.
+**Fascia B — diagnostica strumentale.** RMN cranio/rachide, TC total body, ecografia addome, PET scan oncologico, scintigrafia ossea. Sono le prestazioni economicamente più pesanti.
 
 ![Cicli](img/14-catalogo-cicli.png)
 
@@ -190,7 +146,7 @@ Il riepilogo conferma prestazione, struttura, data, ricetta allegata e copertura
 
 ![Handoff AureaShuttle](img/21-handoff-shuttle.png)
 
-Il passaggio ad **AureaShuttle** arriva già compilato con partenza da casa, arrivo alla struttura e giorno dell'appuntamento. *(Nel mockup l'orario di ritiro è un valore dimostrativo fisso, non ancora calcolato sull'ora dello slot.)* È il punto di giunzione tra i due layer del programma — la cura e il modo di arrivarci — e attraversa due app della suite senza che il paziente debba reinserire nulla. Esistono tre varianti di questo passaggio (precompilato, guidato in tre passi, sobrio), commutabili dall'hub di review.
+Il passaggio ad **AureaShuttle** arriva già compilato con partenza da casa, arrivo alla struttura e giorno dell'appuntamento. *(Nel mockup l'orario di ritiro è un valore dimostrativo fisso, non ancora calcolato sull'ora dello slot.)* È il punto di giunzione tra i due layer del programma — la cura e il modo di arrivarci — e attraversa due app della suite senza che il paziente debba reinserire nulla.
 
 ![Ciclo con trasporto](img/22-ciclo-trasporto.png)
 
@@ -212,7 +168,7 @@ Il dettaglio mostra struttura, medico, data, certificazione e la copertura del p
 
 È la terza raccolta di informazioni chiesta dal cliente: **dopo la visita**. Compare sulle visite approvate con data ormai passata, ed è l'unico modo per sapere ciò che nessun sistema registra da solo — se la visita **si è svolta davvero**, se è stata prescritta una prestazione successiva, se il **trasporto è stato adeguato** (la domanda si disattiva se la corsa non era prevista), quali difficoltà sono emerse, se il paziente vuole essere **ricontattato dal Coordinatore**.
 
-È il punto in cui il programma potrà misurare il suo obiettivo vero, il **drop-out terapeutico evitato**: il questionario raccoglie il dato alla fonte. *Nel mockup le risposte restano sul dispositivo e non alimentano ancora i numeri della console; un questionario già compilato viene riconosciuto come tale.* Anche questo questionario è marcato come **bozza da validare**.
+È il punto in cui il programma potrà misurare il suo obiettivo vero, il **drop-out terapeutico evitato**: il questionario raccoglie il dato alla fonte.
 
 ## 1.10 Profilo: le dichiarazioni e il loro storico
 
@@ -220,7 +176,7 @@ Il dettaglio mostra struttura, medico, data, certificazione e la copertura del p
 
 Il profilo raccoglie anagrafica, documenti, livello di accesso e **da chi è stato segnalato** il paziente. La parte nuova è la card delle **dichiarazioni obbligatorie**: le due dichiarazioni accettate, con **data, ora e versione del testo**, il loro **storico** (prima accettazione in registrazione, riconferma al caricamento di una nuova ricetta) e una **ricevuta scaricabile**.
 
-È la "storicizzazione" richiesta: se un domani si dovesse verificare una dichiarazione, serve sapere *cosa* è stato accettato e *quando*, non solo che una casella era spuntata.
+Se un domani si dovesse verificare una dichiarazione, serve sapere *cosa* è stato accettato e *quando*, non solo che una casella era spuntata.
 
 ![Impostazioni](img/29-profilo-impostazioni.png)
 
@@ -270,7 +226,7 @@ Una richiesta di **solo trasporto (Layer 1)** si presenta diversamente: al posto
 
 ![Strutture](img/34-admin-strutture.png)
 
-Le 18 strutture convenzionate: **tutte private, tutte certificate** ISO 9001 o JCI. Non è un dettaglio anagrafico ma il criterio di ammissione alla rete del Layer 2. La mappa mostra il network sul territorio; il Coordinatore può **attivare, disattivare, aggiungere o rimuovere** una struttura (oggi ne sono attive 17 su 18).
+Le 18 strutture convenzionate: **tutte private, tutte certificate** ISO 9001 o JCI. Non è un dettaglio anagrafico ma il criterio di ammissione alla rete del Layer 2. La mappa mostra il network sul territorio; il Coordinatore può **attivare, disattivare, aggiungere o rimuovere** una struttura.
 
 ![Dettaglio struttura](img/35-admin-struttura-dettaglio.png)
 
@@ -295,49 +251,6 @@ Da qui si scarica la **fattura verificabile CSRD** di ogni prestazione di Fascia
 ![Messaggio al paziente](img/43-admin-messaggio-paziente.png)
 
 Il Coordinatore può **scrivere al paziente**: il canale è l'email, unico mezzo di comunicazione tracciabile previsto dal flusso.
-
-### La fattura verificabile
-
-È il documento su cui si regge la promessa del programma. Riporta il **listino ufficiale** della struttura, lo **sconto ESG contrattuale del 15%**, la **tariffa ESG** che ne risulta, quanto ha **coperto il Fondo** e la **quota del paziente, sempre €0,00** — più l'**ID del voucher** e la certificazione della struttura. Chiude il riferimento al **revisore CSRD** e alla validazione ex-post dello SROI.
-
-```
-PROGRAMMA ESG CARELINK — Alphio APS · piattaforma AureaCare
-Fattura verificabile · Convenzione Terzo Settore (Layer 2)
-Emessa dalla console del Coordinatore Alphio
-════════════════════════════════════════════════════════════
-
-Numero:              INV-BOOK-097
-Data:                14 mag
-Paziente:            Lucia Marchetti
-Codice fiscale:      MRCLCU82M55H501T
-
-STRUTTURA EROGANTE
-Struttura:           Centro Diagnostico Italiano Eur
-Certificazione:      ISO 9001 · listino ufficiale depositato e verificato
-Medico:              Dr. Luca Ferri
-
-PRESTAZIONE
-Prestazione:         RMN cranio/rachide
-Stato:               Approvata
-
-ECONOMICS (verificabili dal revisore CSRD)
-Listino ufficiale:               €360,00
-Sconto ESG contrattuale:         −15%
-Tariffa ESG:                     €306,00
-Coperto dal Fondo ESG Territoriale Roma: €306,00
-Quota paziente:                  €0,00
-
-Voucher:             VCH-2026-0137
-
-════════════════════════════════════════════════════════════
-Documento verificabile dal revisore CSRD del programma.
-SROI validato ex-post da primaria società di revisione.
-Alphio APS · Fondo ESG Territoriale di Roma · AureaVia Srl Innovativa
-```
-
-Per una prestazione di **Layer 1** il blocco economico cambia: niente voucher, ma il costo al programma di €72,00 a corsa, il riferimento a Samarcanda Scarl e la stessa quota paziente a €0,00.
-
-Questa fattura vive **solo nella console**: è il revisore a doverla verificare, non il paziente.
 
 ## 2.6 KPI ESG: l'impatto del programma
 
@@ -376,10 +289,6 @@ Il rendiconto del **Fondo ESG Territoriale di Roma**, circa **9 milioni** per l'
 
 ![Canvas](img/40-canvas.png)
 
-`canvas.html` raccoglie **tutte e 17 le schermate** in cornici telefono e desktop, così da vedere il prodotto intero in una pagina sola. Un pannello di regolazione permette di cambiare al volo l'accento cromatico, lo stile dell'app switcher e la variante del passaggio ad AureaShuttle: serve a discutere le alternative di design senza toccare il codice.
-
----
-
 # Regole trasversali
 
 **Il paziente non vede denaro.** In tutte e dieci le schermate paziente non compare un solo simbolo di euro, né un prezzo, uno sconto, un voucher o un saldo. Non è una scelta estetica: il paziente non paga, e mostrargli importi che non deve versare crea solo ansia e confusione. Al loro posto una garanzia esplicita — *coperta dal programma, nessun costo a tuo carico*. Tutto l'apparato economico esiste, ma nella console, dove serve a chi decide e a chi verifica.
@@ -387,40 +296,6 @@ Il rendiconto del **Fondo ESG Territoriale di Roma**, circa **9 milioni** per l'
 **Ciò che è obbligatorio, blocca.** I vincoli chiesti dal cliente non sono etichette: l'**ISEE** ferma la registrazione, il **consenso sanitario** ferma il questionario, le **dichiarazioni** fermano il completamento dell'account, la **ricetta medica** ferma la prenotazione.
 
 **I numeri sono quelli del documento.** Prezzi di listino e tariffe ESG delle dieci prestazioni, sconto del 15%, €72 a corsa, i 9 milioni del fondo, i target dell'anno 1, gli intervalli di SROI: sono presi dal programma Carelink, non inventati.
-
-**Nessuna emoji, solo icone vettoriali.** L'interfaccia usa un set di icone coerente; la scrittura è in italiano e i dati sono romani.
-
----
-
-# Cosa è reale e cosa è simulato
-
-Questa tabella serve prima di una demo: distingue ciò che il prototipo **fa davvero** da ciò che **mostra come se lo facesse**. Non toglie nulla al lavoro — un mockup serve a decidere, non a produrre — ma evita promesse che il codice non mantiene.
-
-| Funzionalità | Nel mockup |
-|---|---|
-| Navigazione, flussi, stati delle schermate | **Reale** |
-| Blocchi obbligatori (ISEE, ricetta, consensi, dichiarazioni) | **Reali**: impediscono davvero di proseguire |
-| Calcolo di listino, sconto 15% e tariffa ESG | **Reale**: i numeri sono coerenti e verificabili |
-| Generazione della fattura CSRD (file scaricabile) | **Reale** |
-| Accesso con SPID / CIE | **Simulato**: nessun Identity Provider dietro |
-| Caricamento e verifica dei documenti | **Simulato**: l'upload non trasferisce file |
-| Storicizzazione delle dichiarazioni | **Mostrata**, non ancora scritta al momento dell'accettazione |
-| Canale di segnalazione scelto in registrazione | **Non salvato**: la scheda del Coordinatore mostra un dato dimostrativo |
-| Questionario post-visita | Salvato **sul dispositivo**; non alimenta ancora i KPI della console |
-| Orario di ritiro nel passaggio ad AureaShuttle | Valore **dimostrativo fisso**, non calcolato sullo slot |
-| Backend, database, pagamenti | **Assenti** (e i pagamenti non servono: il paziente non paga) |
-
----
-
-# Questioni ancora aperte
-
-**Il questionario è una proposta.** Le domande dei tre momenti — censimento, prenotazione, post-visita — sono state costruite sul profilo del paziente Carelink, ma vanno **validate con Alphio APS**. Nel mockup sono marcate come bozza.
-
-**Cosa si può prenotare.** Oggi il catalogo espone visite specialistiche, diagnostica strumentale e cicli con trasporto. Va deciso se il programma consente **solo visite** o anche il resto.
-
-**Come si verifica l'ISEE.** Il documento è obbligatorio e il caricamento è simulato, ma la **modalità di verifica** — controllo manuale del Coordinatore, integrazione con INPS, autocertificazione — non è definita. Nessuna integrazione è stata ipotizzata senza mandato.
-
-**Come si verifica la ricetta medica.** Stessa questione: la ricetta è obbligatoria, ma chi e come ne accerta la validità resta da stabilire.
 
 ---
 
@@ -446,6 +321,3 @@ Questa tabella serve prima di una demo: distingue ciò che il prototipo **fa dav
 | 16 | KPI ESG | `admin-esg.html` | SROI per layer, drop-out, benefici, ambiente, demografia |
 | 17 | Fondo ESG | `admin-fund.html` | Allocazione, sponsor, Comitato, governance, Samarcanda |
 
----
-
-*AureaCare · POC · Programma ESG Carelink — Alphio APS · piattaforma coordinata da AureaVia Srl Innovativa. Le immagini sono catture reali delle schermate del prototipo. Dati dimostrativi.*

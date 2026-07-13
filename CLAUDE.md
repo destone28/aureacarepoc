@@ -61,7 +61,6 @@ Both share `js/styles.css`, `js/navigation.js`, `js/icons.js`, and `data/mock-da
 - **Mandatory, historicized declarations**: `patient.declarations` (truthful docs · authorization to contact the competent authorities) + `patient.declarations_history`. Accepted in onboarding (blocking), shown with their history and a downloadable receipt in `profile.html`, and surfaced to the Coordinator in `admin-patients.html`.
 - **ISEE is mandatory at registration** (blocks the onboarding wizard) and the **medical prescription is mandatory at booking** (the "Conferma" CTA stays disabled until the patient reuses the verified one or uploads a new one).
 - **SPID / CIE login** in `index.html` is **simulated** (no real IdP, no library, no external logos — text buttons only). `admin-login.html` does not use it.
-- **The questionnaire is a DRAFT proposal**, not a settled requirement. It spans 3 moments — onboarding step 4, `booking.html`, and `follow-up.html` — and every screen carrying it shows the visible note *"Bozza · da validare con il cliente"*. **Keep that label** until the client validates the questions; answers persist to `localStorage` under `aureacare_followup_<bookingId>`.
 
 ### Simulated SSO across the Aurea suite
 `js/navigation.js` reads/writes the localStorage key **`aurea_auth_user`** (`{ email, role, apps }`). This key is the convention shared with AureaVia and AureaShuttle to simulate cross-app SSO without a backend. `requireAuth()` / `requireAdmin()` redirect to the relevant login if the key is missing or `role` doesn't match. The Coordinatore Alphio is still `role: 'admin'` — only the copy changed.
@@ -104,4 +103,3 @@ These came from the client and are **not settled**. If a task touches them, keep
 1. **Scope of bookable services** — visits only, or other services too? Today the catalogue exposes Fascia A visits, Fascia B diagnostics and recurring cycles with transport.
 2. **How the ISEE is verified** — upload is simulated and the document reads "verificato dal Coordinatore Alphio". **No INPS integration** has been assumed. Don't add one.
 3. **How the medical prescription is verified** — same: simulated upload, verified by the Coordinator. **No tessera sanitaria / dematerialized-prescription integration.** Don't add one.
-4. **The questionnaire content** is a draft proposal awaiting client validation — keep the "Bozza · da validare con il cliente" label.

@@ -50,7 +50,7 @@ I pazienti arrivano **segnalati** da Comuni / Regione Lazio → Associazioni (ch
 
 ### Questionario di raccolta informazioni · **bozza da validare**
 
-Il questionario **non è ancora definito col cliente**: quello nel mockup è una **proposta**, marcata a video con la nota *"Bozza · da validare con il cliente"*. Raccoglie informazioni in **3 momenti**:
+Il questionario accoglie informazioni in **3 momenti**:
 
 | Momento | Dove | Cosa raccoglie |
 |---|---|---|
@@ -179,7 +179,6 @@ Punti sollevati dal cliente che **non sono decidibili in autonomia**: nel mockup
 | 1 | **Perimetro delle prestazioni prenotabili**: solo visite, o anche altri servizi? | Il catalogo espone tutto: Fascia A (visite), Fascia B (diagnostica) e cicli di cure ricorsive con trasporto. Restringere il perimetro alle sole visite è una scelta di programma, non tecnica. |
 | 2 | **Modalità di verifica dell'ISEE** | L'upload è **simulato** e il documento risulta "verificato dal Coordinatore Alphio". Nessuna integrazione INPS: non è stata ipotizzata di proposito. |
 | 3 | **Modalità di verifica della ricetta medica** | Idem: upload simulato, ricetta "verificata dal Coordinatore Alphio". Nessuna integrazione con tessera sanitaria / ricetta dematerializzata. |
-| 4 | **Contenuto del questionario** | Le domande nei 3 momenti sono una **bozza proposta**, marcata a video *"Bozza · da validare con il cliente"*. Vanno confermate (o riscritte) col cliente prima di considerarle requisito. |
 
 ## Cosa NON è incluso
 

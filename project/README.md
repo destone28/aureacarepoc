@@ -76,7 +76,6 @@ aureacarepoc/
 - **Copertura dichiarata, non contabilizzata**: pill verde "Coperta dal programma" sul catalogo e riga "Coperta dal Programma Carelink · nessun costo a tuo carico" nel recap. Zero cifre lato paziente.
 - **Banner Roma**: sticky su `onboarding.html` step 3 e `structures.html`, fondo `#E6F1FB`
 - **Handoff AureaShuttle**: la domanda "serve trasporto?" appare già nel calendario; per i cicli il trasporto è incluso e preselezionato; il summary mostra il riepilogo cross-app con la corsa Samarcanda gratuita
-- **Nota "Bozza · da validare con il cliente"**: marca ogni schermata che contiene il questionario (onboarding step 4, booking, follow-up)
 - **App switcher**: dropdown 3 brand-card (default), con varianti modale e bottom sheet
 
 ## Tweaks live
