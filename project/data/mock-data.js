@@ -85,6 +85,14 @@ window.MOCK = (function () {
     avatar_initials: 'LM',
     // Livello di accesso al programma Carelink (vedi access_levels)
     access: { level: 2, label: 'ISEE < €20.000', doc: 'Modello ISEE 2026', verified_by: 'Coordinatore Alphio', verified_date: '02/02/2026' },
+    // Ingresso mediato: Comuni/Regione segnalano i pazienti alle Associazioni,
+    // che curano onboarding e privacy prima della presa in carico del Coordinatore.
+    referred_by: {
+      channel: 'Associazione',
+      name: 'Associazione Insieme per la Cura ODV',
+      flagged_by: 'Comune di Roma — Servizi Sociali',
+      onboarding_date: '04/01/2026'
+    },
     docs: {
       ricetta:  { status: 'verified',  uploaded: '12/04/2026', name: 'Ricetta rossa', file: 'ricetta_marchetti_apr26.pdf' },
       isee:     { status: 'verified',  uploaded: '02/02/2026', name: 'Modello ISEE', file: 'isee_marchetti_2026.pdf' },
@@ -173,19 +181,21 @@ window.MOCK = (function () {
   // ---------- Admin: lista pazienti registrati (estratto 12) ----------
   // vouchers_left = voucher ESG residui sul plafond assegnato dal Coordinatore.
   // access_level: 1 = urgenza clinica SSN/MMG · 2 = ISEE < €20.000 · 3 = due diligence.
+  // referral = canale di ingresso istituzionale (Comuni/Regione segnalano alle
+  // Associazioni, che curano onboarding e privacy; SSN/MMG certifica l'urgenza).
   const admin_patients = [
-    { id: 'PAT-00142', name: 'Lucia Marchetti',  cf: 'MRCLCU82M55H501T', vouchers_left: 8,  access_level: 2, completed: 8, last_login: 'Oggi 09:14', docs_status: 'complete' },
-    { id: 'PAT-00141', name: 'Andrea Rossi',     cf: 'RSSNDR79H03H501Z', vouchers_left: 6,  access_level: 1, completed: 12, last_login: 'Ieri 19:42', docs_status: 'complete' },
-    { id: 'PAT-00140', name: 'Giulia Bianchi',   cf: 'BNCGLI91D52H501W', vouchers_left: 3,  access_level: 2, completed: 6, last_login: 'Ieri 15:08', docs_status: 'complete' },
-    { id: 'PAT-00139', name: 'Marco De Luca',    cf: 'DLCMRC85A12H501P', vouchers_left: 5,  access_level: 3, completed: 9, last_login: '2 giorni fa', docs_status: 'partial' },
-    { id: 'PAT-00138', name: 'Sofia Ferri',      cf: 'FRRSFO88P54H501M', vouchers_left: 2,  access_level: 2, completed: 3, last_login: '3 giorni fa', docs_status: 'complete' },
-    { id: 'PAT-00137', name: 'Paolo Esposito',   cf: 'SPSPLA72L08F839B', vouchers_left: 4,  access_level: 1, completed: 14, last_login: '4 giorni fa', docs_status: 'complete' },
-    { id: 'PAT-00136', name: 'Chiara Romano',    cf: 'RMNCHR93T67H501S', vouchers_left: 7,  access_level: 2, completed: 5, last_login: '5 giorni fa', docs_status: 'complete' },
-    { id: 'PAT-00135', name: 'Davide Greco',     cf: 'GRCDVD80E21H501Y', vouchers_left: 1,  access_level: 3, completed: 7, last_login: '1 settimana fa', docs_status: 'partial' },
-    { id: 'PAT-00134', name: 'Elena Riva',       cf: 'RVELNE76C44H501R', vouchers_left: 10, access_level: 1, completed: 22, last_login: 'Oggi 08:02', docs_status: 'complete' },
-    { id: 'PAT-00133', name: 'Roberto Conti',    cf: 'CNTRRT69M28H501F', vouchers_left: 5,  access_level: 2, completed: 11, last_login: 'Ieri 22:00', docs_status: 'complete' },
-    { id: 'PAT-00132', name: 'Federica Santoro', cf: 'SNTFRC84S58H501J', vouchers_left: 0,  access_level: 1, completed: 6, last_login: '2 giorni fa', docs_status: 'pending' },
-    { id: 'PAT-00131', name: 'Stefano Marino',   cf: 'MRNSFN77H15H501K', vouchers_left: 9,  access_level: 2, completed: 16, last_login: '3 giorni fa', docs_status: 'complete' }
+    { id: 'PAT-00142', name: 'Lucia Marchetti',  cf: 'MRCLCU82M55H501T', vouchers_left: 8,  access_level: 2, referral: 'Associazione Insieme per la Cura ODV', completed: 8, last_login: 'Oggi 09:14', docs_status: 'complete' },
+    { id: 'PAT-00141', name: 'Andrea Rossi',     cf: 'RSSNDR79H03H501Z', vouchers_left: 6,  access_level: 1, referral: 'SSN/MMG', completed: 12, last_login: 'Ieri 19:42', docs_status: 'complete' },
+    { id: 'PAT-00140', name: 'Giulia Bianchi',   cf: 'BNCGLI91D52H501W', vouchers_left: 3,  access_level: 2, referral: 'Comune di Roma', completed: 6, last_login: 'Ieri 15:08', docs_status: 'complete' },
+    { id: 'PAT-00139', name: 'Marco De Luca',    cf: 'DLCMRC85A12H501P', vouchers_left: 5,  access_level: 3, referral: 'Regione Lazio', completed: 9, last_login: '2 giorni fa', docs_status: 'partial' },
+    { id: 'PAT-00138', name: 'Sofia Ferri',      cf: 'FRRSFO88P54H501M', vouchers_left: 2,  access_level: 2, referral: 'Associazione Argo Salute ODV', completed: 3, last_login: '3 giorni fa', docs_status: 'complete' },
+    { id: 'PAT-00137', name: 'Paolo Esposito',   cf: 'SPSPLA72L08F839B', vouchers_left: 4,  access_level: 1, referral: 'SSN/MMG', completed: 14, last_login: '4 giorni fa', docs_status: 'complete' },
+    { id: 'PAT-00136', name: 'Chiara Romano',    cf: 'RMNCHR93T67H501S', vouchers_left: 7,  access_level: 2, referral: 'Comune di Roma', completed: 5, last_login: '5 giorni fa', docs_status: 'complete' },
+    { id: 'PAT-00135', name: 'Davide Greco',     cf: 'GRCDVD80E21H501Y', vouchers_left: 1,  access_level: 3, referral: 'Regione Lazio', completed: 7, last_login: '1 settimana fa', docs_status: 'partial' },
+    { id: 'PAT-00134', name: 'Elena Riva',       cf: 'RVELNE76C44H501R', vouchers_left: 10, access_level: 1, referral: 'Associazione Insieme per la Cura ODV', completed: 22, last_login: 'Oggi 08:02', docs_status: 'complete' },
+    { id: 'PAT-00133', name: 'Roberto Conti',    cf: 'CNTRRT69M28H501F', vouchers_left: 5,  access_level: 2, referral: 'Comune di Roma', completed: 11, last_login: 'Ieri 22:00', docs_status: 'complete' },
+    { id: 'PAT-00132', name: 'Federica Santoro', cf: 'SNTFRC84S58H501J', vouchers_left: 0,  access_level: 1, referral: 'SSN/MMG', completed: 6, last_login: '2 giorni fa', docs_status: 'pending' },
+    { id: 'PAT-00131', name: 'Stefano Marino',   cf: 'MRNSFN77H15H501K', vouchers_left: 9,  access_level: 2, referral: 'Associazione Argo Salute ODV', completed: 16, last_login: '3 giorni fa', docs_status: 'complete' }
   ];
 
   // ---------- ESG: KPI anno 1 Carelink + breakdown ----------

@@ -1752,6 +1752,72 @@ textarea.input { resize: vertical; min-height: 80px; }
   .sponsor-strip .sponsor-slot.empty { display: none; }
 }
 
+/* Sponsor del Fondo ESG Territoriale di Roma (T10):
+   card con iniziali stilizzate, coerenti col mock `fund.sponsors`. */
+.sponsor-strip .fund-sponsor-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+}
+.sponsor-strip .fund-sponsor {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  border: 1px solid var(--border-soft);
+  border-radius: 8px;
+  background: #FBFDFC;
+}
+.sponsor-strip .fs-mark {
+  flex: none;
+  width: 30px; height: 30px;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 7px;
+  background: #E1F5EE;
+  color: #0F6E56;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+.sponsor-strip .fs-text { min-width: 0; }
+.sponsor-strip .fs-text strong {
+  display: block;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--ink);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.sponsor-strip .fs-text span {
+  display: block;
+  font-size: 10px;
+  color: var(--medium-gray);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.sponsor-strip .sponsor-tech {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px dashed var(--border-gray);
+}
+.sponsor-strip .sponsor-tech .sponsor-slot { min-height: 36px; padding: 4px 8px; }
+.sponsor-strip .sponsor-tech-label {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--medium-gray);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+@media (max-width: 520px) {
+  .sponsor-strip .fund-sponsor-grid { grid-template-columns: 1fr; }
+}
+
 /* Dev credit — riga sobria "Sviluppato da 3DSprinted"
    compare nel footer di admin-login. */
 .dev-credit {

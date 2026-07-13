@@ -33,6 +33,14 @@
       font-size: 11px; font-weight: 700;
       background: #E1F5EE; color: #0F6E56;
     }
+    /* Cella "Segnalato da" — canale di ingresso istituzionale */
+    .ref-cell {
+      display: inline-flex; align-items: center; gap: 6px;
+      font-size: 12px; font-weight: 600; color: var(--ink);
+      max-width: 200px;
+    }
+    .ref-cell span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .ref-cell svg { flex: none; color: var(--medium-gray); }
   </style>
 </head>
 <body class="admin-page">
@@ -108,6 +116,7 @@
                 <th>CF</th>
                 <th>Voucher residui</th>
                 <th>Livello accesso</th>
+                <th>Segnalato da</th>
                 <th>Cure completate</th>
                 <th>Documenti</th>
                 <th>Ultimo accesso</th>
@@ -218,6 +227,9 @@
 
     // Lookup livello di accesso Carelink (1 urgenza · 2 ISEE · 3 due diligence)
     const accessLevelOf = lvl => MOCK.access_levels.find(a => a.level === lvl);
+    // Canale di ingresso istituzionale: Comuni/Regione → Associazioni; SSN/MMG certifica l'urgenza.
+    const referralIcon = ref =>
+      ref.startsWith('Associazione') ? 'users' : ref === 'SSN/MMG' ? 'heart' : 'building';
 
     const rows = MOCK.admin_patients.map((p, i) => {
       const [c1, c2] = palettes[i % palettes.length];
@@ -237,6 +249,7 @@
         <td data-th="CF"><span class="font-mono" style="font-size:12px">${p.cf}</span></td>
         <td data-th="Voucher residui"><strong>${p.vouchers_left}</strong> <span class="cell-sub" style="display:inline">su 12</span></td>
         <td data-th="Livello accesso"><span class="lvl-pill" title="${al.desc}">L${al.level}</span> <span class="cell-sub" style="display:inline">${al.label}</span></td>
+        <td data-th="Segnalato da"><span class="ref-cell" title="${p.referral}">${aIcon(referralIcon(p.referral),{size:13})}<span>${p.referral}</span></span></td>
         <td data-th="Cure"><span style="font-weight:600">${p.completed}</span></td>
         <td data-th="Documenti"><span class="doc-pill ${docCls}">${aIcon(docCls==='ok'?'check-circle':docCls==='partial'?'alert':'clock',{size:12})}${docLabel}</span></td>
         <td data-th="Ultimo accesso">${p.last_login}</td>
@@ -267,9 +280,9 @@
 
     // Esporta CSV (genera download client-side)
     function exportCSV() {
-      const header = ['ID','Nome','CF','VoucherResidui','LivelloAccesso','Completate','Docs','UltimoAccesso'];
+      const header = ['ID','Nome','CF','VoucherResidui','LivelloAccesso','SegnalatoDa','Completate','Docs','UltimoAccesso'];
       const lines = [header.join(',')].concat(
-        MOCK.admin_patients.map(p => [p.id, '"'+p.name+'"', p.cf, p.vouchers_left, p.access_level, p.completed, p.docs_status, '"'+p.last_login+'"'].join(','))
+        MOCK.admin_patients.map(p => [p.id, '"'+p.name+'"', p.cf, p.vouchers_left, p.access_level, '"'+p.referral+'"', p.completed, p.docs_status, '"'+p.last_login+'"'].join(','))
       );
       const blob = new Blob([lines.join('\n')], { type: 'text/csv;charset=utf-8' });
       const url = URL.createObjectURL(blob);
@@ -330,6 +343,7 @@
             <div style="display:grid;gap:8px;font-size:13px;background:#FAFAFA;padding:14px;border-radius:10px">
               <div style="display:flex;justify-content:space-between;align-items:center"><span class="text-muted">Livello di accesso</span><span><span class="lvl-pill">Livello ${al.level}</span> <strong style="color:#0F6E56">${al.label}</strong></span></div>
               <div style="display:flex;justify-content:space-between"><span class="text-muted">Requisito</span><strong>${al.desc} · verificato</strong></div>
+              <div style="display:flex;justify-content:space-between;gap:12px"><span class="text-muted">Segnalato da</span><strong style="text-align:right">${p.referral}</strong></div>
               <div style="display:flex;justify-content:space-between"><span class="text-muted">Voucher residui</span><strong style="color:var(--care-blue-dark)">${p.vouchers_left} su 12</strong></div>
               <div style="display:flex;justify-content:space-between"><span class="text-muted">Prestazioni completate</span><strong>${p.completed}</strong></div>
               <div style="display:flex;justify-content:space-between"><span class="text-muted">Approvazioni</span><strong>${Math.floor(p.completed*0.95)} su ${p.completed+1}</strong></div>
