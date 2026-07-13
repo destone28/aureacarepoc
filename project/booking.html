@@ -143,14 +143,6 @@
     .q-draft-head { display: flex; gap: 10px; align-items: flex-start; margin-bottom: 14px; }
     .q-draft-head svg { flex: none; color: var(--medium-gray); margin-top: 2px; }
     .q-draft-head p { font-size: 12px; color: var(--medium-gray); line-height: 1.6; }
-    .q-draft-badge {
-      display: inline-flex; align-items: center;
-      margin-right: 4px;
-      padding: 2px 8px; border-radius: 999px;
-      font-size: 10px; font-weight: 700;
-      background: var(--light-gray); color: var(--medium-gray);
-      letter-spacing: .04em;
-    }
     .q-draft .field { margin-bottom: 14px; }
     .q-needs { display: grid; gap: 8px; margin-top: 8px; }
     .q-need {
@@ -254,7 +246,7 @@
       <div class="q-draft">
         <div class="q-draft-head">
           <span id="ico-q"></span>
-          <p><span class="q-draft-badge">Bozza · da validare con il cliente</span> Queste informazioni servono al Coordinatore Alphio per validare la richiesta e dimensionare l'eventuale corsa.</p>
+          <p><span class="badge badge--draft">Bozza · da validare con il cliente</span> Queste informazioni servono al Coordinatore Alphio per validare la richiesta e dimensionare l'eventuale corsa.</p>
         </div>
 
         <div class="field">
@@ -386,8 +378,8 @@
     const urlParams = new URLSearchParams(location.search);
     const sid = urlParams.get('structure') || 'STR-001';
     const selected = MOCK.structures.find(s => s.id === sid) || MOCK.structures[0];
-    document.getElementById('rec-meta').textContent =
-      `${selected.name} · ${selected.distance_km.toFixed(1)} km · ★ ${selected.rating.toFixed(1)}`;
+    document.getElementById('rec-meta').innerHTML =
+      `${selected.name} · ${selected.distance_km.toFixed(1)} km · <span style="display:inline-flex;align-items:center;gap:3px;vertical-align:-2px">${aIcon('star',{size:12})}${selected.rating.toFixed(1)}</span>`;
 
     // Servizio selezionato (inoltrato da book-care → structures). Fallback su
     // MOCK.services[0] se il parametro manca: nessun valore inventato in pagina.
@@ -528,6 +520,11 @@
     let selectedTime = null;
     function openSheet(day) {
       selectedDay = day;
+      // Cambiare giorno invalida l'orario già confermato: riepilogo e CTA non
+      // devono restare sul giorno precedente mentre proceed() userebbe il nuovo.
+      selectedTime = null;
+      document.getElementById('row-datetime').style.display = 'none';
+      updateProceed();
       document.getElementById('sheet-title').textContent = `${day} maggio · slot disponibili`;
       const slotsEl = document.getElementById('slots');
       slotsEl.innerHTML = '';

@@ -134,7 +134,7 @@
       }
       return `<div class="cure-followup">
         <a class="fu-link" href="follow-up.html?booking=${b.id}" onclick="event.stopPropagation()">${aIcon('message-square',{size:14})} Com'è andata la visita?</a>
-        <span class="badge badge--neutral">Bozza</span>
+        <span class="badge badge--draft">Bozza</span>
       </div>`;
     }
 
@@ -213,13 +213,18 @@
 
         ${b.status === 'pending' ? `<p class="caption mt-12">In attesa di validazione del <strong>Coordinatore Alphio</strong> · tempi medi 2-4 ore lavorative.</p>` : ''}
 
-        ${isVisitDone(b) && !getFollowUp(b.id) ? `<a class="btn btn--secondary btn--block mt-16" href="follow-up.html?booking=${b.id}">${aIcon('message-square',{size:16})} Com'è andata la visita? <span class="badge badge--neutral">Bozza</span></a>` : ''}
+        ${isVisitDone(b) && !getFollowUp(b.id) ? `<a class="btn btn--secondary btn--block mt-16" href="follow-up.html?booking=${b.id}">${aIcon('message-square',{size:16})} Com'è andata la visita? <span class="badge badge--draft">Bozza</span></a>` : ''}
 
-        <div class="flex gap-8 mt-16">
-          ${b.status === 'pending'
-            ? `<button class="btn btn--danger" style="flex:1" onclick="cancel()">Annulla richiesta</button>`
-            : `<button class="btn btn--danger" style="flex:1" onclick="cancel()">Cancella</button><button class="btn btn--secondary" style="flex:1" onclick="reschedule('${b.id}')">Sposta</button>`}
-        </div>`;
+        ${
+          // Azioni: gli stati paziente sono due, quindi "approvata + data passata"
+          // = visita già svolta. Su una visita svolta non si cancella né si sposta
+          // nulla: resta solo il questionario post-visita (CTA qui sopra).
+          b.status === 'pending'
+            ? `<div class="flex gap-8 mt-16"><button class="btn btn--danger" style="flex:1" onclick="cancel()">Annulla richiesta</button></div>`
+            : isVisitDone(b)
+              ? `<p class="caption mt-16">Visita già svolta: non è più possibile spostarla o cancellarla.</p>`
+              : `<div class="flex gap-8 mt-16"><button class="btn btn--danger" style="flex:1" onclick="cancel()">Cancella</button><button class="btn btn--secondary" style="flex:1" onclick="reschedule('${b.id}')">Sposta</button></div>`
+        }`;
       openModal('cure-modal');
     }
 

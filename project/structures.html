@@ -60,7 +60,7 @@
       color: var(--care-blue-dark); background: var(--care-blue-light);
       padding: 2px 8px; border-radius: 999px; flex-shrink: 0;
     }
-    .star-mini { color: #F59E0B; font-weight: 700; font-size: 12px; }
+    .star-mini { display: inline-flex; align-items: center; gap: 4px; color: var(--medium-gray); font-weight: 700; font-size: 12px; }
     .map-pin-2 { position: absolute; }
   </style>
 </head>
@@ -205,7 +205,7 @@
             <div class="str-name">${s.name}</div>
             <div class="str-meta">${s.address} · ${s.district}</div>
             <div class="str-meta-row">
-              <span class="star-mini">★ ${s.rating.toFixed(1)}</span>
+              <span class="star-mini">${aIcon('star',{size:12})}${s.rating.toFixed(1)}</span>
               <span class="caption">(${s.reviews})</span>
               <span class="caption">·</span>
               <span class="caption" style="color:var(--care-blue);font-weight:600">${s.distance_km.toFixed(1)} km</span>

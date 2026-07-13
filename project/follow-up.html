@@ -20,13 +20,6 @@
     }
     .draft-note svg { flex: none; color: var(--medium-gray); margin-top: 1px; }
     .draft-note p { font-size: 12px; color: var(--medium-gray); line-height: 1.5; }
-    .draft-badge {
-      display: inline-flex; align-items: center;
-      padding: 2px 8px; border-radius: 999px;
-      font-size: 10px; font-weight: 700;
-      background: var(--light-gray); color: var(--medium-gray);
-      letter-spacing: .04em;
-    }
 
     .visit-card {
       background: linear-gradient(160deg, #fff, var(--care-blue-bg));
@@ -125,7 +118,7 @@
       <!-- Il questionario è una proposta: va dichiarato in demo -->
       <div class="draft-note">
         <span id="ico-draft"></span>
-        <p><strong>Bozza · da validare con il cliente.</strong> Proposta di raccolta informazioni dopo la visita: le domande e la scala di valutazione sono indicative e saranno confermate insieme ad Alphio APS.</p>
+        <p><span class="badge badge--draft">Bozza · da validare con il cliente</span> Proposta di raccolta informazioni dopo la visita: le domande e la scala di valutazione sono indicative e saranno confermate insieme ad Alphio APS.</p>
       </div>
 
       <!-- Prenotazione di riferimento -->
@@ -231,8 +224,19 @@
     const params = new URLSearchParams(location.search);
     const wanted = params.get('booking');
     const pending = pendingFollowUps();
+    const asked = wanted ? MOCK.bookings.find(b => b.id === wanted && isVisitDone(b)) : null;
+
+    // Se l'URL chiede una prenotazione che non è una visita svolta (o non esiste),
+    // non si degrada su un'altra visita: il questionario finirebbe sulla
+    // prenotazione sbagliata. Il fallback vale solo senza parametro (canvas).
+    if (wanted && !asked) {
+      showToast('Questa visita non è ancora stata svolta', 'info');
+      setTimeout(() => { location.href = 'my-cures.html'; }, 900);
+      throw new Error('follow-up: prenotazione non valida · ' + wanted);
+    }
+
     const booking =
-      MOCK.bookings.find(b => b.id === wanted && isVisitDone(b)) ||
+      asked ||
       pending[0] ||
       MOCK.bookings.filter(isVisitDone)[0] ||
       MOCK.bookings[0];

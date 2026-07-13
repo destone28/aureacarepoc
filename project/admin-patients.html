@@ -41,15 +41,6 @@
     }
     .ref-cell span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     .ref-cell svg { flex: none; color: var(--medium-gray); }
-    /* Il questionario post-visita è una proposta: va marcato come tale anche in console */
-    .draft-pill {
-      display: inline-flex; align-items: center;
-      margin-left: 6px;
-      padding: 2px 8px; border-radius: 999px;
-      font-size: 10px; font-weight: 700;
-      background: var(--light-gray); color: var(--medium-gray);
-      letter-spacing: .04em; text-transform: none;
-    }
   </style>
 </head>
 <body class="admin-page">
@@ -237,11 +228,59 @@
 
     // Lookup livello di accesso Carelink (1 urgenza · 2 ISEE · 3 due diligence)
     const accessLevelOf = lvl => MOCK.access_levels.find(a => a.level === lvl);
-    // Dichiarazioni obbligatorie del paziente (testo, data/ora, versione):
+    // Dichiarazioni obbligatorie del paziente loggato (testo, data/ora, versione):
     // servono al Coordinatore per la due diligence sui requisiti di accesso.
+    // Il mock le ha SOLO per PAT-00142: per gli altri pazienti dell'estratto si
+    // dichiara lo stato derivato dai documenti, senza spacciare per loro le
+    // dichiarazioni di Lucia Marchetti.
     const DECL = MOCK.patient.declarations;
     const DECL_HIST = MOCK.patient.declarations_history;
-    const statusLabel = { pending: 'In approvazione', approved: 'Approvata', confirmed: 'Confermata', completed: 'Completata', cancelled: 'Annullata' };
+    // Stati realmente presenti: bookings del paziente (pending/approved) e
+    // richieste di validazione (pending/approved/rejected/info_requested).
+    const statusLabel = { pending: 'In approvazione', approved: 'Approvata', rejected: 'Rifiutata', info_requested: 'Info richieste' };
+    const statusBadgeCls = { pending: 'badge--pending', approved: 'badge--approved', rejected: 'badge--cancelled', info_requested: 'badge--warning' };
+
+    // Storico prenotazioni del paziente APERTO. MOCK.bookings appartiene al solo
+    // PAT-00142 (patient_id): per gli altri pazienti la fonte sono le loro
+    // richieste reali (admin_requests, match sul CF), dove paziente, tariffa e
+    // ID voucher sono coerenti riga per riga. Mai incrociare la prenotazione di
+    // un paziente con l'anagrafica di un altro: la fattura CSRD lega 1 voucher
+    // a 1 paziente a 1 prestazione.
+    function historyOf(p) {
+      const fromBookings = (MOCK.bookings || [])
+        .filter(b => b.patient_id === p.id)
+        .map(b => ({ src: 'booking', id: b.id, title: b.service_name, structure: b.structure_name, when: `${b.date} ${b.time}`, voucher_id: b.voucher_id, esg_price: b.esg_price, status: b.status }));
+      if (fromBookings.length) return fromBookings.slice(0, 5);
+      return (MOCK.admin_requests || [])
+        .filter(r => r.cf === p.cf)
+        .map(r => ({ src: 'request', id: r.id, title: r.service, structure: r.structure, when: r.date, voucher_id: r.voucher_id, esg_price: r.esg_price, status: r.status }))
+        .slice(0, 5);
+    }
+
+    // Dichiarazioni obbligatorie in scheda: reali per il paziente loggato,
+    // stato derivato dai documenti per gli altri record dell'estratto.
+    function declarationsBlock(p) {
+      if (p.id === MOCK.patient.id) {
+        return `<div style="display:grid;gap:8px;font-size:13px;background:#F4FBF6;border:1px solid #C8E6CF;padding:14px;border-radius:10px">
+          ${Object.keys(DECL).map(k => {
+            const d = DECL[k];
+            return `<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px">
+              <span style="flex:1;line-height:1.45">${aIcon('check-circle',{size:13})} ${d.label}</span>
+              <span class="badge badge--approved"><span class="dot"></span>${d.accepted ? 'Accettata' : 'Mancante'}</span>
+            </div>`;
+          }).join('')}
+          <p class="caption" style="border-top:1px dashed #C8E6CF;padding-top:8px;margin-top:2px">Accettate il <strong>${DECL.truthful_docs.ts}</strong> · testo <span class="font-mono">${DECL.truthful_docs.version}</span> · storicizzate (${DECL_HIST.length} registrazioni)</p>
+        </div>`;
+      }
+      const ok = p.docs_status === 'complete';
+      return `<div style="display:grid;gap:8px;font-size:13px;background:#FAFAFA;border:1px solid var(--border-soft);padding:14px;border-radius:10px">
+        ${Object.keys(DECL).map(k => `<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px">
+          <span style="flex:1;line-height:1.45">${DECL[k].label}</span>
+          <span class="badge ${ok ? 'badge--approved' : 'badge--pending'}"><span class="dot"></span>${ok ? 'Accettata' : 'Da verificare'}</span>
+        </div>`).join('')}
+        <p class="caption" style="border-top:1px dashed var(--border-soft);padding-top:8px;margin-top:2px">Data/ora, versione del testo e storico non inclusi in questo estratto mock.</p>
+      </div>`;
+    }
 
     // Medie calcolate sull'estratto di 12 pazienti (stessa base per entrambe)
     const AP = MOCK.admin_patients;
@@ -339,18 +378,44 @@
       showToast('Messaggio inviato a ' + (currentPatient ? currentPatient.name : 'paziente'), 'success');
     }
 
-    // Fattura verificabile CSRD dallo storico prenotazioni della scheda paziente:
-    // disponibile sulle prenotazioni approvate (voucher validato o trasporto L1).
-    function invoiceForBooking(bookingId, patientId) {
-      const b = MOCK.bookings.find(x => x.id === bookingId);
+    // Fattura verificabile CSRD dallo storico della scheda paziente: SOLO su
+    // record approvati CON voucher, e solo se il record appartiene davvero al
+    // paziente aperto (patient_id sui bookings, CF sulle richieste).
+    function invoiceForHistory(src, recordId, patientId) {
       const p = MOCK.admin_patients.find(x => x.id === patientId);
-      if (!b || b.status !== 'approved') return;
+      if (!p) return;
+      if (src === 'request') return invoiceForRequest(recordId, p);
+      invoiceForBooking(recordId, p);
+    }
+
+    function invoiceForRequest(reqId, p) {
+      const r = MOCK.admin_requests.find(x => x.id === reqId);
+      if (!r || r.status !== 'approved' || !r.voucher_id || r.cf !== p.cf) return;
+      const st = (MOCK.structures || []).find(s => s.id === r.structure_id);
+      downloadCsrdInvoice({
+        id: r.id,
+        date: r.date.replace(' · ', ' 2026 · '),
+        patient: r.patient,
+        cf: r.cf,
+        structure_name: r.structure,
+        cert: st ? st.cert : 'ISO 9001',
+        service_name: r.service,
+        status_label: statusLabel[r.status] || r.status,
+        list_price: r.list_price,
+        esg_price: r.esg_price,
+        voucher_id: r.voucher_id
+      });
+    }
+
+    function invoiceForBooking(bookingId, p) {
+      const b = MOCK.bookings.find(x => x.id === bookingId);
+      if (!b || b.status !== 'approved' || !b.voucher_id || b.patient_id !== p.id) return;
       const st = (MOCK.structures || []).find(s => s.id === b.structure_id);
       downloadCsrdInvoice({
         id: b.id,
         date: b.date + ' 2026 · ' + b.time,
-        patient: p ? p.name : '',
-        cf: p ? p.cf : '',
+        patient: p.name,
+        cf: p.cf,
         structure_name: b.structure_name,
         cert: st ? st.cert : 'ISO 9001',
         doctor: b.doctor,
@@ -397,7 +462,7 @@
       const [c1, c2] = palettes[MOCK.admin_patients.indexOf(p) % palettes.length];
       const al = accessLevelOf(p.access_level);
       document.getElementById('pm-title').textContent = p.name;
-      const docPatient = MOCK.bookings.slice(0,5);
+      const docPatient = historyOf(p);
       document.getElementById('pm-body').innerHTML = `
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px">
           <div>
@@ -423,16 +488,7 @@
             </div>
 
             <p class="eyebrow mt-20 mb-8">Dichiarazioni obbligatorie</p>
-            <div style="display:grid;gap:8px;font-size:13px;background:#F4FBF6;border:1px solid #C8E6CF;padding:14px;border-radius:10px">
-              ${Object.keys(DECL).map(k => {
-                const d = DECL[k];
-                return `<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px">
-                  <span style="flex:1;line-height:1.45">${aIcon('check-circle',{size:13})} ${d.label}</span>
-                  <span class="badge badge--approved"><span class="dot"></span>${d.accepted ? 'Accettata' : 'Mancante'}</span>
-                </div>`;
-              }).join('')}
-              <p class="caption" style="border-top:1px dashed #C8E6CF;padding-top:8px;margin-top:2px">Accettate il <strong>${DECL.truthful_docs.ts}</strong> · testo <span class="font-mono">${DECL.truthful_docs.version}</span> · storicizzate (${DECL_HIST.length} registrazioni)</p>
-            </div>
+            ${declarationsBlock(p)}
 
             <p class="eyebrow mt-20 mb-8">Documenti</p>
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:12px">
@@ -446,22 +502,22 @@
           <div>
             <p class="eyebrow mb-8">Storico prenotazioni (5 più recenti)</p>
             <div style="display:grid;gap:8px">
-              ${docPatient.map(b => `<div style="padding:10px 12px;background:#FAFAFA;border-radius:10px;display:flex;justify-content:space-between;align-items:center;gap:10px;font-size:13px">
+              ${docPatient.length ? docPatient.map(h => `<div style="padding:10px 12px;background:#FAFAFA;border-radius:10px;display:flex;justify-content:space-between;align-items:center;gap:10px;font-size:13px">
                 <div>
-                  <strong>${b.service_name}</strong><br>
-                  <span class="caption">${b.structure_name} · ${b.date} ${b.time}</span>
-                  ${b.voucher_id ? `<br><span class="caption font-mono">${b.voucher_id}</span>` : ''}
+                  <strong>${h.title}</strong><br>
+                  <span class="caption">${h.structure} · ${h.when}</span>
+                  ${h.voucher_id ? `<br><span class="caption font-mono">${h.voucher_id}</span>` : ''}
                 </div>
                 <div style="text-align:right">
-                  <strong>${b.voucher_id ? '€' + b.esg_price : 'Trasporto L1'}</strong><br>
-                  <span class="badge badge--${b.status === 'completed' ? 'completed' : b.status === 'pending' ? 'pending' : b.status === 'cancelled' ? 'cancelled' : 'approved'}"><span class="dot"></span>${statusLabel[b.status] || b.status}</span>
-                  ${b.status === 'approved' ? `<br><button class="btn btn--ghost btn--sm mt-8" title="Scarica fattura verificabile CSRD" onclick="invoiceForBooking('${b.id}','${p.id}')">${aIcon('file-check',{size:13})}<span>Fattura CSRD</span></button>` : ''}
+                  <strong>${h.voucher_id ? '€' + h.esg_price : 'Trasporto L1'}</strong><br>
+                  <span class="badge ${statusBadgeCls[h.status] || 'badge--neutral'}"><span class="dot"></span>${statusLabel[h.status] || h.status}</span>
+                  ${h.status === 'approved' && h.voucher_id ? `<br><button class="btn btn--ghost btn--sm mt-8" title="Scarica fattura verificabile CSRD" onclick="invoiceForHistory('${h.src}','${h.id}','${p.id}')">${aIcon('file-check',{size:13})}<span>Fattura CSRD</span></button>` : ''}
                 </div>
-              </div>`).join('')}
+              </div>`).join('') : `<div style="padding:14px;background:#FAFAFA;border-radius:10px;font-size:13px" class="text-muted">Nessuna prenotazione a storico per questo paziente.</div>`}
             </div>
             <p class="caption mt-8" style="display:flex;align-items:flex-start;gap:6px;color:#0F6E56">${aIcon('shield-check',{size:14})}<span>Ogni fattura riporta listino ufficiale, sconto contrattuale <strong>−15%</strong>, tariffa ESG e ID voucher: verificabile dal revisore CSRD del programma.</span></p>
 
-            <p class="eyebrow mt-20 mb-8">Questionario post-visita <span class="draft-pill">Bozza</span></p>
+            <p class="eyebrow mt-20 mb-8">Questionario post-visita <span class="badge badge--draft">Bozza</span></p>
             ${followUpBlock(p.id)}
 
             <p class="eyebrow mt-20 mb-8">ESG aggregato</p>

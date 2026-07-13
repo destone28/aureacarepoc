@@ -73,7 +73,7 @@ Both share `js/styles.css`, `js/navigation.js`, `js/icons.js`, and `data/mock-da
 |---|---|
 | `aureacare_accent`, `_accent_dark`, `_accent_light` | Overrides `--care-blue` CSS variables across all frames |
 | `aureacare_app_switcher_style` | `dropdown` / `modal` / `sheet` — switches `mountAppSwitcher` behavior |
-| `aureacare_handoff_mode` | `pre-flagged` / `visual` / `sober` — variant on `booking-summary.html` |
+| `aureacare_handoff_mode` | `prefilled` (default) / `visual` / `sobrio` — variant on `booking-summary.html` |
 
 The old `aureacare_wallet_variant` key (voucher ring) is **gone** together with `renderWalletRing` — the ring was an economic counter and has no place in the patient app. Don't reintroduce either.
 

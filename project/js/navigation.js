@@ -1,6 +1,6 @@
 /* AureaCare — global navigation & utilities
    Estende il pattern di AureaVia (toast, confirm dialog, mobile menu)
-   Aggiunge: SSO simulato, app switcher, voucher ring renderer.
+   Aggiunge: SSO simulato, app switcher, helper del questionario post-visita.
    ============================================================ */
 
 // ---------- Auth (simulato, condiviso con AureaVia) ----------
@@ -276,7 +276,7 @@ const aMap = (function () {
             <div style="font-family:'Open Sans',system-ui;min-width:200px">
               <div style="font-weight:700;font-size:13px;line-height:1.3;margin-bottom:4px">${s.name}</div>
               <div style="font-size:11px;color:#666">${s.address} · ${s.district}</div>
-              <div style="font-size:11px;color:#666;margin-top:4px">★ ${s.rating.toFixed(1)} · ${s.distance_km.toFixed(1)} km</div>
+              <div style="font-size:11px;color:#666;margin-top:4px;display:flex;align-items:center;gap:4px">${aIcon('star',{size:11})}${s.rating.toFixed(1)} · ${s.distance_km.toFixed(1)} km</div>
               ${opts.onPick ? `<a href="#" data-pick="${s.id}" style="display:inline-block;margin-top:8px;padding:5px 10px;background:${accent};color:#fff;text-decoration:none;font-size:11px;font-weight:700;border-radius:6px">Scegli struttura →</a>` : ''}
             </div>`;
           m.bindPopup(popHtml);
@@ -347,9 +347,20 @@ function isVisitDone(b) {
   return !!b && b.status === 'approved' && isPastBooking(b);
 }
 
+// Questionario già compilato per una prenotazione: prima le risposte date in
+// demo (localStorage), poi lo storico mock (MOCK.patient_followups) — che è la
+// stessa fonte letta dal Coordinatore nella scheda paziente. Senza questo
+// fallback l'app chiederebbe al paziente un questionario che la console mostra
+// come già compilato.
 function getFollowUp(bookingId) {
-  try { return JSON.parse(localStorage.getItem(FOLLOWUP_PREFIX + bookingId)); }
-  catch (e) { return null; }
+  try {
+    const ls = JSON.parse(localStorage.getItem(FOLLOWUP_PREFIX + bookingId));
+    if (ls) return ls;
+  } catch (e) { /* voce corrotta: si ricade sul mock */ }
+  const patientId = (window.MOCK && MOCK.patient && MOCK.patient.id) || null;
+  const mock = ((window.MOCK && MOCK.patient_followups) || [])
+    .find(f => f.booking_id === bookingId && f.patient_id === patientId);
+  return mock ? Object.assign({}, mock, { submitted_at: mock.date }) : null;
 }
 
 function saveFollowUp(bookingId, data) {
