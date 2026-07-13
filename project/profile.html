@@ -145,11 +145,11 @@
       <div class="divider-eyebrow"><span>Il tuo impatto sociale</span><span class="line"></span></div>
       <div class="card card--lg" style="padding: 18px; background: linear-gradient(135deg, #FBFDF8, #E1F5EE); border-color:#C8E6CF; margin-bottom: 12px;">
         <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px">
-          <div style="text-align:center"><p style="font-size:22px;font-weight:700;color:#0F6E56">8</p><p class="caption">cure completate</p></div>
+          <div style="text-align:center"><p style="font-size:22px;font-weight:700;color:#0F6E56" id="pf-completed"></p><p class="caption">cure completate</p></div>
           <div style="text-align:center"><p style="font-size:22px;font-weight:700;color:#0F6E56">3</p><p class="caption">drop-out evitati</p></div>
           <div style="text-align:center"><p style="font-size:22px;font-weight:700;color:#0F6E56">28h</p><p class="caption">caregiver liberate</p></div>
         </div>
-        <p class="caption" style="line-height:1.55;border-top:1px dashed #C8E6CF;padding-top:12px">Grazie al Programma Carelink hai contribuito a <strong style="color:#0F6E56">142kg di CO₂ evitata</strong>, <strong style="color:#0F6E56">28 ore di caregiver risparmiate</strong> e a <strong style="color:#0F6E56">3,2× di SROI combinato</strong> (valore sociale generato dal Fondo ESG Territoriale). Il tuo percorso ha evitato <strong style="color:#0F6E56">3 drop-out di seduta</strong>.</p>
+        <p class="caption" style="line-height:1.55;border-top:1px dashed #C8E6CF;padding-top:12px">Grazie al Programma Carelink hai contribuito a <strong style="color:#0F6E56"><span id="pf-co2"></span> kg di CO₂ evitata</strong>, <strong style="color:#0F6E56">28 ore di caregiver risparmiate</strong> e a <strong style="color:#0F6E56">3,2× di SROI combinato</strong> (valore sociale generato dal Fondo ESG Territoriale). Il tuo percorso ha evitato <strong style="color:#0F6E56">3 drop-out di seduta</strong>.</p>
       </div>
 
       <!-- Sponsor del Fondo ESG Territoriale di Roma -->
@@ -264,6 +264,11 @@
     document.getElementById('nv-wallet').outerHTML = aIcon('wallet',  { size: 22 });
     document.getElementById('nv-profile').outerHTML= aIcon('user',    { size: 22 });
 
+    // Impatto personale — derivato dalle cure effettivamente completate (MOCK.bookings)
+    const pfCompleted = MOCK.bookings.filter(b => b.status === 'completed').length;
+    document.getElementById('pf-completed').textContent = pfCompleted;
+    document.getElementById('pf-co2').textContent = Math.round(pfCompleted * MOCK.esg.environmental.co2_per_visit_avg);
+
     // Mini mappa indirizzo paziente
     aMap.init('profile-map', {
       structures: [],
@@ -293,9 +298,9 @@
         html: `
           <p class="caption mb-16">Seleziona la lingua di AureaCare.</p>
           <div class="slots" style="grid-template-columns:1fr">
-            <button class="slot lang-opt ${settingsState.lang==='it'?'selected':''}" data-lang="it">🇮🇹 Italiano</button>
-            <button class="slot lang-opt ${settingsState.lang==='en'?'selected':''}" data-lang="en">🇬🇧 English</button>
-            <button class="slot lang-opt ${settingsState.lang==='es'?'selected':''}" data-lang="es">🇪🇸 Español</button>
+            <button class="slot lang-opt ${settingsState.lang==='it'?'selected':''}" data-lang="it"><span class="font-mono">IT</span> · Italiano</button>
+            <button class="slot lang-opt ${settingsState.lang==='en'?'selected':''}" data-lang="en"><span class="font-mono">EN</span> · English</button>
+            <button class="slot lang-opt ${settingsState.lang==='es'?'selected':''}" data-lang="es"><span class="font-mono">ES</span> · Español</button>
           </div>
           <p class="caption mt-12">Le lingue extra-italiano sono in beta.</p>`
       }),

@@ -162,7 +162,7 @@
   <div class="rotate-hint">
     <span id="ico-rot"></span>
     <h2>Console ottimizzata per schermi più grandi</h2>
-    <p>Per usare la console AureaCare, ruota il dispositivo o passa a tablet/desktop.</p>
+    <p>Per usare la console del Coordinatore Alphio, ruota il dispositivo o passa a tablet/desktop.</p>
     <button class="btn btn--primary" onclick="this.parentElement.style.display='none'">Continua</button>
   </div>
 
@@ -260,7 +260,7 @@
               <div style="display:flex;justify-content:space-between"><span class="text-muted">Quota paziente</span><strong>€0</strong></div>
             </div>`}
 
-            <p class="eyebrow mt-20 mb-8">Note admin</p>
+            <p class="eyebrow mt-20 mb-8">Note del Coordinatore</p>
             <div class="input-container"><textarea class="input" placeholder="Aggiungi nota visibile al paziente (opzionale)"></textarea></div>
           </div>
 
@@ -284,12 +284,13 @@
             </div>
 
             <p class="eyebrow mb-8">Storico paziente</p>
+            ${(() => { const p = (MOCK.admin_patients || []).find(x => x.cf === r.cf) || { completed: 0 }; return `
             <div style="display:grid;gap:6px;font-size:12px;background:#FAFAFA;padding:12px;border-radius:10px">
-              <div style="display:flex;justify-content:space-between"><span>Prestazioni completate</span><strong>8</strong></div>
-              <div style="display:flex;justify-content:space-between"><span>Approvazioni precedenti</span><strong>11 / 12</strong></div>
+              <div style="display:flex;justify-content:space-between"><span>Prestazioni completate</span><strong>${p.completed}</strong></div>
+              <div style="display:flex;justify-content:space-between"><span>Approvazioni precedenti</span><strong>${Math.floor(p.completed * 0.95)} / ${p.completed + 1}</strong></div>
               <div style="display:flex;justify-content:space-between"><span>Annullamenti</span><strong>1</strong></div>
-              <div style="display:flex;justify-content:space-between"><span>Cliente AureaCare da</span><strong>09/01/2026</strong></div>
-            </div>
+              <div style="display:flex;justify-content:space-between"><span>Nel programma dal</span><strong>09/01/2026</strong></div>
+            </div>`; })()}
 
             <p class="eyebrow mt-20 mb-8">Posizione struttura</p>
             <div class="aurea-map aurea-map--xs" id="ap-map" style="height:180px"></div>
@@ -302,9 +303,9 @@
         </div>`;
       openModal('approve-modal');
 
-      // Inizializza la mini-mappa: cerca per nome (parziale) tra strutture mockate
+      // Inizializza la mini-mappa: risoluzione esatta via structure_id della richiesta
       setTimeout(() => {
-        const target = MOCK.structures.find(s => r.structure && s.name.toLowerCase().includes(r.structure.toLowerCase().split(' ')[0])) || MOCK.structures[0];
+        const target = MOCK.structures.find(s => s.id === r.structure_id) || MOCK.structures[0];
         aMap.init('ap-map', {
           structures: [target],
           selectedId: target.id,

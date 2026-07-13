@@ -107,16 +107,23 @@ window.MOCK = (function () {
   // plafond di voucher, ogni prestazione Fascia A/B consuma 1 voucher e il
   // Fondo ESG Territoriale di Roma copre la tariffa ESG (listino −15%).
   // Quota a carico del paziente: sempre €0.
+  // Coerenza: i movimenti 'usato' sono ESATTAMENTE i voucher consumati dai
+  // bookings non-pending (BOOK-099/097/096/095/093); il voucher del booking
+  // pending (VCH-2026-0142 → BOOK-100) resta 'assegnato' finché il Coordinatore
+  // non lo valida. used = 5 → residui 12 − 5 = 7.
+  // covered_value_ytd = 153 + 306 + 136 + 119 + 1105 = 1.819 €.
+  // Tutte le tariffe ESG sono listino × 0,85 al centesimo (sconto contrattuale 15%).
   const vouchers = {
-    assigned: 12, used: 4, // residui 8
+    assigned: 12, used: 5, // residui 7
     access_level: 2, // ISEE < €20.000 (vedi livelli di accesso)
-    covered_value_ytd: 486, // € coperti dal fondo per Lucia YTD
+    covered_value_ytd: 1819, // € coperti dal fondo per Lucia YTD
     movements: [
-      { id: 'VCH-2026-0142', date: '20 mag', label: 'Visita nefrologica · Villa Gianicolense',      list_price: 130, esg_price: 110, covered: 110, patient_paid: 0, ref: 'BOOK-100', status: 'assegnato' },
-      { id: 'VCH-2026-0139', date: '18 mag', label: 'Prima visita oncologica · Gemelli',            list_price: 180, esg_price: 153, covered: 153, patient_paid: 0, ref: 'BOOK-099', status: 'usato' },
-      { id: 'VCH-2026-0136', date: '12 mag', label: 'Ecografia addome · Gemelli',                   list_price: 153, esg_price: 130, covered: 130, patient_paid: 0, ref: 'BOOK-096', status: 'usato' },
-      { id: 'VCH-2026-0133', date: '08 mag', label: 'Visita oncologica di controllo · Aurelia Hospital', list_price: 130, esg_price: 110, covered: 110, patient_paid: 0, ref: 'BOOK-095', status: 'usato' },
-      { id: 'VCH-2026-0129', date: '18 apr', label: 'Visita nefrologica · Villa Gianicolense',      list_price: 109, esg_price: 93,  covered: 93,  patient_paid: 0, ref: 'BOOK-090', status: 'usato' },
+      { id: 'VCH-2026-0142', date: '20 mag', label: 'Visita nefrologica · Clinica Villa Gianicolense',   list_price: 140,  esg_price: 119,  covered: 119,  patient_paid: 0, ref: 'BOOK-100', status: 'assegnato' },
+      { id: 'VCH-2026-0139', date: '18 mag', label: 'Prima visita oncologica · Gemelli',                 list_price: 180,  esg_price: 153,  covered: 153,  patient_paid: 0, ref: 'BOOK-099', status: 'usato' },
+      { id: 'VCH-2026-0137', date: '14 mag', label: 'RMN cranio/rachide · Centro Diagnostico Italiano Eur', list_price: 360, esg_price: 306, covered: 306, patient_paid: 0, ref: 'BOOK-097', status: 'usato' },
+      { id: 'VCH-2026-0136', date: '12 mag', label: 'Ecografia addome · Gemelli',                        list_price: 160,  esg_price: 136,  covered: 136,  patient_paid: 0, ref: 'BOOK-096', status: 'usato' },
+      { id: 'VCH-2026-0133', date: '08 mag', label: 'Visita oncologica di controllo · Aurelia Hospital', list_price: 140,  esg_price: 119,  covered: 119,  patient_paid: 0, ref: 'BOOK-095', status: 'usato' },
+      { id: 'VCH-2026-0128', date: '28 apr', label: 'PET scan oncologico · Gemelli',                     list_price: 1300, esg_price: 1105, covered: 1105, patient_paid: 0, ref: 'BOOK-093', status: 'usato' },
       { id: 'VCH-2026-0121', date: '02 feb', label: 'Voucher assegnato dal Coordinatore Alphio',    list_price: null, esg_price: null, covered: 0, patient_paid: 0, ref: '—', status: 'assegnato' },
       { id: 'VCH-2026-0120', date: '02 feb', label: 'Voucher assegnato dal Coordinatore Alphio',    list_price: null, esg_price: null, covered: 0, patient_paid: 0, ref: '—', status: 'assegnato' }
     ]
@@ -127,15 +134,17 @@ window.MOCK = (function () {
   // paziente sempre €0. Ogni prestazione Fascia A/B consuma 1 voucher ESG
   // (voucher_id). Le cure ricorsive (kind ciclo, Layer 1) non consumano
   // voucher: il programma copre il trasporto, non la cura — shuttle SEMPRE true.
+  // I list_price sono multipli di 20 dentro il range di listino del servizio, così
+  // che esg_price = list_price × 0,85 sia esatto al centesimo (verificabile CSRD).
   const bookings = [
     { id: 'BOOK-099', service_id: 'SRV-A01', service_name: 'Prima visita oncologica',        structure_id: 'STR-001', structure_name: 'Policlinico Gemelli',            date: '22 mag', time: '14:30', list_price: 180,  esg_price: 153,  voucher_id: 'VCH-2026-0139', status: 'approved',  shuttle: true,  doctor: 'Dr.ssa Elena Conti' },
     { id: 'BOOK-098', service_id: 'SRV-L01', service_name: 'Ciclo oncologico ambulatoriale', structure_id: 'STR-001', structure_name: 'Policlinico Gemelli',            date: '24 mag', time: '09:00', list_price: 0,    esg_price: 0,    voucher_id: null,            status: 'confirmed', shuttle: true,  doctor: 'Dr. Marco Pace' },
     { id: 'BOOK-097', service_id: 'SRV-B01', service_name: 'RMN cranio/rachide',             structure_id: 'STR-015', structure_name: 'Centro Diagnostico Italiano Eur', date: '14 mag', time: '11:00', list_price: 360,  esg_price: 306,  voucher_id: 'VCH-2026-0137', status: 'completed', shuttle: true,  doctor: 'Dr. Luca Ferri' },
-    { id: 'BOOK-096', service_id: 'SRV-B03', service_name: 'Ecografia addome',               structure_id: 'STR-001', structure_name: 'Policlinico Gemelli',            date: '12 mag', time: '17:30', list_price: 153,  esg_price: 130,  voucher_id: 'VCH-2026-0136', status: 'completed', shuttle: false, doctor: 'Dr.ssa Anna Lobello' },
-    { id: 'BOOK-095', service_id: 'SRV-A02', service_name: 'Visita oncologica di controllo', structure_id: 'STR-009', structure_name: 'Aurelia Hospital',               date: '08 mag', time: '10:00', list_price: 130,  esg_price: 110,  voucher_id: 'VCH-2026-0133', status: 'completed', shuttle: false, doctor: 'Dr.ssa Sara Vitali' },
-    { id: 'BOOK-094', service_id: 'SRV-A03', service_name: 'Prima visita cardiologica',      structure_id: 'STR-003', structure_name: 'Villa Gianicolense',             date: '02 mag', time: '15:00', list_price: 170,  esg_price: 145,  voucher_id: null,            status: 'cancelled', shuttle: false, doctor: 'Dr. Paolo Sini' },
+    { id: 'BOOK-096', service_id: 'SRV-B03', service_name: 'Ecografia addome',               structure_id: 'STR-001', structure_name: 'Policlinico Gemelli',            date: '12 mag', time: '17:30', list_price: 160,  esg_price: 136,  voucher_id: 'VCH-2026-0136', status: 'completed', shuttle: false, doctor: 'Dr.ssa Anna Lobello' },
+    { id: 'BOOK-095', service_id: 'SRV-A02', service_name: 'Visita oncologica di controllo', structure_id: 'STR-009', structure_name: 'Aurelia Hospital',               date: '08 mag', time: '10:00', list_price: 140,  esg_price: 119,  voucher_id: 'VCH-2026-0133', status: 'completed', shuttle: false, doctor: 'Dr.ssa Sara Vitali' },
+    { id: 'BOOK-094', service_id: 'SRV-A03', service_name: 'Prima visita cardiologica',      structure_id: 'STR-003', structure_name: 'Clinica Villa Gianicolense',     date: '02 mag', time: '15:00', list_price: 180,  esg_price: 153,  voucher_id: null,            status: 'cancelled', shuttle: false, doctor: 'Dr. Paolo Sini' },
     { id: 'BOOK-093', service_id: 'SRV-B04', service_name: 'PET scan oncologico',            structure_id: 'STR-001', structure_name: 'Policlinico Gemelli',            date: '28 apr', time: '16:30', list_price: 1300, esg_price: 1105, voucher_id: 'VCH-2026-0128', status: 'completed', shuttle: true,  doctor: 'Dr.ssa Marta Bui' },
-    { id: 'BOOK-100', service_id: 'SRV-A05', service_name: 'Visita nefrologica',             structure_id: 'STR-003', structure_name: 'Villa Gianicolense',             date: '27 mag', time: '17:00', list_price: 130,  esg_price: 110,  voucher_id: 'VCH-2026-0142', status: 'pending',   shuttle: false, doctor: 'Dr. Mauro Genna' }
+    { id: 'BOOK-100', service_id: 'SRV-A05', service_name: 'Visita nefrologica',             structure_id: 'STR-003', structure_name: 'Clinica Villa Gianicolense',     date: '27 mag', time: '17:00', list_price: 140,  esg_price: 119,  voucher_id: 'VCH-2026-0142', status: 'pending',   shuttle: false, doctor: 'Dr. Mauro Genna' }
   ];
 
   // ---------- Admin: richieste di validazione voucher (estese — 12 visibili) ----------
@@ -144,26 +153,28 @@ window.MOCK = (function () {
   // (voucher_id; vouchers_left = residui attuali del paziente). Le cure
   // ricorsive Layer 1 non consumano voucher: la richiesta riguarda il
   // trasporto gratuito (voucher_id null, esg_price 0).
+  // structure_id = riferimento esatto alla struttura (la mappa del modale di
+  // revisione lo usa invece di un match euristico sul nome).
   const admin_requests = [
-    { id: 'REQ-2026-0142', patient: 'Lucia Marchetti',  cf: 'MRCLCU82M55H501T', service: 'Visita nefrologica',                          structure: 'Villa Gianicolense',              date: '27 mag · 17:00', submitted: '20 mag 14:22', list_price: 130,  esg_price: 110,  voucher_id: 'VCH-2026-0142', vouchers_left: 8,  access_level: 2, status: 'pending' },
-    { id: 'REQ-2026-0141', patient: 'Andrea Rossi',     cf: 'RSSNDR79H03H501Z', service: 'Ciclo oncologico ambulatoriale (trasporto L1)', structure: 'Policlinico Gemelli',           date: '02 giu · 09:00', submitted: '20 mag 11:09', list_price: 0,    esg_price: 0,    voucher_id: null,            vouchers_left: 6,  access_level: 1, status: 'pending' },
-    { id: 'REQ-2026-0140', patient: 'Giulia Bianchi',   cf: 'BNCGLI91D52H501W', service: 'Prima visita cardiologica',                   structure: 'Casa di Cura Mater Dei',          date: '28 mag · 11:00', submitted: '20 mag 09:45', list_price: 188,  esg_price: 160,  voucher_id: 'VCH-2026-0140', vouchers_left: 3,  access_level: 2, status: 'pending' },
-    { id: 'REQ-2026-0139', patient: 'Marco De Luca',    cf: 'DLCMRC85A12H501P', service: 'Ecografia addome',                            structure: 'Centro Diagnostico Italiano Eur', date: '23 mag · 18:00', submitted: '19 mag 22:17', list_price: 153,  esg_price: 130,  voucher_id: 'VCH-2026-0138', vouchers_left: 5,  access_level: 3, status: 'info_requested' },
-    { id: 'REQ-2026-0138', patient: 'Sofia Ferri',      cf: 'FRRSFO88P54H501M', service: 'RMN cranio/rachide',                          structure: 'Centro Diagnostico Italiano Eur', date: '26 mag · 15:30', submitted: '19 mag 17:32', list_price: 376,  esg_price: 320,  voucher_id: 'VCH-2026-0135', vouchers_left: 2,  access_level: 2, status: 'approved' },
-    { id: 'REQ-2026-0137', patient: 'Paolo Esposito',   cf: 'SPSPLA72L08F839B', service: 'Prima visita cardiologica',                   structure: 'Gemelli',                         date: '24 mag · 10:00', submitted: '19 mag 13:08', list_price: 176,  esg_price: 150,  voucher_id: 'VCH-2026-0134', vouchers_left: 4,  access_level: 1, status: 'approved' },
-    { id: 'REQ-2026-0136', patient: 'Chiara Romano',    cf: 'RMNCHR93T67H501S', service: 'Visita oncologica di controllo',              structure: 'Aurelia Hospital',                date: '23 mag · 14:00', submitted: '19 mag 10:11', list_price: 135,  esg_price: 115,  voucher_id: 'VCH-2026-0132', vouchers_left: 7,  access_level: 2, status: 'approved' },
-    { id: 'REQ-2026-0135', patient: 'Davide Greco',     cf: 'GRCDVD80E21H501Y', service: 'Prima visita neurologica',                    structure: 'Clinica Borgo Salus',             date: '22 mag · 09:30', submitted: '18 mag 16:43', list_price: 182,  esg_price: 155,  voucher_id: 'VCH-2026-0131', vouchers_left: 1,  access_level: 3, status: 'rejected' },
-    { id: 'REQ-2026-0134', patient: 'Elena Riva',       cf: 'RVELNE76C44H501R', service: 'Ciclo dialisi mensile (trasporto L1)',        structure: 'Roma East Private Hospital',      date: '21 mag · 08:00', submitted: '18 mag 12:08', list_price: 0,    esg_price: 0,    voucher_id: null,            vouchers_left: 10, access_level: 1, status: 'approved' },
-    { id: 'REQ-2026-0133', patient: 'Roberto Conti',    cf: 'CNTRRT69M28H501F', service: 'TC total body',                               structure: 'Centro Diagnostico Italiano Eur', date: '21 mag · 11:30', submitted: '18 mag 09:32', list_price: 294,  esg_price: 250,  voucher_id: 'VCH-2026-0127', vouchers_left: 5,  access_level: 2, status: 'approved' },
-    { id: 'REQ-2026-0132', patient: 'Federica Santoro', cf: 'SNTFRC84S58H501J', service: 'PET scan oncologico',                         structure: 'Policlinico Gemelli',             date: '20 mag · 17:00', submitted: '17 mag 21:09', list_price: 1300, esg_price: 1105, voucher_id: 'VCH-2026-0126', vouchers_left: 0,  access_level: 1, status: 'approved' },
-    { id: 'REQ-2026-0131', patient: 'Stefano Marino',   cf: 'MRNSFN77H15H501K', service: 'Scintigrafia ossea',                          structure: 'Centro Diagnostico Italiano Eur', date: '18 mag · 09:00', submitted: '15 mag 14:00', list_price: 341,  esg_price: 290,  voucher_id: 'VCH-2026-0125', vouchers_left: 9,  access_level: 2, status: 'approved' }
+    { id: 'REQ-2026-0142', patient: 'Lucia Marchetti',  cf: 'MRCLCU82M55H501T', service: 'Visita nefrologica',                          structure: 'Clinica Villa Gianicolense',      structure_id: 'STR-003', date: '27 mag · 17:00', submitted: '20 mag 14:22', list_price: 140,  esg_price: 119,  voucher_id: 'VCH-2026-0142', vouchers_left: 7,  access_level: 2, status: 'pending' },
+    { id: 'REQ-2026-0141', patient: 'Andrea Rossi',     cf: 'RSSNDR79H03H501Z', service: 'Ciclo oncologico ambulatoriale (trasporto L1)', structure: 'Policlinico Gemelli',           structure_id: 'STR-001', date: '02 giu · 09:00', submitted: '20 mag 11:09', list_price: 0,    esg_price: 0,    voucher_id: null,            vouchers_left: 6,  access_level: 1, status: 'pending' },
+    { id: 'REQ-2026-0140', patient: 'Giulia Bianchi',   cf: 'BNCGLI91D52H501W', service: 'Prima visita cardiologica',                   structure: 'Casa di Cura Mater Dei',          structure_id: 'STR-018', date: '28 mag · 11:00', submitted: '20 mag 09:45', list_price: 180,  esg_price: 153,  voucher_id: 'VCH-2026-0140', vouchers_left: 3,  access_level: 2, status: 'pending' },
+    { id: 'REQ-2026-0139', patient: 'Marco De Luca',    cf: 'DLCMRC85A12H501P', service: 'Ecografia addome',                            structure: 'Centro Diagnostico Italiano Eur', structure_id: 'STR-015', date: '23 mag · 18:00', submitted: '19 mag 22:17', list_price: 160,  esg_price: 136,  voucher_id: 'VCH-2026-0138', vouchers_left: 5,  access_level: 3, status: 'info_requested' },
+    { id: 'REQ-2026-0138', patient: 'Sofia Ferri',      cf: 'FRRSFO88P54H501M', service: 'RMN cranio/rachide',                          structure: 'Centro Diagnostico Italiano Eur', structure_id: 'STR-015', date: '26 mag · 15:30', submitted: '19 mag 17:32', list_price: 380,  esg_price: 323,  voucher_id: 'VCH-2026-0135', vouchers_left: 2,  access_level: 2, status: 'approved' },
+    { id: 'REQ-2026-0137', patient: 'Paolo Esposito',   cf: 'SPSPLA72L08F839B', service: 'Prima visita cardiologica',                   structure: 'Policlinico Gemelli',             structure_id: 'STR-001', date: '24 mag · 10:00', submitted: '19 mag 13:08', list_price: 180,  esg_price: 153,  voucher_id: 'VCH-2026-0134', vouchers_left: 4,  access_level: 1, status: 'approved' },
+    { id: 'REQ-2026-0136', patient: 'Chiara Romano',    cf: 'RMNCHR93T67H501S', service: 'Visita oncologica di controllo',              structure: 'Aurelia Hospital',                structure_id: 'STR-009', date: '23 mag · 14:00', submitted: '19 mag 10:11', list_price: 140,  esg_price: 119,  voucher_id: 'VCH-2026-0132', vouchers_left: 7,  access_level: 2, status: 'approved' },
+    { id: 'REQ-2026-0135', patient: 'Davide Greco',     cf: 'GRCDVD80E21H501Y', service: 'Prima visita neurologica',                    structure: 'Clinica Borgo Salus',             structure_id: 'STR-016', date: '22 mag · 09:30', submitted: '18 mag 16:43', list_price: 180,  esg_price: 153,  voucher_id: 'VCH-2026-0131', vouchers_left: 1,  access_level: 3, status: 'rejected' },
+    { id: 'REQ-2026-0134', patient: 'Elena Riva',       cf: 'RVELNE76C44H501R', service: 'Ciclo dialisi mensile (trasporto L1)',        structure: 'Roma East Private Hospital',      structure_id: 'STR-002', date: '21 mag · 08:00', submitted: '18 mag 12:08', list_price: 0,    esg_price: 0,    voucher_id: null,            vouchers_left: 10, access_level: 1, status: 'approved' },
+    { id: 'REQ-2026-0133', patient: 'Roberto Conti',    cf: 'CNTRRT69M28H501F', service: 'TC total body',                               structure: 'Centro Diagnostico Italiano Eur', structure_id: 'STR-015', date: '21 mag · 11:30', submitted: '18 mag 09:32', list_price: 280,  esg_price: 238,  voucher_id: 'VCH-2026-0127', vouchers_left: 5,  access_level: 2, status: 'approved' },
+    { id: 'REQ-2026-0132', patient: 'Federica Santoro', cf: 'SNTFRC84S58H501J', service: 'PET scan oncologico',                         structure: 'Policlinico Gemelli',             structure_id: 'STR-001', date: '20 mag · 17:00', submitted: '17 mag 21:09', list_price: 1300, esg_price: 1105, voucher_id: 'VCH-2026-0126', vouchers_left: 0,  access_level: 1, status: 'approved' },
+    { id: 'REQ-2026-0131', patient: 'Stefano Marino',   cf: 'MRNSFN77H15H501K', service: 'Scintigrafia ossea',                          structure: 'Centro Diagnostico Italiano Eur', structure_id: 'STR-015', date: '18 mag · 09:00', submitted: '15 mag 14:00', list_price: 340,  esg_price: 289,  voucher_id: 'VCH-2026-0125', vouchers_left: 9,  access_level: 2, status: 'approved' }
   ];
 
   // ---------- Admin: KPI dashboard ----------
   // Scala anno 1 Roma: 33.500 voucher e 35.100 corse a target; YTD (Gen–Lug) 13.900 voucher e 14.620 corse.
   const admin_kpi = {
     voucher_month: { value: 2790, delta: 12.5 },  // voucher validati (mese corrente = Lug)
-    value_covered: { value: 318000, delta: 8.7 }, // € coperti dal Fondo ESG (mese)
+    value_covered: { value: 334800, delta: 8.7 }, // € coperti dal Fondo ESG (mese) = 2.790 × €120 medi per voucher
     rides_month:   { value: 2940, delta: 5.8 },   // corse Samarcanda coordinate (mese)
     approval_rate: { value: 87, delta: 2.4 },
     sroi:          { value: 3.2, delta: 0.4 }     // SROI combinato (range documento 2,76–3,64×)
@@ -184,7 +195,7 @@ window.MOCK = (function () {
   // referral = canale di ingresso istituzionale (Comuni/Regione segnalano alle
   // Associazioni, che curano onboarding e privacy; SSN/MMG certifica l'urgenza).
   const admin_patients = [
-    { id: 'PAT-00142', name: 'Lucia Marchetti',  cf: 'MRCLCU82M55H501T', vouchers_left: 8,  access_level: 2, referral: 'Associazione Insieme per la Cura ODV', completed: 8, last_login: 'Oggi 09:14', docs_status: 'complete' },
+    { id: 'PAT-00142', name: 'Lucia Marchetti',  cf: 'MRCLCU82M55H501T', vouchers_left: 7,  access_level: 2, referral: 'Associazione Insieme per la Cura ODV', completed: 4, last_login: 'Oggi 09:14', docs_status: 'complete' },
     { id: 'PAT-00141', name: 'Andrea Rossi',     cf: 'RSSNDR79H03H501Z', vouchers_left: 6,  access_level: 1, referral: 'SSN/MMG', completed: 12, last_login: 'Ieri 19:42', docs_status: 'complete' },
     { id: 'PAT-00140', name: 'Giulia Bianchi',   cf: 'BNCGLI91D52H501W', vouchers_left: 3,  access_level: 2, referral: 'Comune di Roma', completed: 6, last_login: 'Ieri 15:08', docs_status: 'complete' },
     { id: 'PAT-00139', name: 'Marco De Luca',    cf: 'DLCMRC85A12H501P', vouchers_left: 5,  access_level: 3, referral: 'Regione Lazio', completed: 9, last_login: '2 giorni fa', docs_status: 'partial' },
@@ -212,7 +223,9 @@ window.MOCK = (function () {
       social_value_y1: '€24,8M – 32,7M', // valore sociale generato anno 1 su €9M di fondo
       co2_saved:       { value: 21400, unit: 'kg', delta: +18.2, label: 'CO₂ evitata (YTD)' },
       caregiver_h:     { value: 16500, unit: 'h',  delta: +12.5, label: 'Ore caregiver risparmiate' },
-      fragile_served:  { value: 38,    unit: '%',  delta: +4.1,  label: 'Pazienti fragili serviti' }
+      // 68% = unione delle categorie di fragilità (le pct delle singole categorie
+      // sommano 89% perché un paziente può rientrare in più categorie).
+      fragile_served:  { value: 68,    unit: '%',  delta: +4.1,  label: 'Pazienti fragili serviti' }
     },
 
     // ---------- Aderenza terapeutica: outcome fondante del programma ----------
@@ -277,8 +290,9 @@ window.MOCK = (function () {
 
     // ---------- Ambientale ----------
     environmental: {
-      co2_per_visit_avg: 17.7,   // kg CO2 evitata per prestazione media (vs percorso senza programma)
-      km_avoided:        249600, // km totali risparmiati (prossimità strutture + corse condivise)
+      // Scala canonica: 1,5 kg × 13.900 voucher YTD ≈ 21.400 kg = 21,4 t (co2_ytd_t).
+      co2_per_visit_avg: 1.5,    // kg CO2 evitata per prestazione media (vs percorso senza programma)
+      km_avoided:        76450,  // km totali risparmiati = 5,5 km/visita × 13.900 prestazioni YTD
       shuttle_share:     54,     // % prestazioni raggiunte con trasporto Samarcanda/AureaShuttle
       shuttle_breakdown: [
         { label: 'AureaShuttle (Samarcanda)', value: 54, color: 'var(--primary-orange)' },
@@ -305,10 +319,11 @@ window.MOCK = (function () {
       ],
       district_coverage: 14, // quartieri Roma coperti
       total_districts:   22, // di cui obiettivo totale
+      // Somma pazienti = 3.120 (= pazienti attivi YTD, 640 L1 + 2.480 L2)
       district_top: [
-        { name: 'Tuscolano',       patients: 440, completed: 1840 },
-        { name: 'EUR',             patients: 360, completed: 1520 },
-        { name: 'Trionfale',       patients: 320, completed: 1380 },
+        { name: 'Tuscolano',       patients: 600, completed: 1840 },
+        { name: 'EUR',             patients: 440, completed: 1520 },
+        { name: 'Trionfale',       patients: 360, completed: 1380 },
         { name: 'Parioli',         patients: 280, completed: 1190 },
         { name: 'Monteverde',      patients: 240, completed: 980  },
         { name: 'Pietralata',      patients: 220, completed: 840  },

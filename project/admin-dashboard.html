@@ -56,7 +56,7 @@
           <div class="kpi-card">
             <div class="kpi-icon green"><span id="k2"></span></div>
             <p class="kpi-label">Valore coperto dal Fondo (mese)</p>
-            <p class="kpi-value">€318k</p>
+            <p class="kpi-value">€335k</p>
             <p class="kpi-delta up"><span id="t2"></span> +8.7% vs Giu</p>
           </div>
           <div class="kpi-card">
@@ -126,23 +126,12 @@
               <text x="788" y="164">2.0×</text>
               <text x="788" y="224">1.0×</text>
             </g>
-            <!-- Voucher validati area + line (scala 0–3.000/mese) -->
-            <path d="M 100 149 L 200 129 L 300 111 L 400 99 L 500 94 L 600 71 L 700 53 L 700 220 L 100 220 Z" fill="url(#blueFill)"/>
-            <polyline points="100,149 200,129 300,111 400,99 500,94 600,71 700,53" fill="none" stroke="#3B82F6" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
-            <!-- SROI line (mapped to 1-4) -->
-            <polyline points="100,142 200,130 300,118 400,112 500,100 600,94 700,88" fill="none" stroke="#0F6E56" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="0"/>
-            <!-- Points voucher -->
-            <g fill="#3B82F6">
-              <circle cx="100" cy="149" r="5"/><circle cx="200" cy="129" r="5"/><circle cx="300" cy="111" r="5"/>
-              <circle cx="400" cy="99" r="5"/><circle cx="500" cy="94" r="5"/><circle cx="600" cy="71" r="5"/>
-              <circle cx="700" cy="53" r="6" stroke="#fff" stroke-width="2"/>
-            </g>
-            <!-- Points sroi -->
-            <g fill="#0F6E56">
-              <circle cx="100" cy="142" r="4"/><circle cx="200" cy="130" r="4"/><circle cx="300" cy="118" r="4"/>
-              <circle cx="400" cy="112" r="4"/><circle cx="500" cy="100" r="4"/><circle cx="600" cy="94" r="4"/>
-              <circle cx="700" cy="88" r="5" stroke="#fff" stroke-width="2"/>
-            </g>
+            <!-- Voucher validati e SROI: serie generate in JS da MOCK.admin_trend -->
+            <path id="ch-area" fill="url(#blueFill)"/>
+            <polyline id="ch-vch" fill="none" stroke="#3B82F6" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+            <polyline id="ch-sroi" fill="none" stroke="#0F6E56" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+            <g id="ch-vch-dots" fill="#3B82F6"></g>
+            <g id="ch-sroi-dots" fill="#0F6E56"></g>
             <!-- X axis labels -->
             <g font-family="Open Sans" font-size="12" fill="#666" text-anchor="middle">
               <text x="100" y="250">Gen</text><text x="200" y="250">Feb</text><text x="300" y="250">Mar</text>
@@ -258,6 +247,32 @@
         { confirmLabel: 'Sì, approva' }
       );
     }
+
+    // ---- Chart: serie disegnate da MOCK.admin_trend (niente punti hardcoded) ----
+    // Asse voucher: 3.000 → y=40, 750 → y=220  ⇒  y = 280 − 0,08·v
+    // Asse SROI:      4,0× → y=40, 1,0× → y=220 ⇒  y = 280 − 60·v
+    (function drawTrend() {
+      const T = MOCK.admin_trend;
+      const xs = [100, 200, 300, 400, 500, 600, 700];
+      const yV = v => +(280 - 0.08 * v).toFixed(1);
+      const yS = v => +(280 - 60 * v).toFixed(1);
+      const ptsV = T.vouchers.map((v, i) => `${xs[i]},${yV(v)}`);
+      const ptsS = T.sroi.map((v, i) => `${xs[i]},${yS(v)}`);
+      document.getElementById('ch-vch').setAttribute('points', ptsV.join(' '));
+      document.getElementById('ch-sroi').setAttribute('points', ptsS.join(' '));
+      document.getElementById('ch-area').setAttribute('d',
+        'M ' + T.vouchers.map((v, i) => `${xs[i]} ${yV(v)}`).join(' L ') +
+        ` L ${xs[T.vouchers.length - 1]} 220 L ${xs[0]} 220 Z`);
+      const dots = (id, pts, r) => {
+        document.getElementById(id).innerHTML = pts.map((p, i) => {
+          const [x, y] = p.split(',');
+          const last = i === pts.length - 1;
+          return `<circle cx="${x}" cy="${y}" r="${last ? r + 1 : r}"${last ? ' stroke="#fff" stroke-width="2"' : ''}/>`;
+        }).join('');
+      };
+      dots('ch-vch-dots', ptsV, 5);
+      dots('ch-sroi-dots', ptsS, 4);
+    })();
 
     // Tab chart switch — riassegna labels asse X
     document.getElementById('trend-tabs').addEventListener('click', (e) => {

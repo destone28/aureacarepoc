@@ -63,17 +63,17 @@
         </div>
         <div class="flex justify-center gap-12 mt-16">
           <div>
-            <p style="font-size:22px;font-weight:700;color:var(--care-blue-dark)">8</p>
+            <p style="font-size:22px;font-weight:700;color:var(--care-blue-dark)" id="vch-left"></p>
             <p class="caption">voucher residui</p>
           </div>
           <div style="width:1px;background:var(--border-soft)"></div>
           <div>
-            <p style="font-size:22px;font-weight:700">4 / 12</p>
+            <p style="font-size:22px;font-weight:700" id="vch-used"></p>
             <p class="caption">usati / assegnati</p>
           </div>
           <div style="width:1px;background:var(--border-soft)"></div>
           <div>
-            <p style="font-size:22px;font-weight:700;color:#0F6E56">€486</p>
+            <p style="font-size:22px;font-weight:700;color:#0F6E56" id="vch-covered"></p>
             <p class="caption">coperti dal Fondo</p>
           </div>
         </div>
@@ -163,9 +163,13 @@
     document.getElementById('nv-wallet').outerHTML = aIcon('wallet',  { size: 22 });
     document.getElementById('nv-profile').outerHTML= aIcon('user',    { size: 22 });
 
+    // Unica fonte di verità: MOCK.vouchers (hero + ring + storico)
     const V = MOCK.vouchers;
+    document.getElementById('vch-left').textContent = V.assigned - V.used;
+    document.getElementById('vch-used').textContent = `${V.used} / ${V.assigned}`;
+    document.getElementById('vch-covered').textContent = '€' + V.covered_value_ytd.toLocaleString('it-IT');
     renderWalletRing(document.getElementById('wallet-ring-big'), {
-      total: V.assigned, used: V.used, covered: V.covered_value_ytd, size: 200, coveredMax: 1000
+      total: V.assigned, used: V.used, covered: V.covered_value_ytd, size: 200, coveredMax: 2000
     });
 
     function openVoucherRequest() { openModal('req-modal'); }

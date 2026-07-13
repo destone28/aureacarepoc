@@ -243,18 +243,20 @@ function renderWalletRing(el, opts) {
                 stroke-dashoffset="${((1-pct)*2*Math.PI*42).toFixed(2)}"/>
       </svg>`;
   } else if (variant === 'dual') {
-    // two concentric rings (valore coperto dal Fondo outer, voucher residui inner)
+    // due anelli concentrici: esterno = valore coperto dal Fondo (verde programma),
+    // interno = voucher residui (care-blue). L'arancione resta marker di suite.
     const pctC = Math.max(0, Math.min(1, covered / (opts.coveredMax || 1000)));
     const pctP = Math.max(0, Math.min(1, (total - used) / total));
     wrap.innerHTML = `
       <svg viewBox="0 0 100 100">
         <circle class="ring-bg" cx="50" cy="50" r="44" stroke-width="5"/>
         <circle class="ring-fg" cx="50" cy="50" r="44" stroke-width="5"
+                stroke="#0F6E56"
                 stroke-dasharray="${(2*Math.PI*44).toFixed(2)}"
                 stroke-dashoffset="${((1-pctC)*2*Math.PI*44).toFixed(2)}"/>
         <circle class="ring-bg" cx="50" cy="50" r="34" stroke-width="5"/>
         <circle class="ring-fg" cx="50" cy="50" r="34" stroke-width="5"
-                stroke="var(--primary-orange)"
+                stroke="var(--care-blue)"
                 stroke-dasharray="${(2*Math.PI*34).toFixed(2)}"
                 stroke-dashoffset="${((1-pctP)*2*Math.PI*34).toFixed(2)}"/>
       </svg>`;
@@ -266,7 +268,7 @@ function renderWalletRing(el, opts) {
     center.innerHTML = `
       <div class="ring-eyebrow">Voucher ESG</div>
       <div class="ring-amount" style="font-size:26px">${total - used}</div>
-      <div class="ring-sub">residui su ${total} · €${covered} coperti dal Fondo</div>`;
+      <div class="ring-sub">residui su ${total} · €${covered.toLocaleString('it-IT')} coperti dal Fondo</div>`;
   } else {
     center.innerHTML = `
       <div class="ring-eyebrow">Voucher ESG</div>
@@ -380,7 +382,9 @@ const aMap = (function () {
 
       if (opts.showPatient && window.MOCK && MOCK.patient_location) {
         const loc = MOCK.patient_location;
-        const m = L.marker([loc.lat, loc.lng], { icon: divPin(green, '🏠', 28) }).addTo(map);
+        // Pin "Casa": icona SVG (aIcon), mai emoji — il colore eredita da currentColor.
+        const homeIco = (typeof aIcon === 'function') ? aIcon('home', { size: 10, stroke: 2.5 }) : '';
+        const m = L.marker([loc.lat, loc.lng], { icon: divPin(green, homeIco, 28) }).addTo(map);
         m.bindPopup(`<div style="font-family:'Open Sans',system-ui;font-size:12px"><strong>Casa</strong><br>${(MOCK.patient && MOCK.patient.address) || 'Via Tuscolana 124, Roma'}</div>`);
         out.markers.push(m);
       }

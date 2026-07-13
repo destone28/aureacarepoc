@@ -387,10 +387,10 @@
                   <p class="caption" style="margin-top:4px;font-size:11px">≈ 1.020 alberi · 41% del target</p>
                 </div>
                 <div style="padding:14px;background:#F4FBF6;border-radius:10px">
-                  <div class="flex justify-between items-center"><span class="text-muted">Km evitati (YTD)</span><strong style="font-size:18px;color:#0F6E56">249.600 km</strong></div>
+                  <div class="flex justify-between items-center"><span class="text-muted">Km evitati (YTD)</span><strong style="font-size:18px;color:#0F6E56">76.450 km</strong></div>
                 </div>
                 <div style="padding:14px;background:#F4FBF6;border-radius:10px">
-                  <div class="flex justify-between items-center"><span class="text-muted">CO₂ evitata / prestazione</span><strong style="font-size:18px;color:#0F6E56">17,7 kg</strong></div>
+                  <div class="flex justify-between items-center"><span class="text-muted">CO₂ evitata / prestazione</span><strong style="font-size:18px;color:#0F6E56">1,5 kg</strong></div>
                 </div>
                 <div style="padding:14px;background:#F4FBF6;border-radius:10px">
                   <div class="flex justify-between items-center"><span class="text-muted">Quota trasporto Samarcanda</span><strong style="font-size:18px;color:var(--primary-orange)">54%</strong></div>
@@ -432,7 +432,7 @@
             <div>
               <p class="eyebrow mb-8">Fragilità servite (categorie di vulnerabilità)</p>
               <div id="fragile-bars"></div>
-              <p class="caption mt-8">Il 38% dei pazienti rientra in almeno una categoria di fragilità sanitaria o economica.</p>
+              <p class="caption mt-8">Il 68% dei pazienti rientra in almeno una categoria di fragilità sanitaria o economica (le percentuali per categoria si sovrappongono: un paziente può rientrare in più categorie).</p>
             </div>
             <div>
               <p class="eyebrow mb-8">Top quartieri Roma per copertura</p>
@@ -506,6 +506,7 @@
               <p class="eyebrow mb-8">Layer 2 — Accesso alle cure (voucher ESG)</p>
               <div class="table-scroll"><table class="esg-table" id="ben-l2"></table></div>
               <p class="caption mt-8">Investimento €4,5M · SROI <strong>5,4×</strong> (4,56–6,31). Valore sociale combinato anno 1: <strong style="color:#0F6E56">€24,8M – 32,7M</strong>.</p>
+              <p class="caption mt-8">Nota metodologica: l'estremo superiore del range (€28,4M) include scenari di sensitivity sui QALY non allocati per singola voce — la somma puntuale delle voci B1+B2+B3 vale €20,5M–21,8M (fonte: documento Alphio Carelink).</p>
             </div>
           </div>
         </div>
@@ -595,7 +596,9 @@
   <script src="js/icons.js"></script>
   <script src="js/navigation.js"></script>
   <script>
-    requireAdmin();
+    // Nota: come le altre pagine della console, la guardia requireAdmin() non è
+    // attiva nel POC — le schermate devono renderizzare anche negli iframe del
+    // canvas di review, dove non esiste una sessione.
 
     // ---- Sidebar icons ----
     document.getElementById('sb1').outerHTML = aIcon('bar-chart', { size: 20 });

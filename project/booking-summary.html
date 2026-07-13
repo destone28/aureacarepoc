@@ -89,17 +89,17 @@
         <h3>Prestazione</h3>
         <div class="flex items-center gap-12 mb-12">
           <div style="width:44px;height:44px;border-radius:12px;background:var(--care-blue-light);color:var(--care-blue-dark);display:flex;align-items:center;justify-content:center;flex-shrink:0">
-            <span id="ico-heart"></span>
+            <span id="sum-thumb"></span>
           </div>
           <div style="flex:1">
-            <p style="font-weight:700" id="sum-service">Prima visita cardiologica</p>
-            <p class="caption" id="sum-service-meta">Cardiologia · Fascia A · 40 min</p>
+            <p style="font-weight:700" id="sum-service">&nbsp;</p>
+            <p class="caption" id="sum-service-meta">&nbsp;</p>
           </div>
         </div>
-        <div class="kv-row"><span class="k">Struttura</span><span class="v">Policlinico Gemelli<br><span class="caption" style="font-weight:400">Largo A. Gemelli 8 · Trionfale</span></span></div>
+        <div class="kv-row"><span class="k">Struttura</span><span class="v" id="kv-structure">&nbsp;</span></div>
         <div class="kv-row"><span class="k">Data</span><span class="v" id="kv-date">Giovedì 22 maggio 2026</span></div>
         <div class="kv-row"><span class="k">Orario</span><span class="v" id="kv-time">14:30</span></div>
-        <div class="kv-row"><span class="k">Medico</span><span class="v">Dr.ssa Elena Conti</span></div>
+        <div class="kv-row"><span class="k">Medico</span><span class="v" id="kv-doctor">&nbsp;</span></div>
       </div>
 
       <!-- Mini mappa della struttura confermata -->
@@ -108,12 +108,7 @@
       <!-- Recap copertura ESG -->
       <div class="recap-block">
         <h3 id="esg-block-title">Copertura ESG</h3>
-        <div id="esg-block-rows">
-          <div class="kv-row"><span class="k">Listino struttura</span><span class="v" style="text-decoration:line-through;color:var(--medium-gray);font-weight:400">€176</span></div>
-          <div class="kv-row"><span class="k">Tariffa ESG (−15%)</span><span class="v">€150</span></div>
-          <div class="kv-row"><span class="k">Coperto dal Fondo ESG Territoriale</span><span class="v" style="color:#0F6E56">€150</span></div>
-          <div class="kv-row"><span class="k">Voucher ESG</span><span class="v" style="color:var(--care-blue-dark)">1 voucher · 7 residui dopo la validazione</span></div>
-        </div>
+        <div id="esg-block-rows"></div>
         <div class="kv-row" id="row-shuttle-fee" style="display:none"><span class="k">Trasporto AureaShuttle</span><span class="v" style="color:#0F6E56">Gratuito — coperto dal Fondo ESG<br><span class="caption" style="font-weight:400">costo al programma €72/corsa</span></span></div>
         <div class="kv-row"><span class="k" style="color:var(--ink);font-weight:700">A tuo carico</span><span class="v" style="color:var(--care-blue-dark);font-size:16px">€0</span></div>
       </div>
@@ -144,7 +139,6 @@
   <script>
     document.getElementById('ico-back').outerHTML = aIcon('arrow-left', { size: 20 });
     document.getElementById('ico-grid').outerHTML = aIcon('grid', { size: 20 });
-    document.getElementById('ico-heart').outerHTML = aIcon('heart', { size: 22 });
     document.getElementById('nv-home').outerHTML   = aIcon('home',    { size: 22 });
     document.getElementById('nv-cure').outerHTML   = aIcon('heart',   { size: 22 });
     document.getElementById('nv-wallet').outerHTML = aIcon('wallet',  { size: 22 });
@@ -160,18 +154,45 @@
       document.getElementById('row-shuttle-fee').style.display = 'flex';
     }
 
-    // Cure ricorsive (Layer 1): il riepilogo mostra trasporto incluso, nessun voucher
+    // Prestazione e struttura effettivamente scelte (?service= / ?structure=),
+    // con fallback deterministico se i parametri mancano.
     const svcId = params.get('service');
-    const svc = MOCK.services.find(s => s.id === svcId) || null;
-    const isCycle = !!(svc && svc.kind === 'ciclo');
+    const svc = MOCK.services.find(s => s.id === svcId) || MOCK.services[0];
+    const st  = MOCK.structures.find(s => s.id === params.get('structure')) || MOCK.structures[0];
+    const isCycle = svc.kind === 'ciclo';
+    const V = MOCK.vouchers;
+    // Stesso formato € di book-care.html / booking.html
+    const fmtEur = v => Number.isInteger(v)
+      ? v.toLocaleString('it-IT')
+      : v.toLocaleString('it-IT', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    const eurRange = (a, b) => a === b ? `€${fmtEur(a)}` : `€${fmtEur(a)}–${fmtEur(b)}`;
+    // Medico: quello che segue la struttura nello storico mock, altrimenti assegnato in fase di conferma
+    const doctor = (MOCK.bookings.find(b => b.structure_id === st.id) || {}).doctor || 'Assegnato dalla struttura';
+
+    document.getElementById('sum-thumb').outerHTML = aIcon(svc.icon || 'heart', { size: 22 });
+    document.getElementById('sum-service').textContent = svc.name;
+    document.getElementById('kv-structure').innerHTML =
+      `${st.name}<br><span class="caption" style="font-weight:400">${st.address} · ${st.district}</span>`;
+    document.getElementById('kv-doctor').textContent = doctor;
+
     if (isCycle) {
-      document.getElementById('sum-service').textContent = svc.name;
       document.getElementById('sum-service-meta').textContent = `${svc.cat} · Cure ricorsive · Layer 1 · ${svc.sessions} sedute`;
       document.getElementById('esg-block-title').textContent = 'Copertura Layer 1';
       document.getElementById('esg-block-rows').innerHTML = `
         <div class="kv-row"><span class="k">Sedute del ciclo</span><span class="v">${svc.sessions} sedute</span></div>
         <div class="kv-row"><span class="k">Trasporto porta-a-porta</span><span class="v" style="color:#0F6E56">Gratuito · ${svc.rides} tratte A/R</span></div>
         <div class="kv-row"><span class="k">Voucher ESG</span><span class="v" style="color:var(--care-blue-dark)">Non richiesto · Layer 1</span></div>`;
+    } else {
+      const listRange = eurRange(svc.price_list_from, svc.price_list_to);
+      const esgRange  = eurRange(svc.price_esg_from,  svc.price_esg_to);
+      const left = Math.max(0, V.assigned - V.used - 1);
+      document.getElementById('sum-service-meta').textContent =
+        `${svc.cat} · Fascia ${svc.kind === 'visita' ? 'A' : 'B'} · ${svc.duration} min`;
+      document.getElementById('esg-block-rows').innerHTML = `
+        <div class="kv-row"><span class="k">Listino struttura</span><span class="v" style="text-decoration:line-through;color:var(--medium-gray);font-weight:400">${listRange}</span></div>
+        <div class="kv-row"><span class="k">Tariffa ESG (−15%)</span><span class="v">${esgRange}</span></div>
+        <div class="kv-row"><span class="k">Coperto dal Fondo ESG Territoriale</span><span class="v" style="color:#0F6E56">${esgRange}</span></div>
+        <div class="kv-row"><span class="k">Voucher ESG</span><span class="v" style="color:var(--care-blue-dark)">1 voucher · ${left} residui dopo la validazione</span></div>`;
     }
 
     // Handoff variant (read from localStorage; pre-flagged is default per user)
@@ -227,8 +248,8 @@
               <div class="handoff-title">Trasporto AureaShuttle precompilato</div>
               <p class="handoff-sub">Hai richiesto il trasporto sanitario in fase di prenotazione. Ecco il riepilogo della richiesta cross-app.</p>
               <div class="prefill-list">
-                <div class="row"><span>Da</span><span>Via Tuscolana 124, Roma</span></div>
-                <div class="row"><span>A</span><span>Policlinico Gemelli</span></div>
+                <div class="row"><span>Da</span><span>${(MOCK.patient && MOCK.patient.address) || 'Via Tuscolana 124, Roma'}</span></div>
+                <div class="row"><span>A</span><span>${st.name}</span></div>
                 <div class="row"><span>Arrivo richiesto</span><span>${day} mag · 14:15</span></div>
                 <div class="row"><span>Costo</span><span style="color:#0F6E56;font-weight:700">Gratuito · ~22 min</span></div>
                 <div class="row"><span>Corsa</span><span>Erogata da Samarcanda Scarl · certificata ISO 9001:2015</span></div>
@@ -275,8 +296,8 @@
               </div>
             </div>
             <div style="background:#FAFAFA;border-radius:10px;padding:14px;font-size:13px;display:grid;gap:6px">
-              <div style="display:flex;justify-content:space-between"><span class="text-muted">Da</span><strong>Via Tuscolana 124</strong></div>
-              <div style="display:flex;justify-content:space-between"><span class="text-muted">A</span><strong>Policlinico Gemelli</strong></div>
+              <div style="display:flex;justify-content:space-between"><span class="text-muted">Da</span><strong>${(MOCK.patient && MOCK.patient.address) || 'Via Tuscolana 124, Roma'}</strong></div>
+              <div style="display:flex;justify-content:space-between"><span class="text-muted">A</span><strong>${st.name}</strong></div>
               <div style="display:flex;justify-content:space-between"><span class="text-muted">Quando</span><strong>${day} mag · 13:30</strong></div>
               <div style="display:flex;justify-content:space-between"><span class="text-muted">Costo</span><strong style="color:#0F6E56">Gratuito · ~22 min</strong></div>
               <div style="display:flex;justify-content:space-between"><span class="text-muted">Corsa</span><strong>Samarcanda Scarl · ISO 9001:2015</strong></div>
@@ -293,7 +314,7 @@
     }
 
     // Mini mappa (struttura confermata + casa paziente)
-    const targetStruct = MOCK.structures.find(s => /gemelli/i.test(s.name)) || MOCK.structures[0];
+    const targetStruct = st;
     aMap.init('summary-map', {
       structures: [targetStruct],
       selectedId: targetStruct.id,

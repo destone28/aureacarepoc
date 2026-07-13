@@ -30,7 +30,7 @@
       <!-- Greeting -->
       <div class="mb-16">
         <p class="caption">Ciao,</p>
-        <h1 class="h1">Lucia 👋</h1>
+        <h1 class="h1">Lucia</h1>
         <span class="badge" style="background:#DCEFE6;color:#0F6E56;margin-top:8px">Programma ESG Carelink</span>
         <p class="caption mt-8">Trasporto gratuito e voucher per le cure: ogni corsa e ogni cura sono un aiuto concreto.</p>
       </div>
@@ -47,9 +47,9 @@
         <div class="flex items-center gap-16">
           <div id="wallet-ring-mini"></div>
           <div style="flex:1">
-            <p style="font-size:28px;font-weight:700;line-height:1">8 <span style="font-weight:400;color:var(--medium-gray);font-size:14px">residui su 12</span></p>
+            <p style="font-size:28px;font-weight:700;line-height:1"><span id="vch-left"></span> <span style="font-weight:400;color:var(--medium-gray);font-size:14px">residui su <span id="vch-assigned"></span></span></p>
             <p class="caption mt-4">1 voucher = 1 prestazione convenzionata</p>
-            <p style="font-size:15px;font-weight:700;margin-top:10px;color:#0F6E56">€486 <span style="font-weight:400;color:var(--medium-gray);font-size:13px">coperti dal Fondo ESG</span></p>
+            <p style="font-size:15px;font-weight:700;margin-top:10px;color:#0F6E56"><span id="vch-covered"></span> <span style="font-weight:400;color:var(--medium-gray);font-size:13px">coperti dal Fondo ESG</span></p>
             <p class="caption">Quota a tuo carico: sempre €0</p>
           </div>
         </div>
@@ -110,13 +110,13 @@
             <span id="ico-leaf"></span>
           </div>
           <div style="flex:1">
-            <p style="font-weight:700">8 cure completate</p>
+            <p style="font-weight:700"><span id="esg-completed"></span> cure completate</p>
             <p class="caption">questo trimestre con AureaCare</p>
           </div>
         </div>
         <div class="mt-16" style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px">
           <div style="padding:10px;background:#fff;border-radius:10px;text-align:center">
-            <p style="font-size:18px;font-weight:700;color:#0F6E56">142</p>
+            <p style="font-size:18px;font-weight:700;color:#0F6E56" id="esg-co2"></p>
             <p style="font-size:10px;color:var(--medium-gray);font-weight:600;letter-spacing:.04em">KG CO₂ EVITATA</p>
           </div>
           <div style="padding:10px;background:#fff;border-radius:10px;text-align:center">
@@ -128,7 +128,7 @@
             <p style="font-size:10px;color:var(--medium-gray);font-weight:600;letter-spacing:.04em">SROI PROGRAMMA</p>
           </div>
         </div>
-        <p class="caption mt-12" style="line-height:1.5">Hai contribuito a <strong style="color:#0F6E56">142kg di CO₂ evitata</strong> e <strong style="color:#0F6E56">28 ore di caregiver risparmiate</strong>, grazie ai voucher ESG e al trasporto gratuito del programma.</p>
+        <p class="caption mt-12" style="line-height:1.5">Hai contribuito a <strong style="color:#0F6E56"><span id="esg-co2-copy"></span> kg di CO₂ evitata</strong> e <strong style="color:#0F6E56">28 ore di caregiver risparmiate</strong>, grazie ai voucher ESG e al trasporto gratuito del programma.</p>
         <p class="caption mt-8" style="line-height:1.5;border-top:1px dashed #C8E6CF;padding-top:10px">Il tuo percorso ha evitato <strong style="color:#0F6E56">3 drop-out di seduta</strong>: nel Programma Carelink l'aderenza alle cure è al <strong style="color:#0F6E56">94%</strong>.</p>
       </div>
 
@@ -185,7 +185,7 @@
           <div class="row-meta"><span class="badge badge--completed"><span class="dot"></span>Completata</span></div>
         </div>
         <div class="row-right">
-          <div class="row-amount" style="color:var(--care-blue-dark)">€130</div>
+          <div class="row-amount" style="color:var(--care-blue-dark)">€136</div>
           <div class="caption">coperti dal Fondo</div>
         </div>
       </a>
@@ -223,10 +223,23 @@
     document.getElementById('nv-wallet').outerHTML = aIcon('wallet',  { size: 22 });
     document.getElementById('nv-profile').outerHTML= aIcon('user',    { size: 22 });
 
+    // Voucher ESG — unica fonte di verità: MOCK.vouchers
+    const V = MOCK.vouchers;
+    document.getElementById('vch-left').textContent = V.assigned - V.used;
+    document.getElementById('vch-assigned').textContent = V.assigned;
+    document.getElementById('vch-covered').textContent = '€' + V.covered_value_ytd.toLocaleString('it-IT');
+
+    // Impatto personale — derivato dalle cure effettivamente completate
+    const completed = MOCK.bookings.filter(b => b.status === 'completed').length;
+    const co2 = Math.round(completed * MOCK.esg.environmental.co2_per_visit_avg);
+    document.getElementById('esg-completed').textContent = completed;
+    document.getElementById('esg-co2').textContent = co2;
+    document.getElementById('esg-co2-copy').textContent = co2;
+
     // Voucher ring (mini, 100px)
     renderWalletRing(document.getElementById('wallet-ring-mini'), {
-      total: MOCK.vouchers.assigned, used: MOCK.vouchers.used,
-      covered: MOCK.vouchers.covered_value_ytd, size: 100, coveredMax: 1000
+      total: V.assigned, used: V.used,
+      covered: V.covered_value_ytd, size: 100, coveredMax: 2000
     });
     // shrink center text for mini ring
     document.querySelectorAll('#wallet-ring-mini .ring-center').forEach(c => { c.style.display='none'; });

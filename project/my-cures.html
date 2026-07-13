@@ -215,7 +215,7 @@
       showConfirmDialog(
         'Sposta la prenotazione',
         'Verrai portato al calendario per scegliere un nuovo orario per "' + b.service_name + '". La data attuale (' + b.date + ') sarà liberata.',
-        () => location.href = 'booking.html?structure=' + sid + '&reschedule=' + id,
+        () => location.href = 'booking.html?structure=' + sid + '&service=' + (b.service_id || '') + '&reschedule=' + id,
         { confirmLabel: 'Scegli nuovo slot' }
       );
     }

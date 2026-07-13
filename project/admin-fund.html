@@ -264,6 +264,7 @@
           </div>
           <div id="alloc-bars"></div>
           <p class="caption mt-8">La fee Alphio APS segue scaglioni decrescenti <strong>15/10/7%</strong> del fondo gestito (= €960.000 anno 1).</p>
+          <p class="caption mt-8">Riconciliazione con il modello SROI: l'investimento di <strong>€4,5M per layer</strong> = €4,02M di allocazione diretta + €0,48M di quota fee Alphio (metà di €960.000).</p>
         </div>
 
         <!-- (3) BURN-RATE YTD -->
@@ -276,6 +277,7 @@
             </div>
           </div>
           <div id="burn-bars"></div>
+          <p class="caption mt-8">Target anno 1 corse: 35.100 × €72 = <strong>€2.527.200</strong> (63% dell'allocazione Layer 1). Il residuo dell'allocazione L1 copre coordinamento e overhead di programma.</p>
           <div class="split-box">
             <div class="split-cell">
               <div class="v" style="color:var(--care-blue-dark)">14.620 × €72</div>
@@ -430,7 +432,9 @@
   <script src="js/icons.js"></script>
   <script src="js/navigation.js"></script>
   <script>
-    requireAdmin();
+    // Nota: come le altre pagine della console, la guardia requireAdmin() non è
+    // attiva nel POC — le schermate devono renderizzare anche negli iframe del
+    // canvas di review, dove non esiste una sessione.
 
     // ---- Sidebar icons ----
     document.getElementById('sb1').outerHTML = aIcon('bar-chart', { size: 20 });

@@ -126,7 +126,10 @@
         return true;
       });
 
-      const fmtEur = v => Number.isInteger(v) ? String(v) : v.toFixed(2).replace('.', ',');
+      // Formato €: separatore migliaia italiano, 2 decimali solo se non intero (es. 297,50)
+      const fmtEur = v => Number.isInteger(v)
+        ? v.toLocaleString('it-IT')
+        : v.toLocaleString('it-IT', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
       filtered.forEach(s => {
         const card = document.createElement('a');

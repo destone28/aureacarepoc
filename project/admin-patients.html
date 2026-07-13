@@ -74,23 +74,23 @@
         <div class="kpi-grid" style="grid-template-columns:repeat(4,1fr);margin-bottom:24px">
           <div class="kpi-card">
             <p class="kpi-label">Pazienti totali</p>
-            <p class="kpi-value">142</p>
-            <p class="caption">su area Roma</p>
+            <p class="kpi-value">3.120</p>
+            <p class="caption">Roma · 640 Layer 1 · 2.480 Layer 2</p>
           </div>
           <div class="kpi-card">
             <p class="kpi-label">Documenti verificati</p>
-            <p class="kpi-value">128</p>
+            <p class="kpi-value">2.811</p>
             <p class="caption">90.1% conformità</p>
           </div>
           <div class="kpi-card">
             <p class="kpi-label">Voucher residui (media)</p>
-            <p class="kpi-value">5.0</p>
-            <p class="caption">su plafond di 12 assegnati</p>
+            <p class="kpi-value" id="kpi-vch-avg"></p>
+            <p class="caption">su plafond di 12 assegnati · estratto di 12</p>
           </div>
           <div class="kpi-card">
             <p class="kpi-label">Cure medie/paz.</p>
-            <p class="kpi-value">9.3</p>
-            <p class="caption">in 12 mesi</p>
+            <p class="kpi-value" id="kpi-cure-avg"></p>
+            <p class="caption">in 12 mesi · estratto di 12</p>
           </div>
         </div>
 
@@ -191,7 +191,7 @@
   <div class="rotate-hint">
     <span id="ico-rot"></span>
     <h2>Console ottimizzata per schermi più grandi</h2>
-    <p>Per usare la console AureaCare, ruota il dispositivo o passa a tablet/desktop.</p>
+    <p>Per usare la console del Coordinatore Alphio, ruota il dispositivo o passa a tablet/desktop.</p>
     <button class="btn btn--primary" onclick="this.parentElement.style.display='none'">Continua</button>
   </div>
 
@@ -227,6 +227,12 @@
 
     // Lookup livello di accesso Carelink (1 urgenza · 2 ISEE · 3 due diligence)
     const accessLevelOf = lvl => MOCK.access_levels.find(a => a.level === lvl);
+    const statusLabel = { pending: 'In approvazione', approved: 'Approvata', confirmed: 'Confermata', completed: 'Completata', cancelled: 'Annullata' };
+
+    // Medie calcolate sull'estratto di 12 pazienti (stessa base per entrambe)
+    const AP = MOCK.admin_patients;
+    document.getElementById('kpi-vch-avg').textContent = (AP.reduce((a, p) => a + p.vouchers_left, 0) / AP.length).toFixed(1);
+    document.getElementById('kpi-cure-avg').textContent = (AP.reduce((a, p) => a + p.completed, 0) / AP.length).toFixed(1);
     // Canale di ingresso istituzionale: Comuni/Regione → Associazioni; SSN/MMG certifica l'urgenza.
     const referralIcon = ref =>
       ref.startsWith('Associazione') ? 'users' : ref === 'SSN/MMG' ? 'heart' : 'building';
@@ -369,15 +375,15 @@
                   <span class="caption">${b.structure_name} · ${b.date} ${b.time}</span>
                 </div>
                 <div style="text-align:right">
-                  <strong>€${b.esg_price}</strong><br>
-                  <span class="badge badge--${b.status === 'completed' ? 'completed' : b.status === 'pending' ? 'pending' : b.status === 'cancelled' ? 'cancelled' : 'approved'}"><span class="dot"></span>${b.status}</span>
+                  <strong>${b.voucher_id ? '€' + b.esg_price : 'Trasporto L1'}</strong><br>
+                  <span class="badge badge--${b.status === 'completed' ? 'completed' : b.status === 'pending' ? 'pending' : b.status === 'cancelled' ? 'cancelled' : 'approved'}"><span class="dot"></span>${statusLabel[b.status] || b.status}</span>
                 </div>
               </div>`).join('')}
             </div>
 
             <p class="eyebrow mt-20 mb-8">ESG aggregato</p>
             <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;text-align:center">
-              <div style="padding:14px;background:#F4FBF6;border-radius:10px"><p style="font-size:22px;font-weight:700;color:#0F6E56">${(p.completed*17.7).toFixed(0)}kg</p><p class="caption">CO₂ evitata</p></div>
+              <div style="padding:14px;background:#F4FBF6;border-radius:10px"><p style="font-size:22px;font-weight:700;color:#0F6E56">${(p.completed * MOCK.esg.environmental.co2_per_visit_avg).toFixed(0)}kg</p><p class="caption">CO₂ evitata</p></div>
               <div style="padding:14px;background:#F4FBF6;border-radius:10px"><p style="font-size:22px;font-weight:700;color:#0F6E56">${(p.completed*3.4).toFixed(0)}h</p><p class="caption">caregiver</p></div>
               <div style="padding:14px;background:#F4FBF6;border-radius:10px"><p style="font-size:22px;font-weight:700;color:#0F6E56">3.2×</p><p class="caption">SROI</p></div>
             </div>
