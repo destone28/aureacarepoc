@@ -130,14 +130,14 @@ function appSwitcherCards() {
       <div class="app-dot">S</div>
       <div>
         <div class="app-name">AureaShuttle</div>
-        <div class="app-tag">Trasporto sanitario</div>
+        <div class="app-tag">Trasporto sanitario · corse Samarcanda</div>
       </div>
     </a>
     <a class="app-card care current" href="home.html">
       <div class="app-dot">C</div>
       <div>
         <div class="app-name">AureaCare</div>
-        <div class="app-tag">Accesso alle cure · In uso</div>
+        <div class="app-tag">Accesso alle cure · Programma Carelink · In uso</div>
       </div>
     </a>`;
 }

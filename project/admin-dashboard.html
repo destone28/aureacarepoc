@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>AureaCare · Dashboard admin</title>
+  <title>AureaCare · Console Coordinatore Alphio</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
@@ -27,11 +27,11 @@
     <!-- Main -->
     <div class="admin-main">
       <header class="admin-topbar">
-        <h1>Dashboard AureaCare</h1>
+        <h1>Dashboard · Programma ESG Carelink</h1>
         <a href="admin-approvals.html" class="badge badge--warning" style="font-size:13px;padding:6px 12px"><strong>3</strong> prestazioni in approvazione</a>
         <button class="icon-btn" style="width:38px;height:38px;background:var(--light-gray);border:none;border-radius:10px" onclick="showToast('3 richieste in attesa di revisione','info')"><span id="ico-bell"></span></button>
         <button class="switch-view" onclick="switchToPatientLogin()" title="Vai al login paziente"><span class="ico-sv"></span><span class="label-full">Vista paziente</span></button>
-        <div class="avatar">FR</div>
+        <div style="display:flex;align-items:center;gap:10px"><div style="text-align:right;line-height:1.25"><p style="font-size:13px;font-weight:700">Filippo Rinaldi</p><p class="caption">Coordinatore Alphio</p></div><div class="avatar">FR</div></div>
       </header>
 
       <div class="admin-content">
@@ -181,7 +181,7 @@
   <div class="rotate-hint">
     <span id="ico-rot"></span>
     <h2>Console ottimizzata per schermi più grandi</h2>
-    <p>Per usare la dashboard AureaCare admin, ruota il dispositivo o accedi da tablet/desktop.</p>
+    <p>Per usare la console del Coordinatore Alphio, ruota il dispositivo o accedi da tablet/desktop.</p>
     <button class="btn btn--primary" onclick="document.querySelector('.rotate-hint').style.display='none'">Continua comunque</button>
   </div>
 

@@ -93,6 +93,7 @@
       <div class="brand-logo">A<span class="badge-care">CARE</span></div>
       <span class="brand-text">AureaCare</span>
     </div>
+    <p class="brand-tag" style="margin-bottom:6px">Programma ESG Carelink · promosso da <strong style="color:#0F6E56">Alphio APS</strong></p>
     <p class="brand-tag">Accesso unificato Aurea Suite</p>
 
     <h1 class="title">Entra nel tuo account</h1>
@@ -125,6 +126,13 @@
 
     <div class="signup-row">Non hai un account? <a href="onboarding.html">Registrati come paziente</a></div>
 
+    <!-- Perché Carelink -->
+    <div style="margin-top:20px;background:#F0F7F4;border:1px solid #C8E6CF;border-radius:var(--r-md);padding:14px 16px;display:grid;gap:10px">
+      <div style="display:flex;gap:10px;align-items:flex-start;font-size:13px;color:var(--ink)"><span id="cl-b1" style="color:#0F6E56;flex-shrink:0;margin-top:1px"></span><span>Liste d'attesa SSN incompatibili con l'urgenza?</span></div>
+      <div style="display:flex;gap:10px;align-items:flex-start;font-size:13px;color:var(--ink)"><span id="cl-b2" style="color:#0F6E56;flex-shrink:0;margin-top:1px"></span><span>Il 54% dei pazienti oncologici non può permettersi il privato</span></div>
+      <div style="display:flex;gap:10px;align-items:flex-start;font-size:13px;color:var(--ink)"><span id="cl-b3" style="color:#0F6E56;flex-shrink:0;margin-top:1px"></span><span>Carelink ti dà accesso a strutture private certificate <strong>senza costi a tuo carico</strong></span></div>
+    </div>
+
     <div class="suite-footer">
       <a class="suite-item via" href="https://destone28.github.io/aureaviapoc/" target="_blank" rel="noopener">
         <span class="suite-dot">V</span>AureaVia
@@ -137,7 +145,8 @@
       </span>
     </div>
 
-    <p class="caption text-center" style="margin-top:20px"><a href="admin-login.html" style="color:var(--medium-gray);text-decoration:underline">Sei un amministratore?</a></p>
+    <p class="caption text-center" style="margin-top:20px"><a href="admin-login.html" style="color:var(--medium-gray);text-decoration:underline">Sei il Coordinatore Alphio?</a></p>
+    <p class="caption text-center" style="margin-top:14px;line-height:1.5;color:var(--medium-gray)">AureaCare è la piattaforma di accesso alle cure del <strong>Programma nazionale ESG Carelink — Alphio APS</strong> · piattaforma tecnologica coordinata da AureaVia Srl Innovativa</p>
   </div>
 
   <!-- Modale Password dimenticata -->
@@ -174,6 +183,9 @@
     document.getElementById('ico-lock').outerHTML = aIcon('lock', { size: 18 });
     document.getElementById('ico-x').outerHTML    = aIcon('x', { size: 16 });
     document.getElementById('ico-i').outerHTML    = aIcon('info', { size: 18 });
+    document.getElementById('cl-b1').innerHTML    = aIcon('clock', { size: 16 });
+    document.getElementById('cl-b2').innerHTML    = aIcon('users', { size: 16 });
+    document.getElementById('cl-b3').innerHTML    = aIcon('shield-check', { size: 16 });
 
     function openForgot() { openModal('forgot-modal'); }
     function sendForgot() {

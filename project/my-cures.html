@@ -184,6 +184,8 @@
           ${b.shuttle ? `<div style="display:flex;justify-content:space-between"><span class="text-muted">Trasporto</span><strong style="color:var(--primary-orange)">AureaShuttle · Samarcanda · gratuito</strong></div>` : ''}
         </div>
 
+        ${b.status === 'pending' ? `<p class="caption mt-12">In attesa di validazione del <strong>Coordinatore Alphio</strong> · tempi medi 2-4 ore lavorative.</p>` : ''}
+
         <div class="flex gap-8 mt-16">
           ${b.status === 'pending' ? `<button class="btn btn--danger" style="flex:1" onclick="cancel()">Annulla richiesta</button>` : ''}
           ${b.status === 'approved' || b.status === 'confirmed' ? `<button class="btn btn--danger" style="flex:1" onclick="cancel()">Cancella</button><button class="btn btn--secondary" style="flex:1" onclick="reschedule('${b.id}')">Sposta</button>` : ''}
