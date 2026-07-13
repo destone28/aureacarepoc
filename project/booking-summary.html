@@ -125,8 +125,8 @@
 
     <nav class="bottom-nav">
       <a class="nav-item" href="home.html"><span id="nv-home"></span>Home</a>
-      <a class="nav-item active" href="my-cures.html"><span id="nv-cure"></span>Cure</a>
-      <a class="nav-item" href="wallet.html"><span id="nv-wallet"></span>Voucher</a>
+      <a class="nav-item active" href="book-care.html"><span id="nv-book"></span>Prenota</a>
+      <a class="nav-item" href="my-cures.html"><span id="nv-cure"></span>Cure</a>
       <a class="nav-item" href="profile.html"><span id="nv-profile"></span>Profilo</a>
     </nav>
   </div>
@@ -141,7 +141,7 @@
     document.getElementById('ico-grid').outerHTML = aIcon('grid', { size: 20 });
     document.getElementById('nv-home').outerHTML   = aIcon('home',    { size: 22 });
     document.getElementById('nv-cure').outerHTML   = aIcon('heart',   { size: 22 });
-    document.getElementById('nv-wallet').outerHTML = aIcon('wallet',  { size: 22 });
+    document.getElementById('nv-book').outerHTML   = aIcon('calendar',{ size: 22 });
     document.getElementById('nv-profile').outerHTML= aIcon('user',    { size: 22 });
 
     const params = new URLSearchParams(location.search);
