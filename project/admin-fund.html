@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>AureaCare · Fondo ESG Territoriale</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="js/styles.css">
+  <style>
+    .fund-hero {
+      background: linear-gradient(135deg, #F4FBF6 0%, #E1F5EE 100%);
+      border: 1px solid #C8E6CF;
+      border-radius: var(--r-md);
+      padding: 22px;
+      margin-bottom: 24px;
+    }
+    .fund-hero-head {
+      display: flex; justify-content: space-between; align-items: flex-start;
+      gap: 16px; margin-bottom: 18px; flex-wrap: wrap;
+    }
+    .fund-hero h2 { font-size: 19px; font-weight: 700; color: #0F6E56; }
+    .fund-hero .caption { color: #486B5A; }
+
+    .fund-kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    .fund-kpi {
+      background: #fff;
+      border-radius: var(--r-md);
+      padding: 14px;
+      box-shadow: var(--shadow-sm);
+    }
+    .fund-kpi .lbl {
+      font-size: 11px; font-weight: 700;
+      color: var(--medium-gray);
+      text-transform: uppercase; letter-spacing: 0.05em;
+      margin-bottom: 4px;
+    }
+    .fund-kpi .val {
+      font-size: 26px; font-weight: 700;
+      line-height: 1.1;
+      color: #0F6E56;
+    }
+    .fund-kpi .val .unit { font-size: 14px; font-weight: 600; color: #5a8175; margin-left: 4px; }
+    .fund-kpi .note { font-size: 11px; color: #486B5A; font-weight: 600; margin-top: 4px; }
+
+    .fund-progress {
+      background: #fff;
+      border-radius: var(--r-md);
+      padding: 14px 16px;
+      box-shadow: var(--shadow-sm);
+    }
+    .fund-progress .track {
+      height: 12px;
+      background: var(--light-gray);
+      border-radius: 999px;
+      overflow: hidden;
+      margin-top: 8px;
+    }
+    .fund-progress .fill {
+      height: 100%;
+      border-radius: 999px;
+      background: #0F6E56;
+      transition: width 800ms ease-out;
+    }
+
+    .fund-section {
+      background: #fff;
+      border: 1px solid var(--border-soft);
+      border-radius: var(--r-md);
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+    .fund-section-head {
+      display: flex; align-items: center; gap: 10px;
+      margin-bottom: 18px;
+      flex-wrap: wrap;
+    }
+    .fund-section-head .ico-wrap {
+      width: 34px; height: 34px;
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .fund-section-head .ico-fund { background: #E1F5EE; color: #0F6E56; }
+    .fund-section-head .ico-gov  { background: #FFF6E8; color: #B45309; }
+    .fund-section-head .ico-blu  { background: #E6F1FB; color: var(--care-blue-dark); }
+    .fund-section-head h3 { font-size: 17px; font-weight: 700; flex: 1; min-width: 0; }
+    .fund-section-head .sub { font-size: 13px; color: var(--medium-gray); margin-top: 2px; }
+
+    .fund-grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+
+    /* Barre allocazione / burn-rate */
+    .fund-bar {
+      display: grid;
+      grid-template-columns: 210px 1fr 110px;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 0;
+      font-size: 13px;
+    }
+    .fund-bar .bar-lbl { color: var(--ink); font-weight: 600; }
+    .fund-bar .bar-track {
+      height: 10px;
+      background: var(--light-gray);
+      border-radius: 999px;
+      overflow: hidden;
+    }
+    .fund-bar .bar-fill {
+      height: 100%;
+      border-radius: 999px;
+      background: #0F6E56;
+      transition: width 800ms ease-out;
+    }
+    .fund-bar .bar-val { font-weight: 700; text-align: right; color: var(--ink); font-size: 12px; }
+    @media (max-width: 640px) {
+      .fund-bar { grid-template-columns: 120px 1fr 90px; font-size: 12px; }
+    }
+
+    /* Tabella sponsor */
+    .sponsor-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    .sponsor-table th {
+      text-align: left; padding: 10px 12px;
+      font-size: 11px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase;
+      color: var(--medium-gray);
+      border-bottom: 1px solid var(--border-soft);
+    }
+    .sponsor-table td {
+      padding: 12px;
+      border-bottom: 1px solid var(--light-gray);
+      vertical-align: middle;
+    }
+    .sponsor-table td.amt, .sponsor-table th.amt { text-align: right; font-weight: 700; }
+    .sponsor-table tr.total td { border-bottom: none; background: #F4FBF6; font-weight: 700; color: #0F6E56; }
+    .sponsor-logo {
+      width: 34px; height: 34px; border-radius: 10px;
+      display: inline-flex; align-items: center; justify-content: center;
+      font-size: 12px; font-weight: 700; color: #fff;
+      background: #0F6E56;
+      margin-right: 10px;
+      vertical-align: middle;
+      flex-shrink: 0;
+    }
+    .table-scroll { overflow-x: auto; }
+
+    /* Card governance / comitato / samarcanda */
+    .info-tile {
+      padding: 14px;
+      background: #FAFAFA;
+      border-radius: 10px;
+    }
+    .info-tile .k { font-size: 11px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; color: var(--medium-gray); margin-bottom: 4px; }
+    .info-tile .v { font-size: 14px; font-weight: 600; color: var(--ink); line-height: 1.5; }
+    .member-pill {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 6px 12px;
+      background: #E1F5EE; color: #0F6E56;
+      border-radius: 999px;
+      font-size: 12px; font-weight: 700;
+      margin: 0 6px 6px 0;
+    }
+
+    .split-box {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      margin-top: 10px;
+    }
+    .split-cell {
+      padding: 12px;
+      border-radius: 10px;
+      background: var(--light-gray);
+      text-align: center;
+    }
+    .split-cell.highlight { background: #E1F5EE; }
+    .split-cell .v { font-size: 20px; font-weight: 700; }
+    .split-cell .l { font-size: 11px; color: var(--medium-gray); font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; }
+
+    .fund-disclaimer {
+      padding: 14px 18px;
+      background: #FAFAFA;
+      border-radius: var(--r-md);
+      font-size: 12px;
+      color: var(--medium-gray);
+      line-height: 1.55;
+      border: 1px dashed var(--border-soft);
+    }
+
+    @media (max-width: 760px) {
+      .fund-kpi-grid { grid-template-columns: repeat(2, 1fr); }
+      .fund-grid-2 { grid-template-columns: 1fr; }
+      .fund-section { padding: 16px; }
+      .fund-hero { padding: 16px; }
+      .fund-kpi .val { font-size: 22px; }
+      .split-box { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body class="admin-page">
+  <div class="admin-shell">
+    <aside class="admin-sidebar">
+      <div class="logo">A</div>
+      <a class="sb-item" href="admin-dashboard.html" data-label="Dashboard"><span id="sb1"></span></a>
+      <a class="sb-item" href="admin-approvals.html" data-label="Approvazioni"><span id="sb2"></span></a>
+      <a class="sb-item" href="admin-structures.html" data-label="Strutture"><span id="sb3"></span></a>
+      <a class="sb-item" href="admin-patients.html" data-label="Pazienti"><span id="sb4"></span></a>
+      <a class="sb-item" href="admin-esg.html" data-label="KPI ESG"><span id="sb5"></span></a>
+      <a class="sb-item active" href="admin-fund.html" data-label="Fondo ESG"><span id="sb8"></span></a>
+      <div class="spacer"></div>
+      <button class="sb-item" data-label="Impostazioni" onclick="showToast('Impostazioni console: in arrivo','info')"><span id="sb6"></span></button>
+      <button class="sb-item" data-label="Esci" onclick="logout()"><span id="sb7"></span></button>
+    </aside>
+
+    <div class="admin-main">
+      <header class="admin-topbar">
+        <h1>Fondo ESG Territoriale · Roma · Anno 1</h1>
+        <span class="badge badge--approved" style="font-size:13px;padding:6px 12px"><strong>Residuo €5,88M</strong></span>
+        <button class="icon-btn" style="width:38px;height:38px;background:var(--light-gray);border:none;border-radius:10px" onclick="showToast('Rendiconto del fondo in PDF: in arrivo','info')"><span id="ico-bell"></span></button>
+        <button class="switch-view" onclick="switchToPatientLogin()" title="Vai al login paziente"><span class="ico-sv"></span><span class="label-full">Vista paziente</span></button>
+        <div style="display:flex;align-items:center;gap:10px"><div style="text-align:right;line-height:1.25"><p style="font-size:13px;font-weight:700">Filippo Rinaldi</p><p class="caption">Coordinatore Alphio</p></div><div class="avatar">FR</div></div>
+      </header>
+
+      <div class="admin-content">
+        <div class="crumbs mb-16" style="font-size:13px;color:var(--medium-gray)">
+          Console &rsaquo; <strong style="color:var(--ink)">Fondo ESG</strong> · Programma ESG Carelink · promosso da Alphio APS
+        </div>
+
+        <!-- (1) HERO KPI -->
+        <div class="fund-hero">
+          <div class="fund-hero-head">
+            <div>
+              <h2>Fondo ESG Territoriale di Roma · Anno 1</h2>
+              <p class="caption">Plafond ESG aziende via Compagnie di Assicurazione + sponsor nazionali + contributi comunali/regionali. Governato dal Comitato ESG locale.</p>
+            </div>
+            <button class="btn btn--secondary btn--sm" onclick="showToast('Periodo: anno 1 · aggiornamento YTD','info')">Anno 1 · YTD ▾</button>
+          </div>
+          <div class="fund-kpi-grid" id="hero-kpi"></div>
+          <div class="fund-progress">
+            <div class="flex justify-between items-center" style="font-size:13px">
+              <span class="text-muted">Avanzamento impegni sul fondo</span>
+              <strong style="color:#0F6E56" id="progress-lbl"></strong>
+            </div>
+            <div class="track"><div class="fill" id="progress-fill"></div></div>
+          </div>
+        </div>
+
+        <!-- (2) ALLOCAZIONE -->
+        <div class="fund-section">
+          <div class="fund-section-head">
+            <div class="ico-wrap ico-fund"><span id="ico-alloc"></span></div>
+            <div style="flex:1;min-width:0">
+              <h3>Allocazione del fondo</h3>
+              <p class="sub">Ripartizione dei €9.000.000 tra fee di gestione e i due layer operativi</p>
+            </div>
+          </div>
+          <div id="alloc-bars"></div>
+          <p class="caption mt-8">La fee Alphio APS segue scaglioni decrescenti <strong>15/10/7%</strong> del fondo gestito (= €960.000 anno 1).</p>
+        </div>
+
+        <!-- (3) BURN-RATE YTD -->
+        <div class="fund-section">
+          <div class="fund-section-head">
+            <div class="ico-wrap ico-blu"><span id="ico-burn"></span></div>
+            <div style="flex:1;min-width:0">
+              <h3>Burn-rate YTD per voce</h3>
+              <p class="sub">Impegnato a metà anno 1 rispetto all'allocazione di ciascuna voce</p>
+            </div>
+          </div>
+          <div id="burn-bars"></div>
+          <div class="split-box">
+            <div class="split-cell">
+              <div class="v" style="color:var(--care-blue-dark)">14.620 × €72</div>
+              <div class="l">Corse Layer 1 erogate</div>
+            </div>
+            <div class="split-cell">
+              <div class="v" style="color:var(--care-blue-dark)">13.900</div>
+              <div class="l">Voucher Layer 2 emessi</div>
+            </div>
+            <div class="split-cell highlight">
+              <div class="v" style="color:#0F6E56">€400.000</div>
+              <div class="l">Fee Alphio maturata</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- (4) SPONSOR -->
+        <div class="fund-section">
+          <div class="fund-section-head">
+            <div class="ico-wrap ico-fund"><span id="ico-sponsor"></span></div>
+            <div style="flex:1;min-width:0">
+              <h3>Sponsor del fondo (multi-sponsor)</h3>
+              <p class="sub">Plafond ESG aziendali €500.000 – 3.000.000 · nessun singolo sponsor domina il fondo</p>
+            </div>
+          </div>
+          <div class="table-scroll">
+            <table class="sponsor-table">
+              <thead>
+                <tr><th>Sponsor</th><th>Tipologia</th><th>Range plafond</th><th class="amt">Impegnato</th></tr>
+              </thead>
+              <tbody id="sponsor-rows"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="fund-grid-2">
+          <!-- (5) COMITATO ESG LOCALE -->
+          <div class="fund-section" style="margin-bottom:20px">
+            <div class="fund-section-head">
+              <div class="ico-wrap ico-fund"><span id="ico-committee"></span></div>
+              <div style="flex:1;min-width:0">
+                <h3>Comitato ESG locale</h3>
+                <p class="sub">Governance territoriale del fondo</p>
+              </div>
+            </div>
+            <p class="eyebrow mb-8">Membri</p>
+            <div id="committee-members" class="mb-16"></div>
+            <div style="display:grid;gap:10px">
+              <div class="info-tile">
+                <div class="k">Ultima riunione</div>
+                <div class="v" id="committee-last"></div>
+              </div>
+              <div class="info-tile">
+                <div class="k">Prossima riunione</div>
+                <div class="v" id="committee-next"></div>
+              </div>
+              <div class="info-tile">
+                <div class="k">Mandato</div>
+                <div class="v" id="committee-notes" style="font-weight:400"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- (6) GOVERNANCE NAZIONALE -->
+          <div class="fund-section" style="margin-bottom:20px">
+            <div class="fund-section-head">
+              <div class="ico-wrap ico-gov"><span id="ico-gov"></span></div>
+              <div style="flex:1;min-width:0">
+                <h3>Governance nazionale</h3>
+                <p class="sub">Ruoli, fee di piattaforma e revisione indipendente</p>
+              </div>
+            </div>
+            <div style="display:grid;gap:10px">
+              <div class="info-tile">
+                <div class="k">Coordinamento programma</div>
+                <div class="v" id="gov-national" style="font-weight:400"></div>
+              </div>
+              <div class="info-tile">
+                <div class="k">Fee di piattaforma</div>
+                <div class="v" id="gov-fees" style="font-weight:400"></div>
+              </div>
+              <div class="info-tile" style="background:#FFF6E8">
+                <div class="k" style="color:#B45309">Revisore indipendente</div>
+                <div class="v" id="gov-auditor"></div>
+                <p class="caption mt-4" id="gov-auditor-scope"></p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- (7) SAMARCANDA -->
+        <div class="fund-section">
+          <div class="fund-section-head">
+            <div class="ico-wrap ico-blu"><span id="ico-truck"></span></div>
+            <div style="flex:1;min-width:0">
+              <h3>Partner logistico · Samarcanda Scarl</h3>
+              <p class="sub">Layer 1 — Mobilità sanitaria assistita · certificata <strong id="sam-cert"></strong></p>
+            </div>
+            <span class="badge badge--confirmed" style="font-size:12px" id="sam-badge"></span>
+          </div>
+          <div class="fund-grid-2">
+            <div>
+              <p class="eyebrow mb-8">Costo per corsa al fondo</p>
+              <div class="split-box" style="margin-top:0">
+                <div class="split-cell">
+                  <div class="v" style="color:var(--ink)">€61</div>
+                  <div class="l">Tariffa corsa</div>
+                </div>
+                <div class="split-cell">
+                  <div class="v" style="color:var(--ink)">€8</div>
+                  <div class="l">Fee coordinamento</div>
+                </div>
+                <div class="split-cell">
+                  <div class="v" style="color:var(--ink)">€3</div>
+                  <div class="l">Piattaforma</div>
+                </div>
+              </div>
+              <p class="caption mt-8">Costo interamente coperto dal Fondo ESG: <strong>mai a carico del paziente</strong>.</p>
+            </div>
+            <div>
+              <p class="eyebrow mb-8">Indicatori partner</p>
+              <div style="display:grid;gap:10px">
+                <div class="info-tile">
+                  <div class="flex justify-between items-center"><span class="text-muted">Margine operativo Samarcanda</span><strong style="font-size:18px;color:#0F6E56" id="sam-margin"></strong></div>
+                </div>
+                <div class="info-tile">
+                  <div class="flex justify-between items-center"><span class="text-muted">Corse erogate YTD</span><strong style="font-size:18px;color:var(--care-blue-dark)">14.620</strong></div>
+                </div>
+                <div class="info-tile">
+                  <div class="flex justify-between items-center"><span class="text-muted">Costo corse YTD al fondo</span><strong style="font-size:18px;color:var(--ink)" id="sam-ytd"></strong></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- DISCLAIMER -->
+        <div class="fund-disclaimer">
+          <strong>Trasparenza:</strong> il rendiconto del Fondo ESG Territoriale è supervisionato dal Comitato ESG locale
+          (Alphio APS · Comune di Roma · sponsor territoriali). Ogni fattura riporta listino ufficiale, sconto contrattuale
+          −15% e ID voucher, ed è verificabile dal revisore CSRD del programma. Lo <strong>SROI è validato ex-post</strong>
+          da primaria società di revisione. Dati mock a scopo dimostrativo.
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <div id="toast-container"></div>
+
+  <script src="data/mock-data.js"></script>
+  <script src="js/icons.js"></script>
+  <script src="js/navigation.js"></script>
+  <script>
+    requireAdmin();
+
+    // ---- Sidebar icons ----
+    document.getElementById('sb1').outerHTML = aIcon('bar-chart', { size: 20 });
+    document.getElementById('sb2').outerHTML = aIcon('check-circle', { size: 20 });
+    document.getElementById('sb3').outerHTML = aIcon('building', { size: 20 });
+    document.getElementById('sb4').outerHTML = aIcon('users', { size: 20 });
+    document.getElementById('sb5').outerHTML = aIcon('leaf', { size: 20 });
+    document.getElementById('sb8').outerHTML = aIcon('wallet', { size: 20 });
+    document.getElementById('sb6').outerHTML = aIcon('settings', { size: 20 });
+    document.getElementById('sb7').outerHTML = aIcon('log-out', { size: 20 });
+    document.getElementById('ico-bell').outerHTML = aIcon('file', { size: 18 });
+
+    // ---- Section icons ----
+    document.getElementById('ico-alloc').outerHTML = aIcon('grid', { size: 18 });
+    document.getElementById('ico-burn').outerHTML = aIcon('trending-up', { size: 18 });
+    document.getElementById('ico-sponsor').outerHTML = aIcon('award', { size: 18 });
+    document.getElementById('ico-committee').outerHTML = aIcon('users', { size: 18 });
+    document.getElementById('ico-gov').outerHTML = aIcon('shield-check', { size: 18 });
+    document.getElementById('ico-truck').outerHTML = aIcon('truck', { size: 18 });
+
+    const F = MOCK.fund;
+    const eur = v => '€' + v.toLocaleString('it-IT');
+    const eurM = v => '€' + (v / 1000000).toLocaleString('it-IT', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + 'M';
+
+    // ---- (1) HERO KPI + barra avanzamento ----
+    const feeAlloc = F.allocation[0].value;
+    document.getElementById('hero-kpi').innerHTML = `
+      <div class="fund-kpi">
+        <div class="lbl">Fondo totale · anno 1</div>
+        <div class="val">${eurM(F.total)}</div>
+        <div class="note">${F.city} · sponsor multipli + Comune</div>
+      </div>
+      <div class="fund-kpi">
+        <div class="lbl">Impegnato YTD</div>
+        <div class="val">${eurM(F.committed_ytd.total)}</div>
+        <div class="note">corse + voucher + fee maturata</div>
+      </div>
+      <div class="fund-kpi">
+        <div class="lbl">Residuo fondo</div>
+        <div class="val">${eurM(F.residual)}</div>
+        <div class="note">${eur(F.residual)}</div>
+      </div>
+      <div class="fund-kpi">
+        <div class="lbl">Fee Alphio maturata</div>
+        <div class="val">${eur(F.committed_ytd.fee)}</div>
+        <div class="note">su ${eur(feeAlloc)} anno 1 (15/10/7%)</div>
+      </div>`;
+
+    const pctCommitted = (F.committed_ytd.total / F.total) * 100;
+    document.getElementById('progress-lbl').textContent =
+      eur(F.committed_ytd.total) + ' / ' + eur(F.total) + ' · ' + pctCommitted.toLocaleString('it-IT', { maximumFractionDigits: 1 }) + '%';
+    document.getElementById('progress-fill').style.width = pctCommitted.toFixed(1) + '%';
+
+    // ---- (2) ALLOCAZIONE: 3 barre ----
+    const allocColors = ['#B45309', '#3B82F6', '#0F6E56'];
+    const allocMax = Math.max(...F.allocation.map(a => a.value));
+    document.getElementById('alloc-bars').innerHTML = F.allocation.map((a, i) => `
+      <div class="fund-bar">
+        <div class="bar-lbl">${a.label}</div>
+        <div class="bar-track"><div class="bar-fill" style="width:${(a.value / allocMax * 100).toFixed(1)}%;background:${allocColors[i]}"></div></div>
+        <div class="bar-val">${eur(a.value)}</div>
+      </div>`).join('');
+
+    // ---- (3) BURN-RATE YTD: impegnato vs allocazione ----
+    const burnRows = [
+      { label: 'Corse Layer 1 (14.620 × €72)',       spent: F.committed_ytd.rides,    alloc: F.allocation[1].value, color: '#3B82F6' },
+      { label: 'Voucher Layer 2 (13.900 emessi)',    spent: F.committed_ytd.vouchers, alloc: F.allocation[2].value, color: '#0F6E56' },
+      { label: 'Fee Alphio APS maturata',            spent: F.committed_ytd.fee,      alloc: F.allocation[0].value, color: '#B45309' }
+    ];
+    document.getElementById('burn-bars').innerHTML = burnRows.map(r => {
+      const pct = (r.spent / r.alloc) * 100;
+      return `
+      <div class="fund-bar">
+        <div class="bar-lbl">${r.label}</div>
+        <div class="bar-track"><div class="bar-fill" style="width:${pct.toFixed(1)}%;background:${r.color}"></div></div>
+        <div class="bar-val">${eur(r.spent)} <span style="color:var(--medium-gray);font-weight:600">· ${pct.toLocaleString('it-IT', { maximumFractionDigits: 1 })}%</span></div>
+      </div>`;
+    }).join('');
+
+    // ---- (4) SPONSOR table ----
+    const initials = name => name.split(/\s+/).slice(0, 2).map(w => w[0]).join('').toUpperCase();
+    const sponsorTotal = F.sponsors.reduce((a, s) => a + s.committed, 0);
+    document.getElementById('sponsor-rows').innerHTML = F.sponsors.map(s => `
+      <tr>
+        <td><span class="sponsor-logo">${initials(s.name)}</span><strong>${s.name}</strong></td>
+        <td style="color:var(--medium-gray)">${s.kind}</td>
+        <td class="font-mono" style="font-size:12px">${s.range}</td>
+        <td class="amt">${eur(s.committed)}</td>
+      </tr>`).join('') + `
+      <tr class="total">
+        <td colspan="3">Totale impegnato dagli sponsor</td>
+        <td class="amt">${eur(sponsorTotal)}</td>
+      </tr>`;
+
+    // ---- (5) COMITATO ----
+    document.getElementById('committee-members').innerHTML = F.committee.members.map(m =>
+      `<span class="member-pill">${aIcon('check', { size: 12 })} ${m}</span>`).join('');
+    document.getElementById('committee-last').textContent = F.committee.last_meeting;
+    document.getElementById('committee-next').textContent = F.committee.next_meeting;
+    document.getElementById('committee-notes').textContent = F.committee.notes;
+
+    // ---- (6) GOVERNANCE NAZIONALE ----
+    document.getElementById('gov-national').textContent = F.governance_national;
+    document.getElementById('gov-fees').textContent = F.platform_fees;
+    document.getElementById('gov-auditor').textContent = F.auditor.name;
+    document.getElementById('gov-auditor-scope').textContent = F.auditor.scope;
+
+    // ---- (7) SAMARCANDA ----
+    document.getElementById('sam-cert').textContent = F.samarcanda.cert;
+    document.getElementById('sam-badge').textContent = '€' + F.samarcanda.ride_cost + '/corsa · ' + F.samarcanda.split;
+    document.getElementById('sam-margin').textContent = F.samarcanda.margin;
+    document.getElementById('sam-ytd').textContent = eur(F.committed_ytd.rides);
+  </script>
+</body>
+</html>

@@ -287,5 +287,37 @@ window.MOCK = (function () {
     }
   };
 
-  return { structures, services, access_levels, patient, patient_location, roma_center, vouchers, bookings, admin_requests, admin_kpi, admin_trend, admin_patients, esg };
+  /* =====================================================
+     FONDO ESG TERRITORIALE · ROMA · ANNO 1
+     Plafond ESG aziende (via Compagnie di Assicurazione) +
+     sponsor nazionali + contributi comunali/regionali.
+     ===================================================== */
+  const fund = {
+    city: 'Roma', year: 1, total: 9000000,
+    allocation: [
+      { label: 'Fee Alphio APS (15/10/7%)',      value: 960000 },
+      { label: 'Layer 1 — Mobilità (corse)',     value: 4020000 },
+      { label: 'Layer 2 — Voucher cure',         value: 4020000 }
+    ],
+    committed_ytd: { rides: 1052640, vouchers: 1672170, fee: 400000, total: 3124810 },
+    residual: 5875190,
+    sponsors: [
+      { name: 'EnerVita S.p.A.',         kind: 'Sponsor ESG nazionale',                                  range: '€500.000 – 3.000.000', committed: 1800000 },
+      { name: 'Assicura Welfare Group',  kind: 'Compagnia di Assicurazione · plafond welfare aziendale', range: '€500.000 – 3.000.000', committed: 2400000 },
+      { name: 'BancaRoma ESG',           kind: 'Sponsor ESG territoriale',                               range: '€500.000 – 3.000.000', committed: 1500000 },
+      { name: 'Corporate ESG vari',      kind: 'Altri plafond aziendali',                                range: '€500.000 – 3.000.000', committed: 2100000 },
+      { name: 'Comune di Roma',          kind: 'Contributo comunale',                                    range: '—',                    committed: 1200000 }
+    ],
+    committee: {
+      members: ['Alphio APS', 'Comune di Roma', 'Sponsor territoriali'],
+      last_meeting: '12/06/2026', next_meeting: '18/09/2026',
+      notes: 'Monitora l\'utilizzo dei fondi, definisce le priorità, supervisiona l\'impatto locale'
+    },
+    governance_national: 'AureaVia Srl Innovativa coordina piattaforma tecnologica e standard operativi. Alphio APS supervisiona etica, reporting annuale e rendicontazione verso le istituzioni. La primaria società di revisione convalida lo SROI ex-post.',
+    auditor: { name: 'Primaria società di revisione (validazione SROI ex-post)', scope: 'Verifica CSRD su ogni fattura · sconto 15% contrattuale' },
+    platform_fees: 'AureaVia Srl: fee di piattaforma + 5% voucher Layer 2 + canone strutture convenzionate',
+    samarcanda: { ride_cost: 72, split: '€61 tariffa + €8 fee + €3 piattaforma', margin: '41,7%', cert: 'ISO 9001:2015' }
+  };
+
+  return { structures, services, access_levels, patient, patient_location, roma_center, vouchers, bookings, admin_requests, admin_kpi, admin_trend, admin_patients, esg, fund };
 })();
