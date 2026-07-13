@@ -41,6 +41,15 @@
     }
     .ref-cell span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     .ref-cell svg { flex: none; color: var(--medium-gray); }
+    /* Il questionario post-visita è una proposta: va marcato come tale anche in console */
+    .draft-pill {
+      display: inline-flex; align-items: center;
+      margin-left: 6px;
+      padding: 2px 8px; border-radius: 999px;
+      font-size: 10px; font-weight: 700;
+      background: var(--light-gray); color: var(--medium-gray);
+      letter-spacing: .04em; text-transform: none;
+    }
   </style>
 </head>
 <body class="admin-page">
@@ -353,6 +362,34 @@
       });
     }
 
+    // Questionario post-visita (BOZZA): esito dell'ultimo questionario compilato
+    // dal paziente. È il ritorno informativo della raccolta — il senso del
+    // questionario è che il Coordinatore lo legga.
+    function followUpBlock(patientId) {
+      const list = (MOCK.patient_followups || []).filter(f => f.patient_id === patientId);
+      if (!list.length) {
+        return `<div style="padding:14px;background:#FAFAFA;border-radius:10px;font-size:13px" class="text-muted">
+          Nessun questionario post-visita compilato da questo paziente.
+        </div>`;
+      }
+      const f = list[0];
+      const issues = (f.issues || []).join(' · ') || '—';
+      const rating = f.transport_rating ? `${f.transport_rating}/5` : 'Non applicabile';
+      return `<div style="display:grid;gap:8px;font-size:13px;background:#FAFAFA;padding:14px;border-radius:10px">
+        <div style="display:flex;justify-content:space-between;gap:12px"><span class="text-muted">Prestazione</span><strong style="text-align:right">${f.service}</strong></div>
+        <div style="display:flex;justify-content:space-between"><span class="text-muted">Compilato il</span><strong>${f.date} · <span class="font-mono">${f.booking_id}</span></strong></div>
+        <div style="display:flex;justify-content:space-between"><span class="text-muted">Visita svolta</span><strong>${f.visit_done}</strong></div>
+        <div style="display:flex;justify-content:space-between;gap:12px"><span class="text-muted">Prestazione successiva</span><strong style="text-align:right">${f.next_prescription}</strong></div>
+        <div style="display:flex;justify-content:space-between"><span class="text-muted">Trasporto puntuale e adeguato</span><strong>${rating}</strong></div>
+        <div style="display:flex;justify-content:space-between;gap:12px"><span class="text-muted">Difficoltà segnalate</span><strong style="text-align:right">${issues}</strong></div>
+        <div style="display:flex;justify-content:space-between;align-items:center"><span class="text-muted">Richiede ricontatto</span>${f.callback
+          ? `<span class="badge badge--pending"><span class="dot"></span>Sì · da richiamare</span>`
+          : `<span class="badge badge--approved"><span class="dot"></span>No</span>`}</div>
+        ${f.note ? `<p class="caption" style="border-top:1px dashed var(--border-soft);padding-top:8px;margin-top:2px">“${f.note}”</p>` : ''}
+        ${list.length > 1 ? `<p class="caption">Altri ${list.length - 1} questionari compilati in precedenza.</p>` : ''}
+      </div>`;
+    }
+
     function openP(id) {
       const p = MOCK.admin_patients.find(x => x.id === id);
       if (!p) return;
@@ -423,6 +460,9 @@
               </div>`).join('')}
             </div>
             <p class="caption mt-8" style="display:flex;align-items:flex-start;gap:6px;color:#0F6E56">${aIcon('shield-check',{size:14})}<span>Ogni fattura riporta listino ufficiale, sconto contrattuale <strong>−15%</strong>, tariffa ESG e ID voucher: verificabile dal revisore CSRD del programma.</span></p>
+
+            <p class="eyebrow mt-20 mb-8">Questionario post-visita <span class="draft-pill">Bozza</span></p>
+            ${followUpBlock(p.id)}
 
             <p class="eyebrow mt-20 mb-8">ESG aggregato</p>
             <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;text-align:center">

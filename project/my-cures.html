@@ -39,6 +39,26 @@
       display: flex; align-items: center; justify-content: space-between;
       font-size: 12px;
     }
+    /* Aggancio al questionario post-visita (bozza): compare solo sulle visite
+       già svolte, cioè approvate con data passata. */
+    .cure-followup {
+      margin-top: 10px;
+      padding-top: 10px;
+      border-top: 1px dashed var(--border-soft);
+      display: flex; align-items: center; justify-content: space-between; gap: 8px;
+    }
+    .cure-followup .fu-link {
+      display: inline-flex; align-items: center; gap: 6px;
+      font-size: 12px; font-weight: 700;
+      color: var(--care-blue-dark);
+      text-decoration: none;
+    }
+    .cure-followup .fu-link:hover { text-decoration: underline; }
+    .cure-followup .fu-done {
+      display: inline-flex; align-items: center; gap: 6px;
+      font-size: 12px; font-weight: 600;
+      color: #0F6E56;
+    }
   </style>
 </head>
 <body>
@@ -103,6 +123,21 @@
 
     const certOf = b => { const s = (MOCK.structures || []).find(x => x.id === b.structure_id); return s ? s.cert : 'ISO 9001'; };
 
+    // Questionario post-visita (bozza): call-to-action sulle visite svolte, cioè
+    // approvate con data già passata. Se il paziente ha già risposto, la card
+    // lo dichiara invece di richiederlo di nuovo.
+    function followUpBar(b) {
+      if (!isVisitDone(b)) return '';
+      const done = getFollowUp(b.id);
+      if (done) {
+        return `<div class="cure-followup"><span class="fu-done">${aIcon('check-circle',{size:14})} Questionario inviato</span><span class="caption">Grazie</span></div>`;
+      }
+      return `<div class="cure-followup">
+        <a class="fu-link" href="follow-up.html?booking=${b.id}" onclick="event.stopPropagation()">${aIcon('message-square',{size:14})} Com'è andata la visita?</a>
+        <span class="badge badge--neutral">Bozza</span>
+      </div>`;
+    }
+
     let filter = 'all';
     function renderCures() {
       const list = document.getElementById('cure-list');
@@ -129,7 +164,8 @@
               <div class="cure-meta" style="color:#0F6E56;font-weight:600;margin-top:4px">Coperta dal Programma Carelink</div>
             </div>
           </div>
-          ${b.shuttle ? `<div class="cure-bar"><span style="color:var(--primary-orange);font-weight:600;display:flex;align-items:center;gap:6px">${aIcon('truck',{size:14})} Trasporto AureaShuttle <span class="badge badge--approved" style="font-weight:600">Samarcanda · gratuito</span></span><span class="caption">${b.status === 'approved' ? 'In agenda' : 'Da validare'}</span></div>` : ''}`;
+          ${b.shuttle ? `<div class="cure-bar"><span style="color:var(--primary-orange);font-weight:600;display:flex;align-items:center;gap:6px">${aIcon('truck',{size:14})} Trasporto AureaShuttle <span class="badge badge--approved" style="font-weight:600">Samarcanda · gratuito</span></span><span class="caption">${b.status === 'approved' ? 'In agenda' : 'Da validare'}</span></div>` : ''}
+          ${followUpBar(b)}`;
         list.appendChild(card);
       });
       if (!filtered.length) {
@@ -176,6 +212,8 @@
         <p class="caption mt-12" style="display:flex;align-items:flex-start;gap:6px;color:#0F6E56">${aIcon('shield-check',{size:14})}<span>Prestazione <strong>coperta dal Programma Carelink</strong>: nessun costo a tuo carico.</span></p>
 
         ${b.status === 'pending' ? `<p class="caption mt-12">In attesa di validazione del <strong>Coordinatore Alphio</strong> · tempi medi 2-4 ore lavorative.</p>` : ''}
+
+        ${isVisitDone(b) && !getFollowUp(b.id) ? `<a class="btn btn--secondary btn--block mt-16" href="follow-up.html?booking=${b.id}">${aIcon('message-square',{size:16})} Com'è andata la visita? <span class="badge badge--neutral">Bozza</span></a>` : ''}
 
         <div class="flex gap-8 mt-16">
           ${b.status === 'pending'

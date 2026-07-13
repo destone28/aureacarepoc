@@ -136,6 +136,45 @@
     .sso-banner-head svg { flex: none; color: var(--care-blue-dark); margin-top: 1px; }
     .sso-banner-head p { font-size: 13px; line-height: 1.5; color: var(--ink); }
     .sso-banner .btn svg { vertical-align: -3px; }
+    /* Questionario di censimento anagrafico — proposta da validare col cliente.
+       Il consenso sanitario è obbligatorio ma ha una classe propria (q-required):
+       le due dichiarazioni dello step 5 restano un blocco di validazione a sé. */
+    .q-draft-note {
+      display: flex; gap: 10px; align-items: flex-start;
+      padding: 12px 14px;
+      border: 1px dashed var(--border-gray);
+      background: #FAFAF7;
+      border-radius: var(--r-md);
+      margin-bottom: 22px;
+    }
+    .q-draft-note svg { flex: none; color: var(--medium-gray); margin-top: 2px; }
+    .q-draft-note p { font-size: 12px; color: var(--medium-gray); line-height: 1.6; }
+    .q-draft-badge {
+      display: inline-flex; align-items: center;
+      margin-right: 4px;
+      padding: 2px 8px; border-radius: 999px;
+      font-size: 10px; font-weight: 700;
+      background: var(--light-gray); color: var(--medium-gray);
+      letter-spacing: .04em;
+    }
+    .q-inline { display: flex; gap: 8px; }
+    .q-inline label {
+      flex: 1;
+      display: flex; gap: 8px; align-items: center;
+      padding: 10px 12px;
+      background: #FAFAFA;
+      border: 1px solid var(--border-soft);
+      border-radius: var(--r-md);
+      font-size: 13px; font-weight: 600;
+      cursor: pointer;
+    }
+    .q-inline label input { width: 16px; height: 16px; accent-color: var(--care-blue); flex: none; }
+    .q-inline label.selected { border-color: var(--care-blue); background: var(--care-blue-bg); color: var(--care-blue-dark); }
+    .consent-row.q-required { border-color: #0F6E56; background: #F4FBF6; }
+    .consent-row.q-required strong { color: #0F6E56; }
+    .consent-row.q-required input[type=checkbox] { accent-color: #0F6E56; }
+    .consent-row.q-required.invalid { border-color: var(--error); background: #FCEBEB; }
+    .consent-row.q-required.invalid .consent-req { background: #F7D5D5; color: var(--error); }
   </style>
 </head>
 <body>
@@ -143,12 +182,12 @@
     <div class="wiz-top">
       <button class="back-btn" onclick="goBackStep()" aria-label="Indietro" id="back-btn-top"><span id="ico-back"></span></button>
       <span class="brand-mini">Crea account paziente</span>
-      <span class="step-counter"><span id="cur-step">1</span>/4</span>
+      <span class="step-counter"><span id="cur-step">1</span>/5</span>
     </div>
 
     <div class="wiz-progress">
       <div class="steps"></div>
-      <p class="step-label">Step <strong><span id="cur-step-label">1</span> di 4</strong> · <span id="step-name">Anagrafica</span></p>
+      <p class="step-label">Step <strong><span id="cur-step-label">1</span> di 5</strong> · <span id="step-name">Anagrafica</span></p>
     </div>
 
     <div class="wiz-body">
@@ -268,8 +307,94 @@
         </div>
       </section>
 
-      <!-- STEP 4: Consenso GDPR -->
+      <!-- STEP 4: Questionario di censimento anagrafico (BOZZA da validare col cliente) -->
       <section class="step-pane" data-step="4">
+        <h2 class="wiz-title">Il tuo percorso di cura</h2>
+        <p class="wiz-sub">Poche domande per capire di cosa hai bisogno: patologia, ricorsività delle cure e autonomia negli spostamenti guidano l'assegnazione delle prestazioni e del trasporto porta-a-porta.</p>
+
+        <div class="q-draft-note">
+          <span id="ico-q-draft"></span>
+          <p><span class="q-draft-badge">Bozza · da validare con il cliente</span> Proposta di questionario per il censimento anagrafico: il set di domande sarà confermato insieme ad Alphio APS.</p>
+        </div>
+
+        <div class="field">
+          <label class="field-label">Patologia principale / area di cura</label>
+          <div class="input-container">
+            <select class="input" id="q-area">
+              <option value="Oncologia">Oncologia</option>
+              <option value="Nefrologia/Dialisi">Nefrologia / Dialisi</option>
+              <option value="Neurologia">Neurologia</option>
+              <option value="Pediatria">Pediatria</option>
+              <option value="Cardiologia">Cardiologia</option>
+              <option value="Altro">Altro</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="field">
+          <label class="field-label">Sei attualmente in un ciclo di cure ricorsive?</label>
+          <div class="q-inline" id="q-cycle"></div>
+          <div class="input-container mt-8" id="q-cycle-freq-wrap" style="display:none">
+            <select class="input" id="q-cycle-freq">
+              <option value="Settimanale">Frequenza settimanale</option>
+              <option value="Quindicinale">Frequenza quindicinale</option>
+              <option value="Mensile">Frequenza mensile</option>
+            </select>
+          </div>
+          <p class="field-hint">Le cure ricorsive danno diritto al trasporto porta-a-porta gratuito per ogni seduta.</p>
+        </div>
+
+        <div class="field">
+          <label class="field-label">Struttura dove sei seguito abitualmente</label>
+          <div class="input-container"><input class="input" id="q-structure" placeholder="Es. Policlinico Gemelli"></div>
+        </div>
+
+        <div class="field">
+          <label class="field-label">Autonomia negli spostamenti</label>
+          <div class="input-container">
+            <select class="input" id="q-autonomy">
+              <option value="Autonomo">Autonomo</option>
+              <option value="Con accompagnatore">Con accompagnatore</option>
+              <option value="Difficoltà motorie">Difficoltà motorie</option>
+              <option value="Sedia a rotelle">Sedia a rotelle</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="field">
+          <label class="field-label">Hai un caregiver di riferimento?</label>
+          <div class="q-inline" id="q-caregiver"></div>
+          <div class="input-container mt-8" id="q-caregiver-rel-wrap" style="display:none">
+            <select class="input" id="q-caregiver-rel">
+              <option value="Familiare">Familiare</option>
+              <option value="Amico">Amico</option>
+              <option value="Assistente">Assistente</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="field">
+          <label class="field-label">Esenzioni attive</label>
+          <div class="input-container"><input class="input" id="q-exemption" placeholder="Codice esenzione (es. 048)"></div>
+          <p class="field-hint">Facoltativo: se non ne hai, lascia vuoto.</p>
+        </div>
+
+        <label class="consent-row q-required" id="q-health-row">
+          <input type="checkbox" id="q-health">
+          <div>
+            <strong>Consenso al trattamento dei dati sanitari<span class="consent-req">Obbligatorio</span></strong>
+            <p>Autorizzo il trattamento dei dati relativi alla mia patologia e al mio percorso di cura per l'assegnazione delle prestazioni e del trasporto sanitario.</p>
+          </div>
+        </label>
+
+        <div class="form-error" id="health-error">
+          <span id="ico-err-health"></span>
+          <span>Il consenso al trattamento dei dati sanitari è obbligatorio: senza non possiamo assegnarti prestazioni né trasporto.</span>
+        </div>
+      </section>
+
+      <!-- STEP 5: Consenso GDPR -->
+      <section class="step-pane" data-step="5">
         <h2 class="wiz-title">Privacy e consensi</h2>
         <p class="wiz-sub">Trasparenza totale su come usiamo i tuoi dati clinici.</p>
 
@@ -340,8 +465,8 @@
   <script src="js/navigation.js"></script>
   <script>
     let step = 1;
-    const TOTAL = 4;
-    const stepNames = { 1: 'Anagrafica', 2: 'Documenti', 3: 'Indirizzo', 4: 'Consensi' };
+    const TOTAL = 5;
+    const stepNames = { 1: 'Anagrafica', 2: 'Documenti', 3: 'Indirizzo', 4: 'Questionario', 5: 'Consensi' };
     let obMapInit = false;
 
     function renderStep() {
@@ -391,9 +516,47 @@
       });
     });
 
+    // Questionario di censimento (bozza): il consenso sanitario è l'unica
+    // risposta bloccante — senza non è possibile assegnare cure né trasporto.
+    function validateHealthConsent() {
+      const row = document.getElementById('q-health-row');
+      const ok = document.getElementById('q-health').checked;
+      row.classList.toggle('invalid', !ok);
+      document.getElementById('health-error').classList.toggle('show', !ok);
+      return ok;
+    }
+    document.getElementById('q-health').addEventListener('change', () => {
+      document.getElementById('q-health-row').classList.remove('invalid');
+      document.getElementById('health-error').classList.remove('show');
+    });
+
+    // Sì/No inline: mostrano il campo di dettaglio collegato (frequenza, relazione).
+    function mountYesNo(containerId, name, onPick) {
+      const el = document.getElementById(containerId);
+      el.innerHTML = `
+        <label data-value="si"><input type="radio" name="${name}" value="si">Sì</label>
+        <label data-value="no"><input type="radio" name="${name}" value="no">No</label>`;
+      el.querySelectorAll('label').forEach(l => {
+        l.addEventListener('change', () => {
+          el.querySelectorAll('label').forEach(x => x.classList.toggle('selected', x === l));
+          onPick(l.dataset.value);
+        });
+      });
+    }
+    mountYesNo('q-cycle', 'q-cycle-r', v => {
+      document.getElementById('q-cycle-freq-wrap').style.display = v === 'si' ? 'flex' : 'none';
+    });
+    mountYesNo('q-caregiver', 'q-caregiver-r', v => {
+      document.getElementById('q-caregiver-rel-wrap').style.display = v === 'si' ? 'flex' : 'none';
+    });
+
     function goNextStep() {
       if (step === 2 && !validateDocs()) {
         showToast('Il Modello ISEE è obbligatorio', 'error');
+        return;
+      }
+      if (step === 4 && !validateHealthConsent()) {
+        showToast('Il consenso al trattamento dei dati sanitari è obbligatorio', 'error');
         return;
       }
       if (step < TOTAL) { step++; renderStep(); window.scrollTo({ top: 0, behavior: 'smooth' }); }
@@ -418,6 +581,8 @@
     document.getElementById('ico-pin').outerHTML = aIcon('map-pin', { size: 18 });
     document.getElementById('ico-err').outerHTML = aIcon('alert', { size: 16 });
     document.getElementById('ico-err-docs').outerHTML = aIcon('alert', { size: 16 });
+    document.getElementById('ico-err-health').outerHTML = aIcon('alert', { size: 16 });
+    document.getElementById('ico-q-draft').outerHTML = aIcon('edit', { size: 16 });
     document.getElementById('ico-sso').outerHTML = aIcon('shield-check', { size: 18 });
     document.getElementById('ico-prefill').innerHTML = aIcon('user', { size: 16 });
 

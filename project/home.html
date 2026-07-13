@@ -50,6 +50,20 @@
         <p class="caption mt-12" style="line-height:1.5;border-top:1px dashed #DCE7F4;padding-top:12px">Le tue cure sono <strong style="color:#0F6E56">coperte dal Programma Carelink</strong> · nessun costo a tuo carico.</p>
       </div>
 
+      <!-- Questionario post-visita (bozza): compare solo se c'è una visita svolta senza risposte -->
+      <a id="fu-banner" class="card card--padded card--lift mt-16" style="display:none;text-decoration:none;color:inherit;border-color:#DCE7F4">
+        <div class="flex items-center gap-12">
+          <div style="width:38px;height:38px;border-radius:10px;background:var(--care-blue-light);color:var(--care-blue-dark);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+            <span id="ico-fu"></span>
+          </div>
+          <div style="flex:1;min-width:0">
+            <p style="font-weight:700;font-size:14px">Com'è andata la visita?</p>
+            <p class="caption" id="fu-sub">&nbsp;</p>
+          </div>
+          <span class="badge badge--neutral">Bozza</span>
+        </div>
+      </a>
+
       <!-- Prossima prenotazione -->
       <div class="divider-eyebrow"><span>Prossima prenotazione</span><span class="line"></span></div>
       <a href="my-cures.html" class="card card--padded card--lift" style="display:block;text-decoration:none;color:inherit">
@@ -220,6 +234,19 @@
       `Livello di accesso ${access.level} · ${access.doc}`;
     document.getElementById('prog-verified').textContent =
       `Requisito verificato dal ${access.verified_by} il ${access.verified_date}`;
+
+    // Questionario post-visita (bozza): banner discreto se almeno una visita
+    // svolta (approvata, data passata) non ha ancora risposte salvate.
+    const toReview = pendingFollowUps();
+    if (toReview.length) {
+      const b = toReview[0];
+      const banner = document.getElementById('fu-banner');
+      document.getElementById('ico-fu').outerHTML = aIcon('message-square', { size: 18 });
+      document.getElementById('fu-sub').textContent =
+        `${b.service_name} · ${b.date}` + (toReview.length > 1 ? ` · e altre ${toReview.length - 1} visite da valutare` : '');
+      banner.href = 'follow-up.html?booking=' + b.id;
+      banner.style.display = 'block';
+    }
 
     // Impatto personale — derivato dalle cure approvate (unico stato di conferma)
     const approved = MOCK.bookings.filter(b => b.status === 'approved').length;

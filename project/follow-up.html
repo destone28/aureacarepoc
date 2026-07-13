@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>AureaCare · Dopo la visita</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="js/styles.css">
+  <style>
+    /* Nota di bozza: il questionario è una proposta, non un requisito approvato */
+    .draft-note {
+      display: flex; gap: 10px; align-items: flex-start;
+      padding: 12px 14px;
+      border: 1px dashed var(--border-gray);
+      border-radius: var(--r-md);
+      background: #FAFAF7;
+      margin-bottom: 16px;
+    }
+    .draft-note svg { flex: none; color: var(--medium-gray); margin-top: 1px; }
+    .draft-note p { font-size: 12px; color: var(--medium-gray); line-height: 1.5; }
+    .draft-badge {
+      display: inline-flex; align-items: center;
+      padding: 2px 8px; border-radius: 999px;
+      font-size: 10px; font-weight: 700;
+      background: var(--light-gray); color: var(--medium-gray);
+      letter-spacing: .04em;
+    }
+
+    .visit-card {
+      background: linear-gradient(160deg, #fff, var(--care-blue-bg));
+      border: 1px solid #DCE7F4;
+      border-radius: var(--r-md);
+      padding: 14px;
+      display: flex; gap: 12px; align-items: center;
+      margin-bottom: 18px;
+    }
+    .visit-thumb {
+      width: 46px; height: 46px;
+      border-radius: 12px;
+      background: var(--care-blue);
+      color: #fff;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+
+    /* Blocco domanda */
+    .q-block { margin-bottom: 20px; }
+    .q-label { font-size: 14px; font-weight: 700; margin-bottom: 4px; }
+    .q-hint { font-size: 12px; color: var(--medium-gray); line-height: 1.5; margin-bottom: 10px; }
+
+    .q-options { display: grid; gap: 8px; }
+    .q-opt {
+      display: flex; gap: 10px; align-items: flex-start;
+      padding: 12px;
+      background: #fff;
+      border: 1px solid var(--border-soft);
+      border-radius: var(--r-md);
+      cursor: pointer;
+      font-size: 13px;
+    }
+    .q-opt input { margin-top: 1px; width: 18px; height: 18px; accent-color: var(--care-blue); flex: none; }
+    .q-opt.selected { border-color: var(--care-blue); box-shadow: 0 0 0 2px rgba(59,130,246,.12); }
+    .q-opt.selected span { color: var(--care-blue-dark); font-weight: 600; }
+
+    /* Scala 1-5 (bottoni numerici, nessuna stella) */
+    .q-scale { display: flex; gap: 8px; }
+    .q-scale button {
+      flex: 1;
+      height: 46px;
+      border: 1px solid var(--border-soft);
+      background: #fff;
+      border-radius: var(--r-md);
+      font-size: 15px; font-weight: 700;
+      color: var(--ink);
+      cursor: pointer;
+      transition: all .15s ease;
+    }
+    .q-scale button:hover:not(:disabled) { border-color: var(--care-blue); }
+    .q-scale button.selected { background: var(--care-blue); border-color: var(--care-blue); color: #fff; }
+    .q-scale button:disabled { opacity: .45; cursor: not-allowed; }
+    .q-scale-legend {
+      display: flex; justify-content: space-between;
+      font-size: 11px; color: var(--medium-gray);
+      margin-top: 6px;
+    }
+
+    .q-error {
+      display: none;
+      align-items: flex-start; gap: 8px;
+      margin-top: 10px;
+      padding: 10px 12px;
+      border-radius: var(--r-md);
+      background: #FCEBEB;
+      color: var(--error);
+      font-size: 12px; font-weight: 600; line-height: 1.45;
+    }
+    .q-error.show { display: flex; }
+    .q-error svg { flex: none; margin-top: 1px; }
+
+    .q-done {
+      display: flex; gap: 12px; align-items: flex-start;
+      padding: 14px;
+      border: 1px solid #C8E6CF;
+      background: #F4FBF6;
+      border-radius: var(--r-md);
+      margin-bottom: 16px;
+    }
+    .q-done svg { flex: none; color: #0F6E56; margin-top: 1px; }
+    .q-done p { font-size: 13px; line-height: 1.5; }
+  </style>
+</head>
+<body>
+  <div class="patient-app">
+    <header class="patient-header">
+      <button class="icon-btn" onclick="location.href='my-cures.html'" aria-label="Indietro"><span id="ico-back"></span></button>
+      <div class="brand" style="font-size:15px">Dopo la visita</div>
+      <div class="app-switcher-wrap">
+        <button class="icon-btn" data-app-switcher aria-label="App suite"><span id="ico-grid"></span></button>
+      </div>
+    </header>
+
+    <div class="patient-content">
+      <!-- Il questionario è una proposta: va dichiarato in demo -->
+      <div class="draft-note">
+        <span id="ico-draft"></span>
+        <p><strong>Bozza · da validare con il cliente.</strong> Proposta di raccolta informazioni dopo la visita: le domande e la scala di valutazione sono indicative e saranno confermate insieme ad Alphio APS.</p>
+      </div>
+
+      <!-- Prenotazione di riferimento -->
+      <div class="visit-card">
+        <div class="visit-thumb"><span id="ico-visit"></span></div>
+        <div style="flex:1;min-width:0">
+          <p class="caption" style="color:var(--care-blue-dark);font-weight:700">VISITA SVOLTA</p>
+          <p style="font-weight:700;font-size:15px" id="v-service">&nbsp;</p>
+          <p class="caption" id="v-meta">&nbsp;</p>
+        </div>
+      </div>
+
+      <!-- Stato "già compilato" -->
+      <div class="q-done" id="already" style="display:none">
+        <span id="ico-done"></span>
+        <div>
+          <p><strong>Questionario già inviato</strong> per questa visita.</p>
+          <p class="caption mt-4" id="already-when">&nbsp;</p>
+        </div>
+      </div>
+
+      <form id="fu-form">
+        <div class="q-block">
+          <p class="q-label">La visita si è svolta?</p>
+          <div class="q-options" id="q-done-opts"></div>
+          <div class="field mt-12" id="q-reason-wrap" style="display:none">
+            <label class="field-label">Motivo della mancata presentazione</label>
+            <div class="input-container"><input class="input" id="q-reason" placeholder="Es. condizioni di salute, trasporto non arrivato…"></div>
+          </div>
+        </div>
+
+        <div class="q-block">
+          <p class="q-label">Ti è stata prescritta una prestazione successiva?</p>
+          <p class="q-hint">Ci aiuta a preparare in anticipo il prossimo accesso alle cure.</p>
+          <div class="q-options" id="q-next-opts"></div>
+          <div class="field mt-12" id="q-next-wrap" style="display:none">
+            <label class="field-label">Quale prestazione</label>
+            <div class="input-container"><input class="input" id="q-next-what" placeholder="Es. visita neurologica di controllo"></div>
+          </div>
+        </div>
+
+        <div class="q-block" id="q-transport-block">
+          <p class="q-label">Il trasporto è stato puntuale e adeguato?</p>
+          <p class="q-hint" id="q-transport-hint">Trasporto porta-a-porta erogato da Samarcanda Scarl, coordinato via AureaShuttle.</p>
+          <div class="q-scale" id="q-scale"></div>
+          <div class="q-scale-legend"><span>1 · per niente</span><span>5 · pienamente</span></div>
+        </div>
+
+        <div class="q-block">
+          <p class="q-label">Hai incontrato difficoltà?</p>
+          <p class="q-hint">Puoi selezionare più opzioni.</p>
+          <div class="q-options" id="q-issues"></div>
+        </div>
+
+        <div class="q-block">
+          <p class="q-label">Vuoi essere ricontattato dal Coordinatore Alphio?</p>
+          <div class="q-options" id="q-callback"></div>
+        </div>
+
+        <div class="q-block">
+          <p class="q-label">Vuoi aggiungere altro?</p>
+          <div class="field" style="margin-bottom:0">
+            <div class="input-container"><textarea class="input" id="q-note" rows="4" placeholder="Nota libera (facoltativa)"></textarea></div>
+          </div>
+        </div>
+
+        <div class="q-error" id="q-error">
+          <span id="ico-err"></span>
+          <span>Indica se la visita si è svolta: è l'unica risposta necessaria per inviare il questionario.</span>
+        </div>
+
+        <button type="button" class="btn btn--care btn--block btn--lg mt-16" onclick="submitFollowUp()">Invia le risposte</button>
+        <p class="caption mt-12 text-center">Le risposte sono usate in forma aggregata per il monitoraggio del Programma Carelink.</p>
+      </form>
+    </div>
+
+    <nav class="bottom-nav">
+      <a class="nav-item" href="home.html"><span id="nv-home"></span>Home</a>
+      <a class="nav-item" href="book-care.html"><span id="nv-book"></span>Prenota</a>
+      <a class="nav-item active" href="my-cures.html"><span id="nv-cure"></span>Cure</a>
+      <a class="nav-item" href="profile.html"><span id="nv-profile"></span>Profilo</a>
+    </nav>
+  </div>
+
+  <div id="toast-container"></div>
+
+  <script src="data/mock-data.js"></script>
+  <script src="js/icons.js"></script>
+  <script src="js/navigation.js"></script>
+  <script>
+    document.getElementById('ico-back').outerHTML  = aIcon('arrow-left', { size: 20 });
+    document.getElementById('ico-grid').outerHTML  = aIcon('grid', { size: 20 });
+    document.getElementById('ico-draft').outerHTML = aIcon('edit', { size: 16 });
+    document.getElementById('ico-done').outerHTML  = aIcon('check-circle', { size: 18 });
+    document.getElementById('ico-err').outerHTML   = aIcon('alert', { size: 16 });
+    document.getElementById('nv-home').outerHTML   = aIcon('home',    { size: 22 });
+    document.getElementById('nv-cure').outerHTML   = aIcon('heart',   { size: 22 });
+    document.getElementById('nv-book').outerHTML   = aIcon('calendar',{ size: 22 });
+    document.getElementById('nv-profile').outerHTML= aIcon('user',    { size: 22 });
+
+    // Prenotazione di riferimento: ?booking=<id>. Fallback sulla prima visita
+    // svolta senza questionario, così la schermata è sempre significativa in demo.
+    const params = new URLSearchParams(location.search);
+    const wanted = params.get('booking');
+    const pending = pendingFollowUps();
+    const booking =
+      MOCK.bookings.find(b => b.id === wanted && isVisitDone(b)) ||
+      pending[0] ||
+      MOCK.bookings.filter(isVisitDone)[0] ||
+      MOCK.bookings[0];
+
+    document.getElementById('ico-visit').outerHTML = aIcon('heart', { size: 22 });
+    document.getElementById('v-service').textContent = booking.service_name;
+    document.getElementById('v-meta').textContent =
+      `${booking.structure_name} · ${booking.date} · ${booking.time} · ${booking.doctor}`;
+
+    // ---------- Domande (bozza) ----------
+    const VISIT_OPTIONS = [
+      { value: 'svolta',     label: 'Sì, si è svolta' },
+      { value: 'rimandata',  label: 'No, è stata rimandata' },
+      { value: 'assente',    label: 'No, non mi sono presentato' }
+    ];
+    const NEXT_OPTIONS = [
+      { value: 'si', label: 'Sì, mi è stata prescritta' },
+      { value: 'no', label: 'No, nessuna prestazione successiva' }
+    ];
+    const ISSUE_OPTIONS = [
+      'Nessuna',
+      'Attesa lunga',
+      'Struttura difficile da raggiungere',
+      'Documentazione',
+      'Altro'
+    ];
+    const CALLBACK_OPTIONS = [
+      { value: 'si', label: 'Sì, vorrei essere ricontattato' },
+      { value: 'no', label: 'No, non serve' }
+    ];
+
+    const answers = { visit: null, next: null, transport: null, issues: [], callback: null };
+
+    function renderRadios(containerId, name, options, onPick) {
+      const el = document.getElementById(containerId);
+      el.innerHTML = options.map(o => `
+        <label class="q-opt" data-value="${o.value}">
+          <input type="radio" name="${name}" value="${o.value}">
+          <span>${o.label}</span>
+        </label>`).join('');
+      el.querySelectorAll('.q-opt').forEach(opt => {
+        opt.addEventListener('change', () => {
+          el.querySelectorAll('.q-opt').forEach(o => o.classList.toggle('selected', o === opt));
+          onPick(opt.dataset.value);
+        });
+      });
+    }
+
+    renderRadios('q-done-opts', 'visit', VISIT_OPTIONS, v => {
+      answers.visit = v;
+      document.getElementById('q-reason-wrap').style.display = v === 'assente' ? 'block' : 'none';
+      document.getElementById('q-error').classList.remove('show');
+    });
+
+    renderRadios('q-next-opts', 'next', NEXT_OPTIONS, v => {
+      answers.next = v;
+      document.getElementById('q-next-wrap').style.display = v === 'si' ? 'block' : 'none';
+    });
+
+    renderRadios('q-callback', 'callback', CALLBACK_OPTIONS, v => { answers.callback = v; });
+
+    // Difficoltà: scelta multipla. "Nessuna" è esclusiva rispetto alle altre.
+    const issuesEl = document.getElementById('q-issues');
+    issuesEl.innerHTML = ISSUE_OPTIONS.map(i => `
+      <label class="q-opt" data-issue="${i}">
+        <input type="checkbox" value="${i}">
+        <span>${i}</span>
+      </label>`).join('');
+    issuesEl.querySelectorAll('.q-opt').forEach(opt => {
+      opt.addEventListener('change', () => {
+        const cb = opt.querySelector('input');
+        if (cb.checked && opt.dataset.issue === 'Nessuna') {
+          issuesEl.querySelectorAll('.q-opt').forEach(o => {
+            if (o === opt) return;
+            o.querySelector('input').checked = false;
+            o.classList.remove('selected');
+          });
+        } else if (cb.checked) {
+          const none = issuesEl.querySelector('.q-opt[data-issue="Nessuna"]');
+          none.querySelector('input').checked = false;
+          none.classList.remove('selected');
+        }
+        opt.classList.toggle('selected', cb.checked);
+        answers.issues = Array.from(issuesEl.querySelectorAll('input:checked')).map(i => i.value);
+      });
+    });
+
+    // Scala 1-5: bottoni numerici, nessuna stella. Attiva solo se la
+    // prenotazione prevedeva il trasporto porta-a-porta.
+    const scaleEl = document.getElementById('q-scale');
+    scaleEl.innerHTML = [1, 2, 3, 4, 5]
+      .map(n => `<button type="button" data-score="${n}">${n}</button>`).join('');
+    if (!booking.shuttle) {
+      document.getElementById('q-transport-hint').textContent =
+        'Per questa prenotazione non hai richiesto il trasporto porta-a-porta: la domanda non si applica.';
+      scaleEl.querySelectorAll('button').forEach(b => { b.disabled = true; });
+    } else {
+      scaleEl.querySelectorAll('button').forEach(btn => {
+        btn.addEventListener('click', () => {
+          scaleEl.querySelectorAll('button').forEach(b => b.classList.remove('selected'));
+          btn.classList.add('selected');
+          answers.transport = parseInt(btn.dataset.score, 10);
+        });
+      });
+    }
+
+    // Questionario già compilato in una sessione precedente: lo si dichiara,
+    // ma resta modificabile (il reinvio sovrascrive la risposta salvata).
+    const saved = getFollowUp(booking.id);
+    if (saved) {
+      document.getElementById('already').style.display = 'flex';
+      document.getElementById('already-when').textContent =
+        'Inviato il ' + saved.submitted_at + ' · puoi aggiornare le risposte e reinviarlo.';
+    }
+
+    function submitFollowUp() {
+      if (!answers.visit) {
+        document.getElementById('q-error').classList.add('show');
+        showToast('Indica se la visita si è svolta', 'error');
+        return;
+      }
+      const visitLabel = (VISIT_OPTIONS.find(o => o.value === answers.visit) || {}).label;
+      const nextWhat = document.getElementById('q-next-what').value.trim();
+      const payload = {
+        booking_id: booking.id,
+        service: booking.service_name,
+        visit_done: visitLabel,
+        reason: answers.visit === 'assente' ? document.getElementById('q-reason').value.trim() : '',
+        next_prescription: answers.next === 'si' ? ('Sì' + (nextWhat ? ' · ' + nextWhat : '')) : (answers.next === 'no' ? 'No' : ''),
+        transport_rating: answers.transport,
+        issues: answers.issues,
+        callback: answers.callback === 'si',
+        note: document.getElementById('q-note').value.trim(),
+        submitted_at: new Date().toLocaleDateString('it-IT')
+      };
+      saveFollowUp(booking.id, payload);
+      showToast('Grazie, le tue risposte aiutano a migliorare il programma', 'care');
+      setTimeout(() => location.href = 'my-cures.html', 1100);
+    }
+  </script>
+</body>
+</html>

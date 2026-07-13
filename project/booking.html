@@ -133,6 +133,46 @@
     }
     .rx-error.show { display: flex; }
     .rx-error svg { flex: none; margin-top: 1px; }
+    /* Questionario di prenotazione — proposta da validare col cliente */
+    .q-draft {
+      border: 1px dashed var(--border-gray);
+      background: #FAFAF7;
+      border-radius: var(--r-md);
+      padding: 14px;
+    }
+    .q-draft-head { display: flex; gap: 10px; align-items: flex-start; margin-bottom: 14px; }
+    .q-draft-head svg { flex: none; color: var(--medium-gray); margin-top: 2px; }
+    .q-draft-head p { font-size: 12px; color: var(--medium-gray); line-height: 1.6; }
+    .q-draft-badge {
+      display: inline-flex; align-items: center;
+      margin-right: 4px;
+      padding: 2px 8px; border-radius: 999px;
+      font-size: 10px; font-weight: 700;
+      background: var(--light-gray); color: var(--medium-gray);
+      letter-spacing: .04em;
+    }
+    .q-draft .field { margin-bottom: 14px; }
+    .q-needs { display: grid; gap: 8px; margin-top: 8px; }
+    .q-need {
+      display: flex; gap: 10px; align-items: center;
+      padding: 10px 12px;
+      background: #fff;
+      border: 1px solid var(--border-soft);
+      border-radius: var(--r-md);
+      font-size: 13px;
+      cursor: pointer;
+    }
+    .q-need input { width: 18px; height: 18px; accent-color: var(--care-blue); flex: none; }
+    .q-need.selected { border-color: var(--care-blue); box-shadow: 0 0 0 2px rgba(59,130,246,.12); }
+    .q-need.selected span { color: var(--care-blue-dark); font-weight: 600; }
+    .q-recall {
+      display: flex; gap: 8px; align-items: flex-start;
+      margin-top: 14px;
+      padding-top: 12px;
+      border-top: 1px dashed var(--border-gray);
+    }
+    .q-recall svg { flex: none; color: #0F6E56; margin-top: 1px; }
+    .q-recall p { font-size: 12px; color: var(--medium-gray); line-height: 1.55; }
   </style>
 </head>
 <body>
@@ -209,6 +249,56 @@
         </div>
       </div>
 
+      <!-- Questionario di prenotazione (BOZZA da validare col cliente) -->
+      <div class="divider-eyebrow"><span>Qualche informazione sulla prestazione</span><span class="line"></span></div>
+      <div class="q-draft">
+        <div class="q-draft-head">
+          <span id="ico-q"></span>
+          <p><span class="q-draft-badge">Bozza · da validare con il cliente</span> Queste informazioni servono al Coordinatore Alphio per validare la richiesta e dimensionare l'eventuale corsa.</p>
+        </div>
+
+        <div class="field">
+          <label class="field-label">Motivo della prestazione</label>
+          <div class="input-container">
+            <select class="input" id="q-reason">
+              <option value="Prima visita">Prima visita</option>
+              <option value="Controllo">Controllo</option>
+              <option value="Accertamento richiesto dallo specialista">Accertamento richiesto dallo specialista</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="field">
+          <label class="field-label">Urgenza percepita</label>
+          <div class="input-container">
+            <select class="input" id="q-urgency">
+              <option value="Entro 7 giorni">Entro 7 giorni</option>
+              <option value="Entro 30 giorni" selected>Entro 30 giorni</option>
+              <option value="Non urgente">Non urgente</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="field">
+          <label class="field-label">Sarai accompagnato?</label>
+          <div class="input-container">
+            <select class="input" id="q-companion">
+              <option value="0">No, vengo da solo</option>
+              <option value="1">Sì, con 1 accompagnatore</option>
+            </select>
+          </div>
+          <p class="field-hint">Serve a dimensionare la corsa porta-a-porta.</p>
+        </div>
+
+        <p class="field-label">Necessità particolari</p>
+        <div class="q-needs" id="q-needs"></div>
+
+        <div class="q-recall">
+          <span id="ico-q-rx"></span>
+          <p><strong>Ricetta medica</strong>: obbligatoria, la alleghi nel blocco qui sopra. <strong>Trasporto porta-a-porta</strong>: lo attivi con l'interruttore qui sopra, è gratuito.</p>
+        </div>
+      </div>
+
       <!-- Riepilogo della prenotazione -->
       <div class="divider-eyebrow"><span>Riepilogo</span><span class="line"></span></div>
       <div id="esg-rows"></div>
@@ -261,6 +351,36 @@
     document.getElementById('ico-cov').outerHTML = aIcon('shield-check', { size: 14 });
     document.getElementById('ico-rx').outerHTML = aIcon('file-check', { size: 18 });
     document.getElementById('ico-rx-err').outerHTML = aIcon('alert', { size: 16 });
+    document.getElementById('ico-q').outerHTML = aIcon('edit', { size: 16 });
+    document.getElementById('ico-q-rx').outerHTML = aIcon('info', { size: 14 });
+
+    // ---------- Questionario di prenotazione (bozza) ----------
+    // Necessità particolari: scelta multipla, "Nessuna" esclude le altre.
+    // Nel POC le risposte non vengono persistite: la raccolta è una proposta.
+    const NEEDS = ['Nessuna', 'Sedia a rotelle', 'Barella', 'Assistenza alla mobilità'];
+    const needsEl = document.getElementById('q-needs');
+    needsEl.innerHTML = NEEDS.map(n => `
+      <label class="q-need" data-need="${n}">
+        <input type="checkbox" value="${n}">
+        <span>${n}</span>
+      </label>`).join('');
+    needsEl.querySelectorAll('.q-need').forEach(opt => {
+      opt.addEventListener('change', () => {
+        const cb = opt.querySelector('input');
+        if (cb.checked && opt.dataset.need === 'Nessuna') {
+          needsEl.querySelectorAll('.q-need').forEach(o => {
+            if (o === opt) return;
+            o.querySelector('input').checked = false;
+            o.classList.remove('selected');
+          });
+        } else if (cb.checked) {
+          const none = needsEl.querySelector('.q-need[data-need="Nessuna"]');
+          none.querySelector('input').checked = false;
+          none.classList.remove('selected');
+        }
+        opt.classList.toggle('selected', cb.checked);
+      });
+    });
 
     // Recap dinamico (legge ?structure=... e ?service=... dalla URL)
     const urlParams = new URLSearchParams(location.search);

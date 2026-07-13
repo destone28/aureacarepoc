@@ -108,10 +108,23 @@ window.MOCK = (function () {
       authority_checks: { accepted: true, label: 'Autorizzo il contatto con le autorità competenti per eventuali verifiche', ts: '04/01/2026 10:32', version: 'v1.0', ip: '93.51.xxx.xxx' }
     },
     declarations_history: [
-      { date: '04/01/2026 10:32', action: 'Accettate in fase di registrazione', version: 'v1.0', channel: 'Onboarding · step 4' },
+      { date: '04/01/2026 10:32', action: 'Accettate in fase di registrazione', version: 'v1.0', channel: 'Onboarding · step 5' },
       { date: '12/04/2026 09:05', action: 'Riconfermate al caricamento di nuova ricetta', version: 'v1.0', channel: 'Prenotazione BOOK-097' }
     ]
   };
+
+  // ---------- Questionario post-visita — BOZZA da validare col cliente ----------
+  // Terzo momento di raccolta informazioni (dopo censimento anagrafico e
+  // prenotazione): il paziente compila follow-up.html sulle visite svolte
+  // (approvate con data passata) e il Coordinatore Alphio ne legge l'esito
+  // dalla scheda paziente. Le risposte compilate in demo sono salvate in
+  // localStorage (aureacare_followup_<bookingId>); queste sono lo storico mock.
+  const patient_followups = [
+    { patient_id: 'PAT-00142', booking_id: 'BOOK-097', service: 'RMN cranio/rachide',              date: '15/05/2026', visit_done: 'Sì, si è svolta', next_prescription: 'Sì · visita neurologica di controllo', transport_rating: 5, issues: ['Attesa lunga'],                     callback: false, note: 'Trasporto puntuale, personale disponibile.' },
+    { patient_id: 'PAT-00142', booking_id: 'BOOK-095', service: 'Visita oncologica di controllo',  date: '09/05/2026', visit_done: 'Sì, si è svolta', next_prescription: 'No',                                    transport_rating: null, issues: ['Nessuna'],                       callback: false, note: '' },
+    { patient_id: 'PAT-00141', booking_id: 'BOOK-091', service: 'Ciclo oncologico ambulatoriale',  date: '11/05/2026', visit_done: 'Sì, si è svolta', next_prescription: 'Sì · ecografia addome',                  transport_rating: 4, issues: ['Struttura difficile da raggiungere'], callback: true,  note: 'Chiedo di anticipare l\'orario di ritiro.' },
+    { patient_id: 'PAT-00134', booking_id: 'BOOK-088', service: 'Ciclo dialisi (mensile)',         date: '07/05/2026', visit_done: 'No, rimandata',   next_prescription: 'No',                                    transport_rating: 3, issues: ['Documentazione'],                 callback: true,  note: 'Seduta rimandata dalla struttura.' }
+  ];
 
   // ---------- Voucher ESG (Layer 2) ----------
   // Il paziente NON paga e NON ricarica: il Coordinatore Alphio assegna un
@@ -426,5 +439,5 @@ window.MOCK = (function () {
     samarcanda: { ride_cost: 72, split: '€61 tariffa + €8 fee + €3 piattaforma', margin: '41,7%', cert: 'ISO 9001:2015' }
   };
 
-  return { structures, services, access_levels, patient, patient_location, roma_center, vouchers, bookings, admin_requests, admin_kpi, admin_trend, admin_patients, esg, fund };
+  return { structures, services, access_levels, patient, patient_followups, patient_location, roma_center, vouchers, bookings, admin_requests, admin_kpi, admin_trend, admin_patients, esg, fund };
 })();

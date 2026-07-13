@@ -320,6 +320,48 @@ const aMap = (function () {
   return { init, ensureLeaflet };
 })();
 
+// ---------- Questionario post-visita (BOZZA da validare col cliente) ----------
+// Terzo momento di raccolta informazioni: si compila su follow-up.html dopo una
+// visita svolta. "Visita svolta" = prenotazione approvata (unico stato di
+// conferma esposto al paziente) con data già passata rispetto alla data di
+// riferimento della demo. Le risposte restano in localStorage per rendere la
+// demo coerente su ricarica.
+const FOLLOWUP_PREFIX = 'aureacare_followup_';
+const DEMO_TODAY = new Date(2026, 4, 21); // 21 maggio 2026 — "oggi" del mock
+const IT_MONTHS = { gen: 0, feb: 1, mar: 2, apr: 3, mag: 4, giu: 5, lug: 6, ago: 7, set: 8, ott: 9, nov: 10, dic: 11 };
+
+// Le date dei bookings sono nel formato mock "14 mag" (anno implicito 2026).
+function parseBookingDate(str) {
+  const m = String(str || '').trim().toLowerCase().match(/^(\d{1,2})\s+([a-zà-ù]{3})/);
+  if (!m || !(m[2] in IT_MONTHS)) return null;
+  return new Date(2026, IT_MONTHS[m[2]], parseInt(m[1], 10));
+}
+
+function isPastBooking(b) {
+  const d = parseBookingDate(b && b.date);
+  return !!d && d < DEMO_TODAY;
+}
+
+// Visita svolta = approvata + data passata (gli stati paziente sono solo due).
+function isVisitDone(b) {
+  return !!b && b.status === 'approved' && isPastBooking(b);
+}
+
+function getFollowUp(bookingId) {
+  try { return JSON.parse(localStorage.getItem(FOLLOWUP_PREFIX + bookingId)); }
+  catch (e) { return null; }
+}
+
+function saveFollowUp(bookingId, data) {
+  localStorage.setItem(FOLLOWUP_PREFIX + bookingId, JSON.stringify(data));
+}
+
+// Visite svolte per cui il questionario non è ancora stato compilato.
+function pendingFollowUps() {
+  const bookings = (window.MOCK && MOCK.bookings) || [];
+  return bookings.filter(b => isVisitDone(b) && !getFollowUp(b.id));
+}
+
 // ---------- Wizard helpers (onboarding) ----------
 function setWizardStep(currentStep, totalSteps) {
   const stepsEl = document.querySelector('.steps');
