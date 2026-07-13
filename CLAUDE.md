@@ -8,6 +8,14 @@ A handoff bundle from Claude Design (claude.ai/design) containing the **AureaCar
 
 The model is taken from the source document **"Alphio Carelink — Programma Nazionale (Lazio)"**. Do not reintroduce the old prepaid-wallet model: **the patient never pays and never tops up — their share is always €0.**
 
+## The economic boundary (hard rule)
+
+Per the client's notes, **the patient app exposes no economic component at all**. In `index`, `onboarding`, `home`, `book-care`, `structures`, `booking`, `booking-summary`, `my-cures`, `follow-up`, `profile` there must be **no `€` symbol, no price, no price list, no ESG tariff, no discount or `−15%`, no voucher counter or voucher ID, no balance, no "a tuo carico €0", no €72/ride, no voucher ring**. `grep -n "€" ` over those files must return **zero**.
+
+What *is* correct and must stay is the **non-numeric** coverage guarantee: *"Prestazione coperta dal Programma Carelink"*, *"Trasporto porta-a-porta gratuito"*, *"Nessun costo a tuo carico"* (no figures, no currency). That is the programme's promise to a fragile patient, not accounting.
+
+The **entire economic model lives in the `admin-*` console** — price list, fixed 15% discount, ESG tariff, vouchers, ESG Fund, SROI, sponsors, and the **verifiable CSRD invoice** (`downloadInvoice` in `admin-approvals.html` + `admin-patients.html`). These are the document's CSRD verifiability requirements: **do not strip them from admin**, and do not leak them back into the patient app.
+
 These are **design prototypes, not production code**. When reimplementing for a real target codebase, recreate the visual output pixel-perfectly in whatever technology fits — don't mirror the prototype's internal structure unless it happens to fit. Read HTML/CSS directly; don't render in a browser or take screenshots unless asked.
 
 The user's primary design is `project/canvas.html` (the review hub embedding all 17 screens). Read it in full and follow its imports before implementing.
@@ -41,12 +49,19 @@ No build, no install, no tests. Open files directly in a browser:
 ## Architecture
 
 ### Two parallel apps, one shared shell
-- **Patient app** (10 screens): mobile-first frames at 360–440px wide. `index → onboarding → home → book-care → structures → booking → booking-summary → wallet → my-cures → profile`.
+- **Patient app** (10 screens): mobile-first frames at 360–440px wide. `index → onboarding → home → book-care → structures → booking → booking-summary → my-cures → follow-up → profile`.
 - **Admin/Coordinator console** (7 screens): desktop layout at 1440px wide. `admin-login → admin-dashboard → admin-approvals → admin-structures → admin-patients → admin-esg → admin-fund`.
 
 Both share `js/styles.css`, `js/navigation.js`, `js/icons.js`, and `data/mock-data.js`. Each HTML file is standalone and pulls these in.
 
-`wallet.html` keeps its filename (so links don't break) but is now **"I miei voucher ESG"** — no top-ups, no payment providers.
+**`wallet.html` has been deleted** — the patient has no voucher page (the services aren't delivered by the platform, and the voucher model belongs to the Coordinator). Don't recreate it, and don't link to it. The patient bottom nav has **4 items**: Home (`home.html`) · **Prenota** (`book-care.html`) · Cure (`my-cures.html`) · Profilo (`profile.html`).
+
+### Patient-side rules that came from the client's notes
+- **Care states are only two**: `pending` ("In attesa") and `approved` ("Approvate"). `confirmed` / `completed` / `cancelled` must not appear in patient UI (tabs, badges, filters, counters). Their `--b-*` tokens stay in `styles.css` — admin still uses them. An **approved booking with a past date = a visit that took place** (that's what drives the follow-up CTA).
+- **Mandatory, historicized declarations**: `patient.declarations` (truthful docs · authorization to contact the competent authorities) + `patient.declarations_history`. Accepted in onboarding (blocking), shown with their history and a downloadable receipt in `profile.html`, and surfaced to the Coordinator in `admin-patients.html`.
+- **ISEE is mandatory at registration** (blocks the onboarding wizard) and the **medical prescription is mandatory at booking** (the "Conferma" CTA stays disabled until the patient reuses the verified one or uploads a new one).
+- **SPID / CIE login** in `index.html` is **simulated** (no real IdP, no library, no external logos — text buttons only). `admin-login.html` does not use it.
+- **The questionnaire is a DRAFT proposal**, not a settled requirement. It spans 3 moments — onboarding step 4, `booking.html`, and `follow-up.html` — and every screen carrying it shows the visible note *"Bozza · da validare con il cliente"*. **Keep that label** until the client validates the questions; answers persist to `localStorage` under `aureacare_followup_<bookingId>`.
 
 ### Simulated SSO across the Aurea suite
 `js/navigation.js` reads/writes the localStorage key **`aurea_auth_user`** (`{ email, role, apps }`). This key is the convention shared with AureaVia and AureaShuttle to simulate cross-app SSO without a backend. `requireAuth()` / `requireAdmin()` redirect to the relevant login if the key is missing or `role` doesn't match. The Coordinatore Alphio is still `role: 'admin'` — only the copy changed.
@@ -57,24 +72,36 @@ Both share `js/styles.css`, `js/navigation.js`, `js/icons.js`, and `data/mock-da
 | Key | Effect |
 |---|---|
 | `aureacare_accent`, `_accent_dark`, `_accent_light` | Overrides `--care-blue` CSS variables across all frames |
-| `aureacare_wallet_variant` | `segmented` (default) / `single` / `dual` — switches the **voucher ring** (`renderWalletRing`) on home + wallet: notches = vouchers, single = remaining vouchers, dual = vouchers + value covered YTD |
 | `aureacare_app_switcher_style` | `dropdown` / `modal` / `sheet` — switches `mountAppSwitcher` behavior |
 | `aureacare_handoff_mode` | `pre-flagged` / `visual` / `sober` — variant on `booking-summary.html` |
+
+The old `aureacare_wallet_variant` key (voucher ring) is **gone** together with `renderWalletRing` — the ring was an economic counter and has no place in the patient app. Don't reintroduce either.
 
 When adding a new screen, register it in the `patientScreens` or `adminScreens` arrays in `canvas.html` and update the screen counter.
 
 ### Design system
 - **Suite marker**: orange `#FF8C00` (logo, focus ring, cross-app CTAs) — inherited from AureaVia.
-- **AureaCare accent**: care-blue `#3B82F6` (+ light `#E6F1FB`, dark `#1E4FBF`) for app-specific patterns (links, "Confermata" badges, hero CTA, voucher ring).
-- **Programme green** `#0F6E56`: reserved for Carelink / ESG-fund accents (programme pills, impact blocks, fund KPIs). It never replaces the app accent.
-- Status badge palette is fixed: pending warm, approved green, confirmed blue, completed olive, cancelled red — see `--b-*` tokens in `styles.css`.
+- **AureaCare accent**: care-blue `#3B82F6` (+ light `#E6F1FB`, dark `#1E4FBF`) for app-specific patterns (links, badges, hero CTA).
+- **Programme green** `#0F6E56`: reserved for Carelink / ESG-fund accents (programme pills, the "Coperta dal programma" pill, impact blocks, fund KPIs). It never replaces the app accent.
+- Status badge palette is fixed: pending warm, approved green, confirmed blue, completed olive, cancelled red — see `--b-*` tokens in `styles.css`. **Patient screens only ever use pending + approved**; the other three are admin-only.
 - All icons are stroke SVG via `aIcon(name, opts)` from `icons.js` — check the name exists in `icons.js` before using it. **No emoji anywhere.**
 - Microcopy is **Italian**; data is **Roma-centric**. All 18 facilities are **private and certified** (ISO 9001 / JCI): Gemelli, Bambino Gesù, Aurelia Hospital, Salvator Mundi, Mater Dei, Villa Gianicolense, IDI, etc.
 
 ### Mock data shape
-`window.MOCK` exposes: `structures` (18, all `type: 'Privato convenzionato'`, with `cert` and `listing_verified`), `services` (14: 5 Fascia A `kind:'visita'` SRV-A01..A05 + 5 Fascia B `kind:'diagnostica'` SRV-B01..B05 + 4 recurring cycles `kind:'ciclo'` SRV-L01..L04, transport-covered, no price), `access_levels` (the 3 eligibility levels), `patient` (with `access` and `referred_by`), `patient_location`, `roma_center`, `vouchers` (assigned/used/movements — replaces the old `wallet`), `bookings` (8, with `list_price` / `esg_price` / `voucher_id`), `admin_requests` (12), `admin_kpi`, `admin_trend`, `admin_patients` (12, with `vouchers_left`, `access_level`, `referral`), `esg` (SROI per layer, benefits A1-A6 / B1-B3, multi-year trajectory, year-1 targets + YTD), `fund` (ESG Territorial Fund, allocation, sponsors, committee, governance, Samarcanda economics).
+`window.MOCK` exposes: `structures` (18, all `type: 'Privato convenzionato'`, with `cert` and `listing_verified`), `services` (14: 5 Fascia A `kind:'visita'` SRV-A01..A05 + 5 Fascia B `kind:'diagnostica'` SRV-B01..B05 + 4 recurring cycles `kind:'ciclo'` SRV-L01..L04, transport-covered, no price), `access_levels` (the 3 eligibility levels), `patient` (with `access`, `referred_by`, `docs`, `declarations`, `declarations_history`), `patient_followups` (post-visit questionnaire results, read by `admin-patients.html`), `patient_location`, `roma_center`, `vouchers` (assigned/used/movements), `bookings` (8, statuses limited to `pending` / `approved`, each with `list_price` / `esg_price` / `voucher_id`), `admin_requests` (12), `admin_kpi`, `admin_trend`, `admin_patients` (12, with `vouchers_left`, `access_level`, `referral`), `esg` (SROI per layer, benefits A1-A6 / B1-B3, multi-year trajectory, year-1 targets + YTD), `fund` (ESG Territorial Fund, allocation, sponsors, committee, governance, Samarcanda economics).
+
+The economic fields on `bookings` (`list_price`, `esg_price`, `voucher_id`) are **kept on purpose**: they feed the CSRD invoice in the console. They are simply never rendered in the patient app.
 
 When adding screens that need data, extend `mock-data.js` rather than inlining. Numbers are cross-referenced by several pages (home, profile, admin-dashboard, admin-esg, admin-fund) — **grep all consumers before changing a value**, and run `node --check` on `mock-data.js` afterwards.
 
 ## What is explicitly NOT included
-Real backend, real auth, **any payment flow at all** (the Carelink model has zero patient cost — do not add checkout, top-ups or payment providers), encrypted document storage (upload UI is simulated). Don't add these speculatively.
+Real backend, real auth (SPID/CIE is a simulated flow — no IdP, no library), **any payment flow at all** (the Carelink model has zero patient cost — do not add checkout, top-ups or payment providers), encrypted document storage (upload UI is simulated). Don't add these speculatively.
+
+## Open questions (To Be) — do not resolve unilaterally
+
+These came from the client and are **not settled**. If a task touches them, keep the current provisional rendering and flag the question rather than inventing an answer:
+
+1. **Scope of bookable services** — visits only, or other services too? Today the catalogue exposes Fascia A visits, Fascia B diagnostics and recurring cycles with transport.
+2. **How the ISEE is verified** — upload is simulated and the document reads "verificato dal Coordinatore Alphio". **No INPS integration** has been assumed. Don't add one.
+3. **How the medical prescription is verified** — same: simulated upload, verified by the Coordinator. **No tessera sanitaria / dematerialized-prescription integration.** Don't add one.
+4. **The questionnaire content** is a draft proposal awaiting client validation — keep the "Bozza · da validare con il cliente" label.
