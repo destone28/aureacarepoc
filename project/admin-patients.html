@@ -228,6 +228,10 @@
 
     // Lookup livello di accesso Carelink (1 urgenza · 2 ISEE · 3 due diligence)
     const accessLevelOf = lvl => MOCK.access_levels.find(a => a.level === lvl);
+    // Dichiarazioni obbligatorie del paziente (testo, data/ora, versione):
+    // servono al Coordinatore per la due diligence sui requisiti di accesso.
+    const DECL = MOCK.patient.declarations;
+    const DECL_HIST = MOCK.patient.declarations_history;
     const statusLabel = { pending: 'In approvazione', approved: 'Approvata', confirmed: 'Confermata', completed: 'Completata', cancelled: 'Annullata' };
 
     // Medie calcolate sull'estratto di 12 pazienti (stessa base per entrambe)
@@ -379,6 +383,18 @@
               <div style="display:flex;justify-content:space-between"><span class="text-muted">Approvazioni</span><strong>${Math.floor(p.completed*0.95)} su ${p.completed+1}</strong></div>
               <div style="display:flex;justify-content:space-between"><span class="text-muted">Cliente da</span><strong>04/01/2026</strong></div>
               <div style="display:flex;justify-content:space-between"><span class="text-muted">Stato documenti</span><span class="doc-pill ok">${aIcon('check-circle',{size:12})}Completi</span></div>
+            </div>
+
+            <p class="eyebrow mt-20 mb-8">Dichiarazioni obbligatorie</p>
+            <div style="display:grid;gap:8px;font-size:13px;background:#F4FBF6;border:1px solid #C8E6CF;padding:14px;border-radius:10px">
+              ${Object.keys(DECL).map(k => {
+                const d = DECL[k];
+                return `<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px">
+                  <span style="flex:1;line-height:1.45">${aIcon('check-circle',{size:13})} ${d.label}</span>
+                  <span class="badge badge--approved"><span class="dot"></span>${d.accepted ? 'Accettata' : 'Mancante'}</span>
+                </div>`;
+              }).join('')}
+              <p class="caption" style="border-top:1px dashed #C8E6CF;padding-top:8px;margin-top:2px">Accettate il <strong>${DECL.truthful_docs.ts}</strong> · testo <span class="font-mono">${DECL.truthful_docs.version}</span> · storicizzate (${DECL_HIST.length} registrazioni)</p>
             </div>
 
             <p class="eyebrow mt-20 mb-8">Documenti</p>

@@ -64,6 +64,42 @@
     .setting-row.danger .set-ico { background: #FCEBEB; color: var(--error); }
     .setting-row.danger .setting-label { color: var(--error); }
     .setting-label { flex: 1; font-weight: 600; font-size: 14px; }
+    /* Dichiarazioni obbligatorie (accettate in registrazione, non revocabili) */
+    .decl-row {
+      display: flex; gap: 10px; align-items: flex-start;
+      padding: 12px 0;
+      border-bottom: 1px solid var(--border-soft);
+    }
+    .decl-row:last-child { border-bottom: none; }
+    .decl-row input[type=checkbox] {
+      margin-top: 2px;
+      width: 18px; height: 18px;
+      accent-color: #0F6E56;
+    }
+    .decl-row .decl-text { flex: 1; font-size: 13px; font-weight: 600; line-height: 1.45; }
+    .decl-req {
+      display: inline-flex; align-items: center;
+      margin-left: 6px;
+      padding: 1px 7px; border-radius: 999px;
+      font-size: 10px; font-weight: 700; letter-spacing: .02em;
+      background: #E1F5EE; color: #0F6E56;
+      vertical-align: middle;
+    }
+    /* Storico dichiarazioni — timeline verticale */
+    .decl-hist { position: relative; padding-left: 16px; margin-top: 4px; }
+    .decl-hist::before {
+      content: ''; position: absolute;
+      left: 3px; top: 10px; bottom: 10px;
+      width: 2px; background: #DCEFE6;
+    }
+    .decl-hist .h-item { position: relative; padding: 8px 0; }
+    .decl-hist .h-item::before {
+      content: ''; position: absolute;
+      left: -16px; top: 13px;
+      width: 8px; height: 8px; border-radius: 50%;
+      background: #0F6E56;
+    }
+    .decl-hist .h-item strong { font-size: 13px; }
   </style>
 </head>
 <body>
@@ -139,6 +175,18 @@
           <div style="flex:1"><p style="font-weight:700;font-size:14px">Certificato urgenza SSN/MMG</p><p class="caption">Non necessario per il livello di accesso 2</p></div>
           <span class="badge" style="background:var(--light-gray);color:var(--medium-gray)">Non richiesto</span>
         </div>
+      </div>
+
+      <!-- Dichiarazioni obbligatorie e storicizzate -->
+      <div class="divider-eyebrow"><span>Dichiarazioni obbligatorie</span><span class="line"></span></div>
+      <div class="card card--padded mb-20">
+        <div id="decl-list"></div>
+        <p class="caption mt-12" style="border-top:1px dashed var(--border-soft);padding-top:12px;line-height:1.55">Le dichiarazioni sono <strong>obbligatorie</strong> per restare nel programma e non possono essere revocate dal profilo. Una dichiarazione non veritiera comporta l'esclusione dal Programma ESG Carelink.</p>
+
+        <p class="eyebrow mt-16 mb-8">Storico dichiarazioni</p>
+        <div class="decl-hist" id="decl-hist"></div>
+
+        <button class="btn btn--secondary btn--block mt-12" onclick="downloadDeclarations()"><span id="ico-rcpt"></span>Scarica ricevuta delle dichiarazioni</button>
       </div>
 
       <!-- ESG personale -->
@@ -263,6 +311,78 @@
     document.getElementById('nv-cure').outerHTML   = aIcon('heart',   { size: 22 });
     document.getElementById('nv-book').outerHTML   = aIcon('calendar',{ size: 22 });
     document.getElementById('nv-profile').outerHTML= aIcon('user',    { size: 22 });
+
+    document.getElementById('ico-rcpt').outerHTML = aIcon('file-check', { size: 16 });
+
+    // ---- Dichiarazioni obbligatorie e storicizzate -------------------------
+    // Già accettate in registrazione: i check restano spuntati e disabilitati
+    // (non revocabili dal profilo); data/ora e versione del testo sono la prova.
+    const DECL = MOCK.patient.declarations;
+    const DECL_HIST = MOCK.patient.declarations_history;
+
+    document.getElementById('decl-list').innerHTML = Object.keys(DECL).map(k => {
+      const d = DECL[k];
+      return `<div class="decl-row">
+        <input type="checkbox" checked disabled aria-label="${d.label}">
+        <div class="decl-text">
+          ${d.label}<span class="decl-req">Obbligatoria</span>
+          <p class="caption mt-4" style="font-weight:400">Accettata il <strong>${d.ts}</strong> · testo <span class="font-mono">${d.version}</span></p>
+        </div>
+        <span class="badge badge--approved"><span class="dot"></span>Accettata</span>
+      </div>`;
+    }).join('');
+
+    document.getElementById('decl-hist').innerHTML = DECL_HIST.map(h => `
+      <div class="h-item">
+        <strong>${h.action}</strong>
+        <p class="caption mt-4">${h.date} · testo <span class="font-mono">${h.version}</span> · ${h.channel}</p>
+      </div>`).join('');
+
+    // Ricevuta delle dichiarazioni (.txt) — nessun dato economico: è la prova
+    // dell'accettazione, non un documento contabile.
+    function downloadDeclarations() {
+      const p = MOCK.patient;
+      const lines = [
+        'PROGRAMMA ESG CARELINK — Alphio APS · piattaforma AureaCare',
+        'Ricevuta delle dichiarazioni obbligatorie',
+        '════════════════════════════════════════════════════════════',
+        '',
+        'Paziente:            ' + p.first_name + ' ' + p.last_name,
+        'Codice fiscale:      ' + p.cf,
+        'ID paziente:         ' + p.id,
+        '',
+        'DICHIARAZIONI ACCETTATE'
+      ];
+      Object.keys(DECL).forEach((k, i) => {
+        const d = DECL[k];
+        lines.push(
+          '',
+          (i + 1) + ') ' + d.label,
+          '   Stato:            ' + (d.accepted ? 'Accettata' : 'Non accettata'),
+          '   Data e ora:       ' + d.ts,
+          '   Versione testo:   ' + d.version,
+          '   Origine:          ' + d.ip
+        );
+      });
+      lines.push(
+        '',
+        'STORICO',
+        ...DECL_HIST.map(h => '· ' + h.date + ' — ' + h.action + ' (' + h.version + ' · ' + h.channel + ')'),
+        '',
+        '════════════════════════════════════════════════════════════',
+        'Le dichiarazioni sono obbligatorie e storicizzate. Una dichiarazione',
+        'non veritiera comporta l\'esclusione dal Programma ESG Carelink.',
+        'Alphio APS · Coordinatore del programma'
+      );
+      const blob = new Blob([lines.join('\n')], { type: 'text/plain;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'dichiarazioni_' + p.id + '.txt';
+      document.body.appendChild(a); a.click(); a.remove();
+      URL.revokeObjectURL(url);
+      showToast('Ricevuta delle dichiarazioni scaricata', 'success');
+    }
 
     // Impatto personale — derivato dalle cure approvate (unico stato di conferma)
     const pfApproved = MOCK.bookings.filter(b => b.status === 'approved').length;

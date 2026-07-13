@@ -99,7 +99,18 @@ window.MOCK = (function () {
       urgenza:  { status: 'not_required', name: 'Certificato urgenza SSN/MMG' },
       cie:      { status: 'verified',  uploaded: '04/01/2026', name: 'CIE',            file: 'cie_marchetti.jpg' },
       spid:     { status: 'verified',  uploaded: '04/01/2026', name: 'SPID',           file: '—' }
-    }
+    },
+    // Dichiarazioni obbligatorie: accettate in registrazione, non revocabili
+    // finché il paziente resta nel programma. Sono storicizzate (ts, versione
+    // del testo, canale) perché servono al Coordinatore per la due diligence.
+    declarations: {
+      truthful_docs:    { accepted: true, label: 'Dichiaro che la documentazione caricata è veritiera', ts: '04/01/2026 10:32', version: 'v1.0', ip: '93.51.xxx.xxx' },
+      authority_checks: { accepted: true, label: 'Autorizzo il contatto con le autorità competenti per eventuali verifiche', ts: '04/01/2026 10:32', version: 'v1.0', ip: '93.51.xxx.xxx' }
+    },
+    declarations_history: [
+      { date: '04/01/2026 10:32', action: 'Accettate in fase di registrazione', version: 'v1.0', channel: 'Onboarding · step 4' },
+      { date: '12/04/2026 09:05', action: 'Riconfermate al caricamento di nuova ricetta', version: 'v1.0', channel: 'Prenotazione BOOK-097' }
+    ]
   };
 
   // ---------- Voucher ESG (Layer 2) ----------

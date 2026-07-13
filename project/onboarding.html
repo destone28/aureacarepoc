@@ -74,6 +74,32 @@
     .access-card p { font-size: 12px; color: var(--medium-gray); margin-top: 3px; line-height: 1.5; }
     .access-card.selected { border-color: #0F6E56; background: #F4FBF6; }
     .access-card.selected strong { color: #0F6E56; }
+    /* Dichiarazioni obbligatorie (bloccano il completamento della registrazione) */
+    .consent-row.required { border-color: #0F6E56; background: #F4FBF6; }
+    .consent-row.required strong { color: #0F6E56; }
+    .consent-row.required input[type=checkbox] { accent-color: #0F6E56; }
+    .consent-row.invalid { border-color: var(--error); background: #FCEBEB; }
+    .consent-req {
+      display: inline-flex; align-items: center;
+      margin-left: 6px;
+      padding: 1px 7px; border-radius: 999px;
+      font-size: 10px; font-weight: 700;
+      background: #DCEFE6; color: #0F6E56;
+      vertical-align: middle;
+    }
+    .consent-row.invalid .consent-req { background: #F7D5D5; color: var(--error); }
+    .form-error {
+      display: none;
+      align-items: flex-start; gap: 8px;
+      margin-top: 12px;
+      padding: 10px 12px;
+      border-radius: var(--r-md);
+      background: #FCEBEB;
+      color: var(--error);
+      font-size: 12px; font-weight: 600; line-height: 1.45;
+    }
+    .form-error.show { display: flex; }
+    .form-error svg { flex: none; margin-top: 1px; }
     /* Documento richiesto dal livello selezionato */
     .upload-card.required { border-color: #0F6E56; box-shadow: 0 0 0 2px rgba(15,110,86,.14); position: relative; }
     .upload-card.required::after {
@@ -204,6 +230,20 @@
         <p class="wiz-sub">Trasparenza totale su come usiamo i tuoi dati clinici.</p>
 
         <div class="consent-list">
+          <label class="consent-row required" data-decl="truthful_docs">
+            <input type="checkbox" id="dec-truthful" data-required>
+            <div>
+              <strong>Dichiarazione di veridicità dei documenti<span class="consent-req">Obbligatoria</span></strong>
+              <p>Dichiaro che la documentazione caricata è veritiera. Una dichiarazione non veritiera comporta l'<strong>esclusione dal Programma ESG Carelink</strong> e la revoca delle prestazioni già autorizzate.</p>
+            </div>
+          </label>
+          <label class="consent-row required" data-decl="authority_checks">
+            <input type="checkbox" id="dec-authority" data-required>
+            <div>
+              <strong>Autorizzazione alle verifiche<span class="consent-req">Obbligatoria</span></strong>
+              <p>Autorizzo il contatto con le autorità competenti per eventuali verifiche sui requisiti di accesso e sui documenti presentati.</p>
+            </div>
+          </label>
           <label class="consent-row">
             <input type="checkbox" checked>
             <div>
@@ -233,6 +273,13 @@
             </div>
           </label>
         </div>
+
+        <div class="form-error" id="decl-error">
+          <span id="ico-err"></span>
+          <span>Per completare la registrazione devi accettare le due dichiarazioni obbligatorie.</span>
+        </div>
+
+        <p class="caption mt-12" style="line-height:1.55">Le dichiarazioni obbligatorie vengono <strong>storicizzate</strong> con data, ora e versione del testo, e restano consultabili dal tuo profilo.</p>
       </section>
     </div>
 
@@ -279,9 +326,34 @@
       }
     }
 
+    // Dichiarazioni obbligatorie: senza entrambe la registrazione non si chiude.
+    function validateDeclarations() {
+      const rows = document.querySelectorAll('.consent-row.required');
+      let ok = true;
+      rows.forEach(r => {
+        const checked = r.querySelector('input[data-required]').checked;
+        r.classList.toggle('invalid', !checked);
+        if (!checked) ok = false;
+      });
+      document.getElementById('decl-error').classList.toggle('show', !ok);
+      return ok;
+    }
+    document.querySelectorAll('.consent-row.required input[data-required]').forEach(cb => {
+      cb.addEventListener('change', () => {
+        cb.closest('.consent-row').classList.remove('invalid');
+        if (document.querySelectorAll('.consent-row.invalid').length === 0) {
+          document.getElementById('decl-error').classList.remove('show');
+        }
+      });
+    });
+
     function goNextStep() {
       if (step < TOTAL) { step++; renderStep(); window.scrollTo({ top: 0, behavior: 'smooth' }); }
       else {
+        if (!validateDeclarations()) {
+          showToast('Accetta le dichiarazioni obbligatorie per proseguire', 'error');
+          return;
+        }
         setAuth({ role: 'patient', patient_id: 'PAT-00142', name: 'Lucia Marchetti', apps: ['via','shuttle','care'] });
         showToast('Account creato. Benvenuta in AureaCare!', 'care');
         setTimeout(() => location.href = 'home.html', 900);
@@ -296,6 +368,7 @@
     document.getElementById('ico-back').outerHTML = aIcon('arrow-left', { size: 18 });
     document.getElementById('ico-info').outerHTML = aIcon('shield', { size: 18 });
     document.getElementById('ico-pin').outerHTML = aIcon('map-pin', { size: 18 });
+    document.getElementById('ico-err').outerHTML = aIcon('alert', { size: 16 });
 
     // Upload grid (step 2)
     const docs = [
