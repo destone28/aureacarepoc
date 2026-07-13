@@ -242,7 +242,7 @@
         '',
         'PRESTAZIONE',
         'Prestazione:         ' + b.service_name,
-        'Stato:               ' + b.status,
+        'Stato:               ' + (statusMap[b.status] ? statusMap[b.status].label : b.status),
         '',
         'ECONOMICS (verificabili dal revisore CSRD)',
         isVoucher(b)
