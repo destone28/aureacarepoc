@@ -67,24 +67,23 @@
       color: var(--medium-gray); font-size: 12px;
     }
     .divider-or::before, .divider-or::after { content: ''; flex: 1; height: 1px; background: var(--border-soft); }
-    .spid-btn {
-      width: 100%; padding: 12px;
-      background: #fff;
-      border: 1px solid var(--border-gray);
+    /* Accesso con identità digitale istituzionale (SPID / CIE).
+       Nessun logo esterno: non abbiamo gli asset ufficiali, il marchio è reso a testo. */
+    .sso-list { display: grid; gap: 10px; }
+    .sso-btn {
+      width: 100%; padding: 13px;
+      border: none;
       border-radius: var(--r-md);
-      display: flex; align-items: center; justify-content: center; gap: 8px;
-      font-weight: 600;
-      color: var(--ink);
-      cursor: pointer;
-    }
-    .spid-btn:hover { background: #FAFAFA; }
-    .spid-badge {
-      background: linear-gradient(135deg, #0066CC, #002F6E);
+      display: flex; align-items: center; justify-content: center; gap: 9px;
+      font-family: inherit; font-size: 15px; font-weight: 700;
       color: #fff;
-      font-size: 11px; font-weight: 700;
-      padding: 2px 6px; border-radius: 4px;
-      letter-spacing: 0.04em;
+      cursor: pointer;
+      transition: filter .15s ease;
     }
+    .sso-btn:hover { filter: brightness(1.08); }
+    .sso-btn--spid { background: linear-gradient(135deg, #0066CC, #002F6E); }
+    .sso-btn--cie  { background: linear-gradient(135deg, #1B3B6F, #0B1F3F); }
+    .sso-note { font-size: 12px; color: var(--medium-gray); text-align: center; margin-top: 10px; line-height: 1.5; }
   </style>
 </head>
 <body>
@@ -98,6 +97,20 @@
 
     <h1 class="title">Entra nel tuo account</h1>
     <p class="subtitle">Usa le stesse credenziali di AureaVia e AureaShuttle.</p>
+
+    <div class="sso-list">
+      <button type="button" class="sso-btn sso-btn--spid" onclick="openSso('SPID')">
+        <span id="ico-spid"></span>
+        <span>Entra con SPID</span>
+      </button>
+      <button type="button" class="sso-btn sso-btn--cie" onclick="openSso('CIE')">
+        <span id="ico-cie"></span>
+        <span>Entra con CIE</span>
+      </button>
+    </div>
+    <p class="sso-note">Accesso con identità digitale: i tuoi dati anagrafici vengono precompilati e verificati.</p>
+
+    <div class="divider-or"><span>oppure</span></div>
 
     <form id="loginForm">
       <div class="field">
@@ -117,12 +130,6 @@
       </div>
       <button type="submit" class="btn btn--care btn--block btn--lg">Accedi</button>
     </form>
-
-    <div class="divider-or"><span>oppure</span></div>
-    <button class="spid-btn" onclick="showToast('Login SPID: in arrivo','info')">
-      <span class="spid-badge">SPID</span>
-      <span>Entra con identità digitale</span>
-    </button>
 
     <div class="signup-row">Non hai un account? <a href="onboarding.html">Registrati come paziente</a></div>
 
@@ -174,6 +181,27 @@
     </div>
   </div>
 
+  <!-- Modale identità digitale (flusso simulato: nessun IdP reale nel POC) -->
+  <div class="modal-overlay" id="sso-modal" onclick="if(event.target===this) closeModal('sso-modal')">
+    <div class="modal">
+      <div class="modal-header">
+        <div class="modal-title" id="sso-title">Entra con SPID</div>
+        <button class="modal-close" onclick="closeModal('sso-modal')"><span id="ico-x2"></span></button>
+      </div>
+      <div class="modal-body">
+        <p class="caption mb-16" id="sso-text"></p>
+        <div class="banner-roma">
+          <span id="ico-i2"></span>
+          <p>Flusso simulato nel POC: nessun Identity Provider reale viene contattato. L'accesso con identità digitale è l'opzione in valutazione con il committente.</p>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn--secondary" onclick="closeModal('sso-modal')">Annulla</button>
+        <button class="btn btn--care" id="sso-confirm" onclick="confirmSso()">Prosegui</button>
+      </div>
+    </div>
+  </div>
+
   <div id="toast-container"></div>
 
   <script src="js/icons.js"></script>
@@ -186,6 +214,38 @@
     document.getElementById('cl-b1').innerHTML    = aIcon('clock', { size: 16 });
     document.getElementById('cl-b2').innerHTML    = aIcon('users', { size: 16 });
     document.getElementById('cl-b3').innerHTML    = aIcon('shield-check', { size: 16 });
+    document.getElementById('ico-spid').innerHTML = aIcon('shield-check', { size: 18 });
+    document.getElementById('ico-cie').innerHTML  = aIcon('lock', { size: 18 });
+    document.getElementById('ico-x2').outerHTML   = aIcon('x', { size: 16 });
+    document.getElementById('ico-i2').outerHTML   = aIcon('info', { size: 18 });
+
+    // Identità digitale: il POC simula il reindirizzamento all'Identity Provider
+    // e chiude il login con lo stesso setAuth del form credenziali.
+    let ssoProvider = 'SPID';
+    const SSO_COPY = {
+      SPID: 'Verrai reindirizzato al tuo Identity Provider SPID per confermare l\'identità. Al rientro l\'accesso ad AureaCare sarà completato.',
+      CIE:  'Verrai reindirizzato al servizio di autenticazione con Carta d\'Identità Elettronica (CIE) per confermare l\'identità. Al rientro l\'accesso ad AureaCare sarà completato.'
+    };
+    function openSso(provider) {
+      ssoProvider = provider;
+      document.getElementById('sso-title').textContent = 'Entra con ' + provider;
+      document.getElementById('sso-text').textContent = SSO_COPY[provider];
+      document.getElementById('sso-confirm').textContent = 'Prosegui con ' + provider;
+      openModal('sso-modal');
+    }
+    function confirmSso() {
+      closeModal('sso-modal');
+      showToast('Identità verificata con ' + ssoProvider, 'success');
+      setAuth({
+        email: 'lucia.marchetti@email.it',
+        role: 'patient',
+        patient_id: 'PAT-00142',
+        name: 'Lucia Marchetti',
+        apps: ['via','shuttle','care'],
+        auth_method: ssoProvider
+      });
+      setTimeout(()=> location.href = 'home.html', 900);
+    }
 
     function openForgot() { openModal('forgot-modal'); }
     function sendForgot() {

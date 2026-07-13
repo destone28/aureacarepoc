@@ -123,6 +123,19 @@
     .upload-card.mandatory.done::after { content: 'Caricato'; background: var(--success); }
     .upload-card.mandatory.invalid { border-color: var(--error); box-shadow: 0 0 0 2px rgba(244,67,54,.14); background: #FCEBEB; }
     .upload-card.mandatory.invalid::after { background: var(--error); }
+    /* Precompilazione da identità digitale (SPID/CIE) — flusso simulato nel POC */
+    .sso-banner {
+      border: 1px solid #C7DBF5;
+      background: #F2F7FD;
+      border-radius: var(--r-md);
+      padding: 14px;
+      margin-bottom: 22px;
+      display: grid; gap: 12px;
+    }
+    .sso-banner-head { display: flex; gap: 10px; align-items: flex-start; }
+    .sso-banner-head svg { flex: none; color: var(--care-blue-dark); margin-top: 1px; }
+    .sso-banner-head p { font-size: 13px; line-height: 1.5; color: var(--ink); }
+    .sso-banner .btn svg { vertical-align: -3px; }
   </style>
 </head>
 <body>
@@ -144,26 +157,37 @@
         <h2 class="wiz-title">Iniziamo dai tuoi dati</h2>
         <p class="wiz-sub">Il Programma ESG Carelink, promosso da Alphio APS, nasce per contrastare il drop-out terapeutico e la rinuncia alle cure causati da liste d'attesa e costi. I tuoi dati servono per associare prestazioni e documenti.</p>
 
+        <!-- Identità digitale: i dati anagrafici arrivano già verificati dall'IdP (flusso simulato) -->
+        <div class="sso-banner">
+          <div class="sso-banner-head">
+            <span id="ico-sso"></span>
+            <p>I dati anagrafici possono essere <strong>precompilati da SPID/CIE</strong>: arrivano già verificati dall'identità digitale, senza doverli riscrivere.</p>
+          </div>
+          <button type="button" class="btn btn--secondary btn--block" id="btn-prefill" onclick="prefillFromSpid()">
+            <span id="ico-prefill"></span> Precompila da SPID
+          </button>
+        </div>
+
         <div class="field-row">
           <div class="field">
             <label class="field-label">Nome</label>
-            <div class="input-container"><input class="input" placeholder="Lucia"></div>
+            <div class="input-container"><input class="input" id="ob-first-name" placeholder="Lucia"></div>
           </div>
           <div class="field">
             <label class="field-label">Cognome</label>
-            <div class="input-container"><input class="input" placeholder="Marchetti"></div>
+            <div class="input-container"><input class="input" id="ob-last-name" placeholder="Marchetti"></div>
           </div>
         </div>
 
         <div class="field">
           <label class="field-label">Codice fiscale</label>
-          <div class="input-container"><input class="input" placeholder="MRCLCU82M55H501T" style="text-transform:uppercase;letter-spacing:.05em"></div>
+          <div class="input-container"><input class="input" id="ob-cf" placeholder="MRCLCU82M55H501T" style="text-transform:uppercase;letter-spacing:.05em"></div>
         </div>
 
         <div class="field-row">
           <div class="field">
             <label class="field-label">Data di nascita</label>
-            <div class="input-container"><input class="input" type="text" placeholder="gg/mm/aaaa"></div>
+            <div class="input-container"><input class="input" id="ob-birth" type="text" placeholder="gg/mm/aaaa"></div>
           </div>
           <div class="field">
             <label class="field-label">Telefono</label>
@@ -221,7 +245,7 @@
 
         <div class="field">
           <label class="field-label">Indirizzo</label>
-          <div class="input-container"><input class="input" placeholder="Via Tuscolana 124"></div>
+          <div class="input-container"><input class="input" id="ob-address" placeholder="Via Tuscolana 124"></div>
         </div>
         <div class="field-row">
           <div class="field">
@@ -394,6 +418,23 @@
     document.getElementById('ico-pin').outerHTML = aIcon('map-pin', { size: 18 });
     document.getElementById('ico-err').outerHTML = aIcon('alert', { size: 16 });
     document.getElementById('ico-err-docs').outerHTML = aIcon('alert', { size: 16 });
+    document.getElementById('ico-sso').outerHTML = aIcon('shield-check', { size: 18 });
+    document.getElementById('ico-prefill').innerHTML = aIcon('user', { size: 16 });
+
+    // Precompilazione da identità digitale: nel POC i dati arrivano dal mock,
+    // in produzione sarebbero gli attributi restituiti dall'Identity Provider.
+    function prefillFromSpid() {
+      const p = MOCK.patient;
+      document.getElementById('ob-first-name').value = p.first_name;
+      document.getElementById('ob-last-name').value  = p.last_name;
+      document.getElementById('ob-cf').value         = p.cf;
+      document.getElementById('ob-birth').value      = p.birth;
+      document.getElementById('ob-address').value    = p.address.replace(/,\s*Roma$/, '');
+      const btn = document.getElementById('btn-prefill');
+      btn.innerHTML = aIcon('check-circle', { size: 16 }) + ' Dati verificati da SPID';
+      btn.disabled = true;
+      showToast('Dati anagrafici precompilati da SPID', 'success');
+    }
 
     // Upload grid (step 2). L'ISEE è l'unico documento obbligatorio per tutti:
     // gli altri restano opzionali o legati al livello di accesso scelto.
