@@ -105,12 +105,12 @@
       <!-- Mini mappa della struttura confermata -->
       <div class="aurea-map aurea-map--xs mb-16" id="summary-map"></div>
 
-      <!-- Recap copertura ESG -->
+      <!-- Recap copertura del programma -->
       <div class="recap-block">
-        <h3 id="esg-block-title">Copertura ESG</h3>
+        <h3 id="esg-block-title">Copertura</h3>
         <div id="esg-block-rows"></div>
-        <div class="kv-row" id="row-shuttle-fee" style="display:none"><span class="k">Trasporto AureaShuttle</span><span class="v" style="color:#0F6E56">Gratuito — coperto dal Fondo ESG<br><span class="caption" style="font-weight:400">costo al programma €72/corsa</span></span></div>
-        <div class="kv-row"><span class="k" style="color:var(--ink);font-weight:700">A tuo carico</span><span class="v" style="color:var(--care-blue-dark);font-size:16px">€0</span></div>
+        <div class="kv-row" id="row-shuttle-fee" style="display:none"><span class="k">Trasporto AureaShuttle</span><span class="v" style="color:#0F6E56">Gratuito<br><span class="caption" style="font-weight:400">Samarcanda Scarl · ISO 9001:2015</span></span></div>
+        <div class="kv-row"><span class="k" style="color:var(--ink);font-weight:700">Coperta dal Programma Carelink</span><span class="v" style="color:#0F6E56">Nessun costo a tuo carico</span></div>
       </div>
 
       <!-- Handoff: pre-flagged (chosen variant) -->
@@ -160,12 +160,6 @@
     const svc = MOCK.services.find(s => s.id === svcId) || MOCK.services[0];
     const st  = MOCK.structures.find(s => s.id === params.get('structure')) || MOCK.structures[0];
     const isCycle = svc.kind === 'ciclo';
-    const V = MOCK.vouchers;
-    // Stesso formato € di book-care.html / booking.html
-    const fmtEur = v => Number.isInteger(v)
-      ? v.toLocaleString('it-IT')
-      : v.toLocaleString('it-IT', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-    const eurRange = (a, b) => a === b ? `€${fmtEur(a)}` : `€${fmtEur(a)}–${fmtEur(b)}`;
     // Medico: quello che segue la struttura nello storico mock, altrimenti assegnato in fase di conferma
     const doctor = (MOCK.bookings.find(b => b.structure_id === st.id) || {}).doctor || 'Assegnato dalla struttura';
 
@@ -179,20 +173,14 @@
       document.getElementById('sum-service-meta').textContent = `${svc.cat} · Cure ricorsive · Layer 1 · ${svc.sessions} sedute`;
       document.getElementById('esg-block-title').textContent = 'Copertura Layer 1';
       document.getElementById('esg-block-rows').innerHTML = `
-        <div class="kv-row"><span class="k">Sedute del ciclo</span><span class="v">${svc.sessions} sedute</span></div>
-        <div class="kv-row"><span class="k">Trasporto porta-a-porta</span><span class="v" style="color:#0F6E56">Gratuito · ${svc.rides} tratte A/R</span></div>
-        <div class="kv-row"><span class="k">Voucher ESG</span><span class="v" style="color:var(--care-blue-dark)">Non richiesto · Layer 1</span></div>`;
+        <div class="kv-row"><span class="k">Sedute del ciclo</span><span class="v">${svc.sessions} sedute · ${svc.duration} min</span></div>
+        <div class="kv-row"><span class="k">Trasporto porta-a-porta</span><span class="v" style="color:#0F6E56">Gratuito · ${svc.rides} tratte A/R</span></div>`;
     } else {
-      const listRange = eurRange(svc.price_list_from, svc.price_list_to);
-      const esgRange  = eurRange(svc.price_esg_from,  svc.price_esg_to);
-      const left = Math.max(0, V.assigned - V.used - 1);
       document.getElementById('sum-service-meta').textContent =
         `${svc.cat} · Fascia ${svc.kind === 'visita' ? 'A' : 'B'} · ${svc.duration} min`;
       document.getElementById('esg-block-rows').innerHTML = `
-        <div class="kv-row"><span class="k">Listino struttura</span><span class="v" style="text-decoration:line-through;color:var(--medium-gray);font-weight:400">${listRange}</span></div>
-        <div class="kv-row"><span class="k">Tariffa ESG (−15%)</span><span class="v">${esgRange}</span></div>
-        <div class="kv-row"><span class="k">Coperto dal Fondo ESG Territoriale</span><span class="v" style="color:#0F6E56">${esgRange}</span></div>
-        <div class="kv-row"><span class="k">Voucher ESG</span><span class="v" style="color:var(--care-blue-dark)">1 voucher · ${left} residui dopo la validazione</span></div>`;
+        <div class="kv-row"><span class="k">Tipo di prestazione</span><span class="v">${svc.kind === 'visita' ? 'Visita specialistica · Fascia A' : 'Diagnostica strumentale · Fascia B'}</span></div>
+        <div class="kv-row"><span class="k">Durata</span><span class="v">${svc.duration} min</span></div>`;
     }
 
     // Handoff variant (read from localStorage; pre-flagged is default per user)
@@ -211,7 +199,7 @@
           <div class="handoff-icon">${aIcon('ambulance', { size: 24 })}</div>
           <div class="handoff-body">
             <div class="handoff-title">Hai bisogno del trasporto sanitario?</div>
-            <p class="handoff-sub">Prenota con AureaShuttle: i dati della visita sono già precompilati. Corsa gratuita, erogata da Samarcanda Scarl · certificata ISO 9001:2015 — coperta dal Fondo ESG.</p>
+            <p class="handoff-sub">Prenota con AureaShuttle: i dati della visita sono già precompilati. Corsa gratuita, erogata da Samarcanda Scarl · certificata ISO 9001:2015 — coperta dal Programma Carelink.</p>
             <div class="handoff-actions">
               <a class="btn btn--primary-grad" href="#" onclick="event.preventDefault();openShuttleSim()">Sì, apri AureaShuttle</a>
               <button class="btn btn--secondary" onclick="declineShuttle(this)">No, grazie</button>
@@ -225,13 +213,13 @@
             <div class="ambo-illo">${aIcon('ambulance', { size: 28 })}</div>
             <div>
               <p style="font-weight:700">Aggiungi trasporto sanitario gratuito</p>
-              <p class="caption" style="color:#856404">AureaShuttle ti porta a destinazione, già precompilato. A tuo carico: €0.</p>
+              <p class="caption" style="color:#856404">AureaShuttle ti porta a destinazione, già precompilato. Nessun costo a tuo carico.</p>
             </div>
           </div>
           <div class="step3">
             <div class="row"><span class="num">1</span><span><strong>Conferma qui</strong>: i dati della visita passano ad AureaShuttle.</span></div>
             <div class="row"><span class="num">2</span><span>Scegli orario di ritiro su AureaShuttle (suggerito 1h prima).</span></div>
-            <div class="row"><span class="num">3</span><span>La corsa è <strong>gratuita</strong>: erogata da Samarcanda Scarl · certificata ISO 9001:2015, coperta dal Fondo ESG (costo al programma €72/corsa).</span></div>
+            <div class="row"><span class="num">3</span><span>La corsa è <strong>gratuita</strong>: erogata da Samarcanda Scarl · certificata ISO 9001:2015, coperta dal Programma Carelink.</span></div>
           </div>
           <div class="handoff-actions" style="display:flex;gap:8px;margin-top:12px">
             <a class="btn btn--primary-grad" href="#" onclick="event.preventDefault();openShuttleSim()" style="flex:1">Apri AureaShuttle</a>
@@ -251,8 +239,8 @@
                 <div class="row"><span>Da</span><span>${(MOCK.patient && MOCK.patient.address) || 'Via Tuscolana 124, Roma'}</span></div>
                 <div class="row"><span>A</span><span>${st.name}</span></div>
                 <div class="row"><span>Arrivo richiesto</span><span>${day} mag · 14:15</span></div>
-                <div class="row"><span>Costo</span><span style="color:#0F6E56;font-weight:700">Gratuito · ~22 min</span></div>
-                <div class="row"><span>Corsa</span><span>Erogata da Samarcanda Scarl · certificata ISO 9001:2015</span></div>
+                <div class="row"><span>Corsa</span><span style="color:#0F6E56;font-weight:700">Gratuita · ~22 min</span></div>
+                <div class="row"><span>Erogata da</span><span>Samarcanda Scarl · certificata ISO 9001:2015</span></div>
                 <div class="row"><span>Percorso di cura</span><span>Corse illimitate · coperte dal programma</span></div>
               </div>
               <div class="handoff-actions">
@@ -267,7 +255,7 @@
             <div class="handoff-icon">${aIcon('ambulance', { size: 24 })}</div>
             <div class="handoff-body">
               <div class="handoff-title">Vuoi aggiungere il trasporto gratuito?</div>
-              <p class="handoff-sub">Non l'hai richiesto in fase di prenotazione. Puoi aggiungerlo ora: i dati passano automaticamente ad AureaShuttle. Corsa erogata da Samarcanda Scarl · certificata ISO 9001:2015, coperta dal Fondo ESG.</p>
+              <p class="handoff-sub">Non l'hai richiesto in fase di prenotazione. Puoi aggiungerlo ora: i dati passano automaticamente ad AureaShuttle. Corsa erogata da Samarcanda Scarl · certificata ISO 9001:2015, coperta dal Programma Carelink.</p>
               <div class="handoff-actions">
                 <a class="btn btn--primary-grad btn--sm" href="#" onclick="event.preventDefault();openShuttleSim()">Sì, apri AureaShuttle</a>
                 <button class="btn btn--secondary btn--sm" onclick="declineShuttle(this)">No, grazie</button>
@@ -299,8 +287,8 @@
               <div style="display:flex;justify-content:space-between"><span class="text-muted">Da</span><strong>${(MOCK.patient && MOCK.patient.address) || 'Via Tuscolana 124, Roma'}</strong></div>
               <div style="display:flex;justify-content:space-between"><span class="text-muted">A</span><strong>${st.name}</strong></div>
               <div style="display:flex;justify-content:space-between"><span class="text-muted">Quando</span><strong>${day} mag · 13:30</strong></div>
-              <div style="display:flex;justify-content:space-between"><span class="text-muted">Costo</span><strong style="color:#0F6E56">Gratuito · ~22 min</strong></div>
-              <div style="display:flex;justify-content:space-between"><span class="text-muted">Corsa</span><strong>Samarcanda Scarl · ISO 9001:2015</strong></div>
+              <div style="display:flex;justify-content:space-between"><span class="text-muted">Corsa</span><strong style="color:#0F6E56">Gratuita · ~22 min</strong></div>
+              <div style="display:flex;justify-content:space-between"><span class="text-muted">Erogata da</span><strong>Samarcanda Scarl · ISO 9001:2015</strong></div>
             </div>
             <p class="caption mt-12">Questi sono i dati che verranno passati ad AureaShuttle. Clicca <strong>Vai ad AureaShuttle</strong> per aprire l'app gemella e completare la richiesta.</p>
           </div>

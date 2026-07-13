@@ -106,10 +106,6 @@
       cancelled: { badge: 'badge--cancelled', label: 'Annullata',       icon: 'x'          }
     };
 
-    // Formattazione euro all'italiana per la fattura CSRD (153 -> "€153,00")
-    const eur = n => '€' + Number(n || 0).toLocaleString('it-IT', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-    // Una prenotazione consuma un voucher solo se è Fascia A/B (Layer 2)
-    const isVoucher = b => !!b.voucher_id;
     const certOf = b => { const s = (MOCK.structures || []).find(x => x.id === b.structure_id); return s ? s.cert : 'ISO 9001'; };
 
     let filter = 'all';
@@ -135,10 +131,7 @@
               <div class="cure-title">${b.service_name}</div>
               <div class="cure-meta">${b.structure_name} · ${b.doctor}</div>
               <div class="cure-meta">${b.date} · ${b.time}</div>
-            </div>
-            <div class="text-right">
-              <p style="font-weight:700">${b.voucher_id ? '€' + b.esg_price : '€0'}</p>
-              <p class="caption">${b.voucher_id ? 'coperti dal Fondo' : 'trasporto L1'}</p>
+              <div class="cure-meta" style="color:#0F6E56;font-weight:600;margin-top:4px">Coperta dal Programma Carelink</div>
             </div>
           </div>
           ${b.shuttle ? `<div class="cure-bar"><span style="color:var(--primary-orange);font-weight:600;display:flex;align-items:center;gap:6px">${aIcon('truck',{size:14})} Trasporto AureaShuttle <span class="badge badge--approved" style="font-weight:600">Samarcanda · gratuito</span></span><span class="caption">${b.status==='completed' ? 'Effettuato' : 'In agenda'}</span></div>` : ''}`;
@@ -181,26 +174,17 @@
           <div style="display:flex;justify-content:space-between"><span class="text-muted">Data</span><strong>${b.date}</strong></div>
           <div style="display:flex;justify-content:space-between"><span class="text-muted">Orario</span><strong>${b.time}</strong></div>
           <div style="display:flex;justify-content:space-between"><span class="text-muted">Riferimento</span><strong class="font-mono">${b.id}</strong></div>
-          ${isVoucher(b) ? `
-          <div style="display:flex;justify-content:space-between"><span class="text-muted">Listino ufficiale</span><span style="text-decoration:line-through;color:var(--medium-gray)">${eur(b.list_price)}</span></div>
-          <div style="display:flex;justify-content:space-between"><span class="text-muted">Sconto ESG contrattuale</span><strong>−15%</strong></div>
-          <div style="display:flex;justify-content:space-between"><span class="text-muted">Tariffa ESG</span><strong>${eur(b.esg_price)}</strong></div>
-          <div style="display:flex;justify-content:space-between"><span class="text-muted">Coperto dal Fondo ESG Roma</span><strong style="color:#0F6E56">${eur(b.esg_price)}</strong></div>
-          <div style="display:flex;justify-content:space-between"><span class="text-muted">Quota a tuo carico</span><strong style="color:var(--care-blue-dark)">€0,00</strong></div>
-          <div style="display:flex;justify-content:space-between"><span class="text-muted">Voucher ESG</span><strong class="font-mono">${b.voucher_id}</strong></div>` : `
-          <div style="display:flex;justify-content:space-between"><span class="text-muted">Copertura</span><strong>Trasporto Layer 1 gratuito · nessun voucher</strong></div>
-          <div style="display:flex;justify-content:space-between"><span class="text-muted">Quota a tuo carico</span><strong style="color:var(--care-blue-dark)">€0,00</strong></div>`}
+          <div style="display:flex;justify-content:space-between"><span class="text-muted">Copertura</span><strong style="color:#0F6E56">Programma Carelink</strong></div>
           ${b.shuttle ? `<div style="display:flex;justify-content:space-between"><span class="text-muted">Trasporto</span><strong style="color:var(--primary-orange)">AureaShuttle · Samarcanda · gratuito</strong></div>` : ''}
         </div>
 
-        <p class="caption mt-12" style="display:flex;align-items:flex-start;gap:6px;color:#0F6E56">${aIcon('shield-check',{size:14})}<span>Economics verificabili dal <strong>revisore CSRD</strong> del programma: listino ufficiale, sconto contrattuale −15% e ID voucher sono riportati in fattura.</span></p>
+        <p class="caption mt-12" style="display:flex;align-items:flex-start;gap:6px;color:#0F6E56">${aIcon('shield-check',{size:14})}<span>Prestazione <strong>coperta dal Programma Carelink</strong>: nessun costo a tuo carico.</span></p>
 
         ${b.status === 'pending' ? `<p class="caption mt-12">In attesa di validazione del <strong>Coordinatore Alphio</strong> · tempi medi 2-4 ore lavorative.</p>` : ''}
 
         <div class="flex gap-8 mt-16">
           ${b.status === 'pending' ? `<button class="btn btn--danger" style="flex:1" onclick="cancel()">Annulla richiesta</button>` : ''}
           ${b.status === 'approved' || b.status === 'confirmed' ? `<button class="btn btn--danger" style="flex:1" onclick="cancel()">Cancella</button><button class="btn btn--secondary" style="flex:1" onclick="reschedule('${b.id}')">Sposta</button>` : ''}
-          ${b.status === 'completed' ? `<button class="btn btn--secondary btn--block" onclick="downloadInvoice('${b.id}')">Scarica fattura verificabile CSRD</button>` : ''}
           ${b.status === 'cancelled' ? `<button class="btn btn--care btn--block" onclick="rebook('${b.id}')">Riprenota</button>` : ''}
         </div>`;
       openModal('cure-modal');
@@ -220,64 +204,6 @@
       );
     }
 
-    function downloadInvoice(id) {
-      const b = MOCK.bookings.find(x => x.id === id);
-      if (!b) return;
-      const st = (MOCK.structures || []).find(s => s.id === b.structure_id);
-      const cert = st ? st.cert : 'ISO 9001';
-      const lines = [
-        'PROGRAMMA ESG CARELINK — Alphio APS · piattaforma AureaCare',
-        'Fattura verificabile · Convenzione Terzo Settore (Layer 2)',
-        '════════════════════════════════════════════════════════════',
-        '',
-        'Numero:              INV-' + id,
-        'Data:                ' + b.date + ' 2026',
-        'Paziente:            ' + (MOCK.patient ? MOCK.patient.first_name + ' ' + MOCK.patient.last_name : 'Paziente'),
-        'Codice fiscale:      ' + (MOCK.patient ? MOCK.patient.cf : ''),
-        '',
-        'STRUTTURA EROGANTE',
-        'Struttura:           ' + b.structure_name,
-        'Certificazione:      ' + cert + ' · listino ufficiale depositato e verificato',
-        'Medico:              ' + b.doctor,
-        '',
-        'PRESTAZIONE',
-        'Prestazione:         ' + b.service_name,
-        'Stato:               ' + (statusMap[b.status] ? statusMap[b.status].label : b.status),
-        '',
-        'ECONOMICS (verificabili dal revisore CSRD)',
-        isVoucher(b)
-          ? [
-              'Listino ufficiale:               ' + eur(b.list_price),
-              'Sconto ESG contrattuale:         −15%',
-              'Tariffa ESG:                     ' + eur(b.esg_price),
-              'Coperto dal Fondo ESG Territoriale Roma: ' + eur(b.esg_price),
-              'Quota paziente:                  €0,00',
-              '',
-              'Voucher:             ' + b.voucher_id
-            ].join('\n')
-          : [
-              'Prestazione in cure ricorsive · Layer 1 — Mobilità sanitaria assistita',
-              'Trasporto porta-a-porta erogato da Samarcanda Scarl (ISO 9001:2015)',
-              'Costo al programma:              €72,00/corsa (coperto dal Fondo ESG)',
-              'Quota paziente:                  €0,00',
-              '',
-              'Voucher:             — (nessun voucher: trasporto Layer 1)'
-            ].join('\n'),
-        '',
-        '════════════════════════════════════════════════════════════',
-        'Documento verificabile dal revisore CSRD del programma.',
-        'SROI validato ex-post da primaria società di revisione.',
-        'Alphio APS · Fondo ESG Territoriale di Roma · AureaVia Srl Innovativa'
-      ].join('\n');
-      const blob = new Blob([lines], { type: 'text/plain;charset=utf-8' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url; a.download = 'fattura_' + id + '.txt';
-      document.body.appendChild(a); a.click(); a.remove();
-      URL.revokeObjectURL(url);
-      showToast('Fattura scaricata · ' + id, 'success');
-    }
-
     function rebook(id) {
       const b = MOCK.bookings.find(x => x.id === id);
       if (!b) return;
@@ -289,8 +215,8 @@
 
     function cancel() {
       closeModal();
-      showConfirmDialog('Annullare la prenotazione?', 'Il voucher ESG tornerà disponibile nel tuo plafond entro 24h.',
-        () => showToast('Prenotazione annullata · voucher in riaccredito','info'),
+      showConfirmDialog('Annullare la prenotazione?', 'La richiesta sarà ritirata. Potrai riprenotare la prestazione in qualsiasi momento: resta coperta dal Programma Carelink.',
+        () => showToast('Prenotazione annullata','info'),
         { confirmLabel: 'Sì, annulla', danger: true });
     }
 

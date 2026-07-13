@@ -32,27 +32,22 @@
         <p class="caption">Ciao,</p>
         <h1 class="h1">Lucia</h1>
         <span class="badge" style="background:#DCEFE6;color:#0F6E56;margin-top:8px">Programma ESG Carelink</span>
-        <p class="caption mt-8">Trasporto gratuito e voucher per le cure: ogni corsa e ogni cura sono un aiuto concreto.</p>
+        <p class="caption mt-8">Trasporto porta-a-porta gratuito e cure coperte dal programma: ogni corsa e ogni cura sono un aiuto concreto.</p>
       </div>
 
-      <!-- Voucher ESG hero -->
+      <!-- Stato del programma -->
       <div class="card card--lg" style="padding: 22px; background: linear-gradient(160deg, #FFFFFF 0%, var(--care-blue-bg) 100%); border-color: #DCE7F4;">
-        <div class="flex justify-between items-start mb-12">
-          <div>
-            <p class="eyebrow" style="color: var(--care-blue-dark)">Voucher ESG</p>
-            <p class="caption mt-4">Assegnati dal Coordinatore Alphio</p>
-          </div>
-          <a href="wallet.html" class="link" style="color:var(--care-blue);font-weight:700;font-size:13px">Dettagli &rarr;</a>
-        </div>
         <div class="flex items-center gap-16">
-          <div id="wallet-ring-mini"></div>
-          <div style="flex:1">
-            <p style="font-size:28px;font-weight:700;line-height:1"><span id="vch-left"></span> <span style="font-weight:400;color:var(--medium-gray);font-size:14px">residui su <span id="vch-assigned"></span></span></p>
-            <p class="caption mt-4">1 voucher = 1 prestazione convenzionata</p>
-            <p style="font-size:15px;font-weight:700;margin-top:10px;color:#0F6E56"><span id="vch-covered"></span> <span style="font-weight:400;color:var(--medium-gray);font-size:13px">coperti dal Fondo ESG</span></p>
-            <p class="caption">Quota a tuo carico: sempre €0</p>
+          <div style="width:52px;height:52px;border-radius:14px;background:#DCEFE6;color:#0F6E56;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+            <span id="ico-shield"></span>
+          </div>
+          <div style="flex:1;min-width:0">
+            <p class="eyebrow" style="color: var(--care-blue-dark)">Programma attivo</p>
+            <p style="font-size:16px;font-weight:700;margin-top:4px" id="prog-level">&nbsp;</p>
+            <p class="caption mt-4" id="prog-verified">&nbsp;</p>
           </div>
         </div>
+        <p class="caption mt-12" style="line-height:1.5;border-top:1px dashed #DCE7F4;padding-top:12px">Le tue cure sono <strong style="color:#0F6E56">coperte dal Programma Carelink</strong> · nessun costo a tuo carico.</p>
       </div>
 
       <!-- Prossima prenotazione -->
@@ -68,10 +63,7 @@
             <p class="caption mt-4">Domani · 22 mag · 14:30</p>
             <p class="caption">Policlinico Gemelli · Largo A. Gemelli 8</p>
             <p class="caption mt-4">Dr.ssa Elena Conti</p>
-          </div>
-          <div class="text-right">
-            <p style="font-size:15px;font-weight:700">1 voucher</p>
-            <p class="caption">€0 a tuo carico</p>
+            <p class="caption mt-4" style="color:#0F6E56;font-weight:600">Coperta dal Programma Carelink</p>
           </div>
         </div>
         <div class="mt-12" style="padding-top:12px;border-top:1px dashed var(--border-soft);display:flex;align-items:center;gap:8px">
@@ -96,9 +88,9 @@
           <span id="ico-q2"></span>
           <div class="quick-label">Strutture</div>
         </a>
-        <a href="wallet.html" class="quick-card">
+        <a href="book-care.html" class="quick-card">
           <span id="ico-q3"></span>
-          <div class="quick-label">Voucher</div>
+          <div class="quick-label">Prenota</div>
         </a>
       </div>
 
@@ -124,11 +116,11 @@
             <p style="font-size:10px;color:var(--medium-gray);font-weight:600;letter-spacing:.04em">CAREGIVER</p>
           </div>
           <div style="padding:10px;background:#fff;border-radius:10px;text-align:center">
-            <p style="font-size:18px;font-weight:700;color:#0F6E56">3.2×</p>
-            <p style="font-size:10px;color:var(--medium-gray);font-weight:600;letter-spacing:.04em">SROI PROGRAMMA</p>
+            <p style="font-size:18px;font-weight:700;color:#0F6E56">3</p>
+            <p style="font-size:10px;color:var(--medium-gray);font-weight:600;letter-spacing:.04em">DROP-OUT EVITATI</p>
           </div>
         </div>
-        <p class="caption mt-12" style="line-height:1.5">Hai contribuito a <strong style="color:#0F6E56"><span id="esg-co2-copy"></span> kg di CO₂ evitata</strong> e <strong style="color:#0F6E56">28 ore di caregiver risparmiate</strong>, grazie ai voucher ESG e al trasporto gratuito del programma.</p>
+        <p class="caption mt-12" style="line-height:1.5">Hai contribuito a <strong style="color:#0F6E56"><span id="esg-co2-copy"></span> kg di CO₂ evitata</strong> e <strong style="color:#0F6E56">28 ore di caregiver risparmiate</strong>, grazie alle cure coperte dal programma e al trasporto gratuito porta-a-porta.</p>
         <p class="caption mt-8" style="line-height:1.5;border-top:1px dashed #C8E6CF;padding-top:10px">Il tuo percorso ha evitato <strong style="color:#0F6E56">3 drop-out di seduta</strong>: nel Programma Carelink l'aderenza alle cure è al <strong style="color:#0F6E56">94%</strong>.</p>
       </div>
 
@@ -173,8 +165,7 @@
           <div class="row-meta"><span class="badge badge--completed"><span class="dot"></span>Completata</span></div>
         </div>
         <div class="row-right">
-          <div class="row-amount" style="color:var(--care-blue-dark)">€306</div>
-          <div class="caption">coperti dal Fondo</div>
+          <div class="caption" style="color:#0F6E56;font-weight:600">Coperta dal<br>programma</div>
         </div>
       </a>
       <a class="list-row" href="my-cures.html">
@@ -185,8 +176,7 @@
           <div class="row-meta"><span class="badge badge--completed"><span class="dot"></span>Completata</span></div>
         </div>
         <div class="row-right">
-          <div class="row-amount" style="color:var(--care-blue-dark)">€136</div>
-          <div class="caption">coperti dal Fondo</div>
+          <div class="caption" style="color:#0F6E56;font-weight:600">Coperta dal<br>programma</div>
         </div>
       </a>
     </div>
@@ -210,6 +200,7 @@
     document.getElementById('ico-grid').outerHTML = aIcon('grid', { size: 20 });
     document.getElementById('ico-bell').outerHTML = aIcon('bell', { size: 20 });
     document.getElementById('ico-heart').outerHTML = aIcon('heart', { size: 24 });
+    document.getElementById('ico-shield').outerHTML = aIcon('shield-check', { size: 24 });
     document.getElementById('ico-truck').outerHTML = aIcon('truck', { size: 16 });
     document.getElementById('ico-plus').outerHTML = aIcon('plus', { size: 20 });
     document.getElementById('ico-leaf').outerHTML = aIcon('leaf', { size: 22 });
@@ -223,11 +214,12 @@
     document.getElementById('nv-wallet').outerHTML = aIcon('wallet',  { size: 22 });
     document.getElementById('nv-profile').outerHTML= aIcon('user',    { size: 22 });
 
-    // Voucher ESG — unica fonte di verità: MOCK.vouchers
-    const V = MOCK.vouchers;
-    document.getElementById('vch-left').textContent = V.assigned - V.used;
-    document.getElementById('vch-assigned').textContent = V.assigned;
-    document.getElementById('vch-covered').textContent = '€' + V.covered_value_ytd.toLocaleString('it-IT');
+    // Stato del programma — livello di accesso del paziente, senza dati economici
+    const access = MOCK.patient.access;
+    document.getElementById('prog-level').textContent =
+      `Livello di accesso ${access.level} · ${access.doc}`;
+    document.getElementById('prog-verified').textContent =
+      `Requisito verificato dal ${access.verified_by} il ${access.verified_date}`;
 
     // Impatto personale — derivato dalle cure effettivamente completate
     const completed = MOCK.bookings.filter(b => b.status === 'completed').length;
@@ -235,14 +227,6 @@
     document.getElementById('esg-completed').textContent = completed;
     document.getElementById('esg-co2').textContent = co2;
     document.getElementById('esg-co2-copy').textContent = co2;
-
-    // Voucher ring (mini, 100px)
-    renderWalletRing(document.getElementById('wallet-ring-mini'), {
-      total: V.assigned, used: V.used,
-      covered: V.covered_value_ytd, size: 100, coveredMax: 2000
-    });
-    // shrink center text for mini ring
-    document.querySelectorAll('#wallet-ring-mini .ring-center').forEach(c => { c.style.display='none'; });
   </script>
 </body>
 </html>

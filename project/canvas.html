@@ -278,7 +278,7 @@
         <span class="num">01 · LATO PAZIENTE</span>
       </div>
       <h2>Paziente · mobile-first</h2>
-      <p class="canvas-section-sub">10 schermate ottimizzate per viewport 360-414px. Voucher ESG in evidenza in home, bottom nav fixed con 4 voci. Pattern di app switcher (icona griglia) per saltare ad AureaVia/AureaShuttle, banner Roma su strutture e onboarding step 3, handoff pre-flagged Shuttle su summary.</p>
+      <p class="canvas-section-sub">10 schermate ottimizzate per viewport 360-414px. Nessuna componente economica lato paziente: la copertura del Programma Carelink è dichiarata, non contabilizzata. Bottom nav fixed con 4 voci, app switcher (icona griglia) per saltare ad AureaVia/AureaShuttle, banner Roma su strutture e onboarding step 3, handoff pre-flagged Shuttle su summary.</p>
 
       <div class="ab-grid ab-grid--phones" id="patient-grid"></div>
     </section>
@@ -311,7 +311,7 @@
         </div>
         <div class="card card--padded-lg">
           <p class="eyebrow mb-8">Pattern nuovi</p>
-          <p style="font-size:13px;line-height:1.6">Voucher ring <strong>segmentato</strong> (1 tacca = 1 voucher ESG), handoff Shuttle <strong>pre-flagged</strong>, banner Roma sticky, app switcher dropdown.</p>
+          <p style="font-size:13px;line-height:1.6">Card <strong>stato del programma</strong> (livello di accesso, copertura senza importi), handoff Shuttle <strong>pre-flagged</strong>, banner Roma sticky, app switcher dropdown.</p>
         </div>
       </div>
     </section>
@@ -335,15 +335,6 @@
           <button class="tw-swatch" style="background:#0F6E56" data-accent="0F6E56" data-dark="0A4D3B" data-light="E1F5EE" title="Verde clinico"></button>
         </div>
         <p class="caption mt-8" style="font-size:11px">Cambia il care-blue su tutte le 17 schermate. Il marker arancione di suite resta.</p>
-      </div>
-
-      <div class="tw-section">
-        <h4>Voucher ring</h4>
-        <div class="tw-options">
-          <button class="tw-opt active" data-tweak="wallet" data-value="segmented">Tacche segmentate (1 tacca = 1 voucher) <span>↘</span></button>
-          <button class="tw-opt" data-tweak="wallet" data-value="single">Ring continuo · voucher residui</button>
-          <button class="tw-opt" data-tweak="wallet" data-value="dual">Doppio ring (residui + € coperti dal Fondo)</button>
-        </div>
       </div>
 
       <div class="tw-section">
@@ -503,7 +494,7 @@
       s.textContent = css;
     }
 
-    // Wallet / switcher / handoff: write to localStorage then reload the affected iframes
+    // Switcher / handoff: write to localStorage then reload the affected iframes
     document.querySelectorAll('.tw-opt').forEach(btn => {
       btn.addEventListener('click', () => {
         const tweak = btn.dataset.tweak;
@@ -511,13 +502,11 @@
         // Update active
         document.querySelectorAll(`.tw-opt[data-tweak="${tweak}"]`).forEach(x => x.classList.remove('active'));
         btn.classList.add('active');
-        if (tweak === 'wallet') localStorage.setItem('aureacare_wallet_variant', value);
         if (tweak === 'switcher') localStorage.setItem('aureacare_app_switcher_style', value);
         if (tweak === 'handoff') localStorage.setItem('aureacare_handoff_mode', value);
 
         // Reload affected frames
         const targets = {
-          wallet: ['home.html','wallet.html'],
           handoff: ['booking-summary.html'],
           switcher: [] // applied dynamically by navigation.js on click — no reload needed
         }[tweak];
@@ -537,7 +526,7 @@
     });
 
     function resetTweaks() {
-      ['aureacare_accent','aureacare_accent_dark','aureacare_accent_light','aureacare_wallet_variant','aureacare_app_switcher_style','aureacare_handoff_mode'].forEach(k => localStorage.removeItem(k));
+      ['aureacare_accent','aureacare_accent_dark','aureacare_accent_light','aureacare_app_switcher_style','aureacare_handoff_mode'].forEach(k => localStorage.removeItem(k));
       location.reload();
     }
 
@@ -564,7 +553,6 @@
     // Restore tweaks UI state from localStorage
     (function restoreUI(){
       const map = {
-        wallet: localStorage.getItem('aureacare_wallet_variant'),
         switcher: localStorage.getItem('aureacare_app_switcher_style'),
         handoff: localStorage.getItem('aureacare_handoff_mode')
       };
