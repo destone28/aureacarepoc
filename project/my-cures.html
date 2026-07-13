@@ -28,9 +28,8 @@
       display: flex; align-items: center; justify-content: center;
       flex-shrink: 0;
     }
-    .cure-icon.complete { background: #EAF3DE; color: var(--b-completed-tx); }
     .cure-icon.pending { background: var(--b-pending-bg); color: var(--b-pending-tx); }
-    .cure-icon.cancelled { background: var(--b-cancelled-bg); color: var(--b-cancelled-tx); }
+    .cure-icon.approved { background: var(--b-approved-bg); color: var(--b-approved-tx); }
     .cure-title { font-weight: 700; font-size: 14px; }
     .cure-meta { font-size: 12px; color: var(--medium-gray); margin-top: 2px; }
     .cure-bar {
@@ -57,8 +56,6 @@
         <button class="tab active" data-filter="all">Tutte</button>
         <button class="tab" data-filter="pending">In attesa</button>
         <button class="tab" data-filter="approved">Approvate</button>
-        <button class="tab" data-filter="completed">Completate</button>
-        <button class="tab" data-filter="cancelled">Annullate</button>
       </div>
 
       <p class="caption mb-12" id="cure-summary"></p>
@@ -98,12 +95,10 @@
     document.getElementById('nv-book').outerHTML   = aIcon('calendar',{ size: 22 });
     document.getElementById('nv-profile').outerHTML= aIcon('user',    { size: 22 });
 
+    // Solo due stati esposti al paziente: In attesa · Approvata
     const statusMap = {
-      pending:   { badge: 'badge--pending',   label: 'In approvazione', icon: 'clock'      },
-      approved:  { badge: 'badge--approved',  label: 'Approvata',       icon: 'check-circle' },
-      confirmed: { badge: 'badge--confirmed', label: 'Confermata',      icon: 'check-circle' },
-      completed: { badge: 'badge--completed', label: 'Completata',      icon: 'check-circle' },
-      cancelled: { badge: 'badge--cancelled', label: 'Annullata',       icon: 'x'          }
+      pending:  { badge: 'badge--pending',  label: 'In attesa', icon: 'clock' },
+      approved: { badge: 'badge--approved', label: 'Approvata', icon: 'check-circle' }
     };
 
     const certOf = b => { const s = (MOCK.structures || []).find(x => x.id === b.structure_id); return s ? s.cert : 'ISO 9001'; };
@@ -117,7 +112,7 @@
       filtered.sort((a,b) => b.id.localeCompare(a.id));
       filtered.forEach(b => {
         const s = statusMap[b.status] || statusMap.pending;
-        const iconCls = b.status === 'completed' ? 'complete' : b.status === 'pending' ? 'pending' : b.status === 'cancelled' ? 'cancelled' : '';
+        const iconCls = b.status === 'approved' ? 'approved' : 'pending';
         const card = document.createElement('div');
         card.className = 'cure-card';
         card.onclick = () => openDetail(b);
@@ -134,7 +129,7 @@
               <div class="cure-meta" style="color:#0F6E56;font-weight:600;margin-top:4px">Coperta dal Programma Carelink</div>
             </div>
           </div>
-          ${b.shuttle ? `<div class="cure-bar"><span style="color:var(--primary-orange);font-weight:600;display:flex;align-items:center;gap:6px">${aIcon('truck',{size:14})} Trasporto AureaShuttle <span class="badge badge--approved" style="font-weight:600">Samarcanda · gratuito</span></span><span class="caption">${b.status==='completed' ? 'Effettuato' : 'In agenda'}</span></div>` : ''}`;
+          ${b.shuttle ? `<div class="cure-bar"><span style="color:var(--primary-orange);font-weight:600;display:flex;align-items:center;gap:6px">${aIcon('truck',{size:14})} Trasporto AureaShuttle <span class="badge badge--approved" style="font-weight:600">Samarcanda · gratuito</span></span><span class="caption">${b.status === 'approved' ? 'In agenda' : 'Da validare'}</span></div>` : ''}`;
         list.appendChild(card);
       });
       if (!filtered.length) {
@@ -183,9 +178,9 @@
         ${b.status === 'pending' ? `<p class="caption mt-12">In attesa di validazione del <strong>Coordinatore Alphio</strong> · tempi medi 2-4 ore lavorative.</p>` : ''}
 
         <div class="flex gap-8 mt-16">
-          ${b.status === 'pending' ? `<button class="btn btn--danger" style="flex:1" onclick="cancel()">Annulla richiesta</button>` : ''}
-          ${b.status === 'approved' || b.status === 'confirmed' ? `<button class="btn btn--danger" style="flex:1" onclick="cancel()">Cancella</button><button class="btn btn--secondary" style="flex:1" onclick="reschedule('${b.id}')">Sposta</button>` : ''}
-          ${b.status === 'cancelled' ? `<button class="btn btn--care btn--block" onclick="rebook('${b.id}')">Riprenota</button>` : ''}
+          ${b.status === 'pending'
+            ? `<button class="btn btn--danger" style="flex:1" onclick="cancel()">Annulla richiesta</button>`
+            : `<button class="btn btn--danger" style="flex:1" onclick="cancel()">Cancella</button><button class="btn btn--secondary" style="flex:1" onclick="reschedule('${b.id}')">Sposta</button>`}
         </div>`;
       openModal('cure-modal');
     }
@@ -202,15 +197,6 @@
         () => location.href = 'booking.html?structure=' + sid + '&service=' + (b.service_id || '') + '&reschedule=' + id,
         { confirmLabel: 'Scegli nuovo slot' }
       );
-    }
-
-    function rebook(id) {
-      const b = MOCK.bookings.find(x => x.id === id);
-      if (!b) return;
-      closeModal('cure-modal');
-      const sid = b.structure_id || 'STR-001';
-      showToast('Riprenotazione: cerco nuovi slot…', 'care');
-      setTimeout(() => location.href = 'booking.html?structure=' + sid + '&service=' + (b.service_id || ''), 600);
     }
 
     function cancel() {
