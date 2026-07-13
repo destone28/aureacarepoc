@@ -109,6 +109,20 @@
       color: #fff; background: #0F6E56;
       padding: 2px 7px; border-radius: 999px;
     }
+    /* Documento obbligatorio a prescindere dal livello di accesso (Modello ISEE):
+       senza upload la registrazione non prosegue. */
+    .upload-card.mandatory { border-color: #0F6E56; box-shadow: 0 0 0 2px rgba(15,110,86,.14); position: relative; }
+    .upload-card.mandatory::after {
+      content: 'Obbligatorio';
+      position: absolute; top: 8px; right: 8px;
+      font-size: 10px; font-weight: 700;
+      color: #fff; background: #0F6E56;
+      padding: 2px 7px; border-radius: 999px;
+    }
+    .upload-card.mandatory.done { border-color: var(--success); box-shadow: 0 0 0 2px rgba(76,175,80,.14); }
+    .upload-card.mandatory.done::after { content: 'Caricato'; background: var(--success); }
+    .upload-card.mandatory.invalid { border-color: var(--error); box-shadow: 0 0 0 2px rgba(244,67,54,.14); background: #FCEBEB; }
+    .upload-card.mandatory.invalid::after { background: var(--error); }
   </style>
 </head>
 <body>
@@ -186,11 +200,17 @@
         <div class="access-list" id="access-list"></div>
 
         <p class="eyebrow mb-8">Carica i tuoi documenti</p>
+        <p class="caption mb-8" style="line-height:1.55">Il <strong>Modello ISEE è obbligatorio per tutti</strong>, qualunque sia il livello di accesso: senza non è possibile completare la registrazione. Gli altri documenti sono facoltativi, tranne quello richiesto dal livello che hai selezionato.</p>
         <div class="upload-grid" id="upload-grid"></div>
+
+        <div class="form-error" id="docs-error">
+          <span id="ico-err-docs"></span>
+          <span>Carica il Modello ISEE per proseguire: è obbligatorio per l'ingresso nel programma.</span>
+        </div>
 
         <div class="banner-roma mt-20">
           <span id="ico-info"></span>
-          <p>I documenti restano cifrati e visibili solo al Coordinatore Alphio. Puoi aggiornarli in qualsiasi momento dal profilo.</p>
+          <p>I documenti restano cifrati e visibili solo al Coordinatore Alphio, che ne verifica la validità. Puoi aggiornarli in qualsiasi momento dal profilo.</p>
         </div>
       </section>
 
@@ -348,6 +368,10 @@
     });
 
     function goNextStep() {
+      if (step === 2 && !validateDocs()) {
+        showToast('Il Modello ISEE è obbligatorio', 'error');
+        return;
+      }
       if (step < TOTAL) { step++; renderStep(); window.scrollTo({ top: 0, behavior: 'smooth' }); }
       else {
         if (!validateDeclarations()) {
@@ -369,20 +393,22 @@
     document.getElementById('ico-info').outerHTML = aIcon('shield', { size: 18 });
     document.getElementById('ico-pin').outerHTML = aIcon('map-pin', { size: 18 });
     document.getElementById('ico-err').outerHTML = aIcon('alert', { size: 16 });
+    document.getElementById('ico-err-docs').outerHTML = aIcon('alert', { size: 16 });
 
-    // Upload grid (step 2)
+    // Upload grid (step 2). L'ISEE è l'unico documento obbligatorio per tutti:
+    // gli altri restano opzionali o legati al livello di accesso scelto.
     const docs = [
       { key: 'ricetta',      label: 'Ricetta rossa',    hint: 'PDF o foto, max 5MB',  done: false, icon: 'file' },
       { key: 'urgenza',      label: 'Certificato urgenza SSN/MMG', hint: 'Richiesto per il livello 1', done: false, icon: 'file' },
-      { key: 'isee',         label: 'Modello ISEE',     hint: 'PDF, max 5MB',         done: false, icon: 'file' },
+      { key: 'isee',         label: 'Modello ISEE',     hint: 'PDF, max 5MB · obbligatorio', done: false, icon: 'file-check', mandatory: true },
       { key: 'duediligence', label: 'Documentazione aggiuntiva', hint: 'Per la valutazione del Comitato ESG', done: false, icon: 'file' },
       { key: 'cie',          label: 'Carta identità (CIE)', hint: 'Fronte + retro',   done: false, icon: 'file' },
       { key: 'spid',         label: 'Verifica SPID',     hint: 'Login federato',      done: false, icon: 'shield' }
     ];
     const grid = document.getElementById('upload-grid');
-    docs.forEach((d, i) => {
+    docs.forEach((d) => {
       const card = document.createElement('div');
-      card.className = 'upload-card';
+      card.className = 'upload-card' + (d.mandatory ? ' mandatory' : '');
       card.dataset.doc = d.key;
       card.innerHTML = `
         ${aIcon(d.icon, { size: 24 })}
@@ -391,11 +417,26 @@
       card.addEventListener('click', () => {
         if (card.classList.contains('done')) return;
         card.classList.add('done');
-        card.innerHTML = `${aIcon('check-circle', { size: 26 })}<div class="upload-title">${d.label}</div><div class="upload-hint">Caricato</div>`;
+        card.classList.remove('invalid');
+        card.innerHTML = `${aIcon('check-circle', { size: 26 })}<div class="upload-title">${d.label}</div><div class="upload-hint">${d.mandatory ? 'Caricato · in verifica' : 'Caricato'}</div>`;
         showToast(d.label + ' caricato', 'success');
+        if (d.mandatory) document.getElementById('docs-error').classList.remove('show');
       });
       grid.appendChild(card);
     });
+
+    // Documenti obbligatori: senza ISEE lo step 2 non si supera.
+    function validateDocs() {
+      const cards = document.querySelectorAll('.upload-card.mandatory');
+      let ok = true;
+      cards.forEach(c => {
+        const done = c.classList.contains('done');
+        c.classList.toggle('invalid', !done);
+        if (!done) ok = false;
+      });
+      document.getElementById('docs-error').classList.toggle('show', !ok);
+      return ok;
+    }
 
     // Livelli di accesso al programma Carelink (radio-card):
     // la selezione evidenzia il documento richiesto dal requisito scelto.
@@ -417,7 +458,11 @@
     function selectAccessLevel(level) {
       selectedLevel = level;
       document.querySelectorAll('.access-card').forEach(c => c.classList.toggle('selected', +c.querySelector('input').value === level));
-      document.querySelectorAll('.upload-card').forEach(c => c.classList.toggle('required', c.dataset.doc === levelDoc[level]));
+      document.querySelectorAll('.upload-card').forEach(c => {
+        // L'ISEE è già obbligatorio per tutti: non viene declassato a "Richiesto dal livello".
+        if (c.classList.contains('mandatory')) return;
+        c.classList.toggle('required', c.dataset.doc === levelDoc[level]);
+      });
     }
     selectAccessLevel(selectedLevel);
 

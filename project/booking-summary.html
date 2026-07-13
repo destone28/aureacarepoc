@@ -100,6 +100,7 @@
         <div class="kv-row"><span class="k">Data</span><span class="v" id="kv-date">Giovedì 22 maggio 2026</span></div>
         <div class="kv-row"><span class="k">Orario</span><span class="v" id="kv-time">14:30</span></div>
         <div class="kv-row"><span class="k">Medico</span><span class="v" id="kv-doctor">&nbsp;</span></div>
+        <div class="kv-row"><span class="k">Ricetta medica</span><span class="v" id="kv-rx">&nbsp;</span></div>
       </div>
 
       <!-- Mini mappa della struttura confermata -->
@@ -168,6 +169,14 @@
     document.getElementById('kv-structure').innerHTML =
       `${st.name}<br><span class="caption" style="font-weight:400">${st.address} · ${st.district}</span>`;
     document.getElementById('kv-doctor').textContent = doctor;
+
+    // Ricetta medica: requisito obbligatorio scelto in prenotazione (?rx=saved|new).
+    // Quella già a fascicolo è verificata; la nuova va verificata dal Coordinatore.
+    const savedRx = (MOCK.patient && MOCK.patient.docs && MOCK.patient.docs.ricetta) || {};
+    const rx = params.get('rx') === 'new' ? 'new' : 'saved';
+    document.getElementById('kv-rx').innerHTML = rx === 'new'
+      ? `Allegata<br><span class="caption" style="font-weight:400">Nuova ricetta · in verifica dal Coordinatore Alphio</span>`
+      : `Allegata (verificata)<br><span class="caption" style="font-weight:400">${savedRx.name || 'Ricetta rossa'} · verificata il ${savedRx.uploaded || '12/04/2026'}</span>`;
 
     if (isCycle) {
       document.getElementById('sum-service-meta').textContent = `${svc.cat} · Cure ricorsive · Layer 1 · ${svc.sessions} sedute`;

@@ -35,6 +35,23 @@
       font-size: 11px; font-weight: 700;
       background: #E1F5EE; color: #0F6E56;
     }
+    /* Documenti della richiesta: ricetta e ISEE sono requisiti obbligatori,
+       gli altri sono di corredo. Il Coordinatore deve distinguerli a colpo d'occhio. */
+    .doc-tile {
+      display: flex; gap: 10px;
+      padding: 10px;
+      background: #FAFAFA;
+      border: 1px solid transparent;
+      border-radius: 10px;
+    }
+    .doc-tile--req { background: #F4FBF6; border-color: #C8E6CF; }
+    .req-pill {
+      display: inline-flex; align-items: center;
+      padding: 1px 6px; border-radius: 999px;
+      font-size: 10px; font-weight: 700;
+      background: #0F6E56; color: #fff;
+      vertical-align: middle;
+    }
     .review-doc {
       width: 64px; height: 80px;
       border-radius: 8px;
@@ -310,12 +327,13 @@
             </div>`; })()}
 
             <p class="eyebrow mb-8">Documenti caricati</p>
-            <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:14px">
-              <div style="display:flex;gap:10px;padding:10px;background:#FAFAFA;border-radius:10px"><div class="review-doc">ricetta</div><div style="font-size:12px"><strong>Ricetta rossa</strong><br><span class="caption">12/04/2026</span><br><span class="badge badge--approved" style="margin-top:4px"><span class="dot"></span>Verificata</span></div></div>
-              <div style="display:flex;gap:10px;padding:10px;background:#FAFAFA;border-radius:10px"><div class="review-doc">ISEE</div><div style="font-size:12px"><strong>Modello ISEE</strong><br><span class="caption">02/02/2026</span><br><span class="badge badge--approved" style="margin-top:4px"><span class="dot"></span>Verificato</span></div></div>
-              <div style="display:flex;gap:10px;padding:10px;background:#FAFAFA;border-radius:10px"><div class="review-doc">CIE</div><div style="font-size:12px"><strong>CIE</strong><br><span class="caption">04/01/2026</span><br><span class="badge badge--approved" style="margin-top:4px"><span class="dot"></span>Verificato</span></div></div>
-              <div style="display:flex;gap:10px;padding:10px;background:#FAFAFA;border-radius:10px"><div class="review-doc">SPID</div><div style="font-size:12px"><strong>SPID</strong><br><span class="caption">login federato</span><br><span class="badge badge--approved" style="margin-top:4px"><span class="dot"></span>Attivo</span></div></div>
+            <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:8px">
+              <div class="doc-tile doc-tile--req"><div class="review-doc">ricetta</div><div style="font-size:12px"><strong>Ricetta rossa</strong> <span class="req-pill">Obbligatoria</span><br><span class="caption">Caricata il 12/04/2026</span><br><span class="badge badge--approved" style="margin-top:4px"><span class="dot"></span>Verificata</span></div></div>
+              <div class="doc-tile doc-tile--req"><div class="review-doc">ISEE</div><div style="font-size:12px"><strong>Modello ISEE</strong> <span class="req-pill">Obbligatorio</span><br><span class="caption">Caricato il 02/02/2026</span><br><span class="badge badge--approved" style="margin-top:4px"><span class="dot"></span>Verificato</span></div></div>
+              <div class="doc-tile"><div class="review-doc">CIE</div><div style="font-size:12px"><strong>CIE</strong><br><span class="caption">04/01/2026</span><br><span class="badge badge--approved" style="margin-top:4px"><span class="dot"></span>Verificato</span></div></div>
+              <div class="doc-tile"><div class="review-doc">SPID</div><div style="font-size:12px"><strong>SPID</strong><br><span class="caption">login federato</span><br><span class="badge badge--approved" style="margin-top:4px"><span class="dot"></span>Attivo</span></div></div>
             </div>
+            <p class="caption mb-16" style="line-height:1.5"><strong>Ricetta medica</strong> (presupposto clinico della prestazione) e <strong>Modello ISEE</strong> sono requisiti obbligatori: senza entrambi verificati la richiesta non può essere approvata. La verifica è manuale, a cura del Coordinatore Alphio.</p>
 
             <p class="eyebrow mb-8">Storico paziente</p>
             ${(() => { const p = (MOCK.admin_patients || []).find(x => x.cf === r.cf) || { completed: 0 }; return `

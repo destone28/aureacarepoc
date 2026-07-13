@@ -83,6 +83,56 @@
     }
     .toggle.on { background: var(--primary-orange); }
     .toggle.on::after { transform: translateX(18px); }
+    /* Ricetta medica: presupposto clinico obbligatorio della prestazione */
+    .rx-block {
+      border: 1px solid #C8E6CF;
+      background: #F4FBF6;
+      border-radius: var(--r-md);
+      padding: 14px;
+    }
+    .rx-head { display: flex; gap: 10px; align-items: flex-start; }
+    .rx-head .ico-wrap {
+      width: 34px; height: 34px;
+      border-radius: 9px;
+      background: #0F6E56; color: #fff;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .rx-title { font-weight: 700; font-size: 14px; }
+    .rx-req {
+      display: inline-flex; align-items: center;
+      margin-left: 6px;
+      padding: 1px 7px; border-radius: 999px;
+      font-size: 10px; font-weight: 700;
+      background: #DCEFE6; color: #0F6E56;
+      vertical-align: middle;
+    }
+    .rx-options { display: grid; gap: 8px; margin-top: 12px; }
+    .rx-opt {
+      display: flex; gap: 10px; align-items: flex-start;
+      padding: 12px;
+      background: #fff;
+      border: 1px solid var(--border-soft);
+      border-radius: var(--r-md);
+      cursor: pointer;
+    }
+    .rx-opt input[type=radio] { margin-top: 2px; width: 18px; height: 18px; accent-color: #0F6E56; }
+    .rx-opt strong { font-size: 13px; }
+    .rx-opt p { font-size: 12px; color: var(--medium-gray); margin-top: 2px; line-height: 1.45; }
+    .rx-opt.selected { border-color: #0F6E56; box-shadow: 0 0 0 2px rgba(15,110,86,.12); }
+    .rx-opt.selected strong { color: #0F6E56; }
+    .rx-error {
+      display: none;
+      align-items: flex-start; gap: 8px;
+      margin-top: 10px;
+      padding: 10px 12px;
+      border-radius: var(--r-md);
+      background: #FCEBEB;
+      color: var(--error);
+      font-size: 12px; font-weight: 600; line-height: 1.45;
+    }
+    .rx-error.show { display: flex; }
+    .rx-error svg { flex: none; margin-top: 1px; }
   </style>
 </head>
 <body>
@@ -128,6 +178,23 @@
         <span class="flex items-center gap-4"><span style="width:6px;height:6px;background:var(--care-blue);border-radius:50%"></span>Disponibile</span>
         <span class="flex items-center gap-4"><span style="width:10px;height:10px;background:var(--care-blue);border-radius:50%;display:inline-block"></span>Selezionato</span>
         <span class="flex items-center gap-4"><span style="width:6px;height:6px;background:#cdd2d8;border-radius:50%"></span>Non disponibile</span>
+      </div>
+
+      <!-- Ricetta medica: obbligatoria per confermare la prenotazione -->
+      <div class="divider-eyebrow"><span>Ricetta medica</span><span class="line"></span></div>
+      <div class="rx-block">
+        <div class="rx-head">
+          <div class="ico-wrap"><span id="ico-rx"></span></div>
+          <div style="flex:1">
+            <p class="rx-title">Ricetta medica <span class="rx-req">Obbligatoria</span></p>
+            <p class="caption">È il presupposto clinico della prestazione: senza ricetta la richiesta non può essere validata dal Coordinatore Alphio.</p>
+          </div>
+        </div>
+        <div class="rx-options" id="rx-options"></div>
+        <div class="rx-error" id="rx-error">
+          <span id="ico-rx-err"></span>
+          <span>Allega la ricetta medica per proseguire: è obbligatoria.</span>
+        </div>
       </div>
 
       <!-- Pre-flag handoff (pre-prenotazione) -->
@@ -192,6 +259,8 @@
     document.getElementById('ico-r').outerHTML = aIcon('chevron-right', { size: 16 });
     document.getElementById('ico-amb').outerHTML = aIcon('ambulance', { size: 20 });
     document.getElementById('ico-cov').outerHTML = aIcon('shield-check', { size: 14 });
+    document.getElementById('ico-rx').outerHTML = aIcon('file-check', { size: 18 });
+    document.getElementById('ico-rx-err').outerHTML = aIcon('alert', { size: 16 });
 
     // Recap dinamico (legge ?structure=... e ?service=... dalla URL)
     const urlParams = new URLSearchParams(location.search);
@@ -280,6 +349,61 @@
       cal.appendChild(d);
     }
 
+    // ---------- Ricetta medica (obbligatoria) ----------
+    // Due sole strade: riusare la ricetta già verificata dal Coordinatore Alphio
+    // oppure caricarne una nuova (upload simulato). La verifica resta manuale:
+    // nessuna integrazione esterna nel POC.
+    const savedRx = (MOCK.patient && MOCK.patient.docs && MOCK.patient.docs.ricetta) || null;
+    const savedRxOk = !!savedRx && savedRx.status === 'verified';
+    let rxChoice = null;
+
+    const rxOptions = document.getElementById('rx-options');
+    rxOptions.innerHTML = `
+      ${savedRxOk ? `
+      <label class="rx-opt" data-rx="saved">
+        <input type="radio" name="rx" value="saved">
+        <div>
+          <strong>Usa la ricetta già caricata</strong>
+          <p>${savedRx.name} · verificata il ${savedRx.uploaded} dal Coordinatore Alphio</p>
+        </div>
+      </label>` : ''}
+      <label class="rx-opt" data-rx="new">
+        <input type="radio" name="rx" value="new">
+        <div>
+          <strong>Carica una nuova ricetta</strong>
+          <p id="rx-new-hint">PDF o foto, max 5MB. Sarà verificata dal Coordinatore Alphio prima della validazione.</p>
+        </div>
+      </label>`;
+
+    rxOptions.querySelectorAll('.rx-opt').forEach(opt => {
+      opt.addEventListener('change', () => {
+        rxChoice = opt.dataset.rx;
+        rxOptions.querySelectorAll('.rx-opt').forEach(o => o.classList.toggle('selected', o === opt));
+        document.getElementById('rx-error').classList.remove('show');
+        if (rxChoice === 'new') {
+          document.getElementById('rx-new-hint').textContent = 'ricetta_maggio2026.pdf · caricata, in attesa di verifica';
+          showToast('Ricetta caricata · in attesa di verifica', 'success');
+        }
+        updateProceed();
+      });
+    });
+
+    // Il CTA resta bloccato finché non ci sono sia lo slot sia la ricetta.
+    function updateProceed() {
+      const btn = document.getElementById('proceed-btn');
+      const ready = !!selectedTime && !!rxChoice;
+      btn.disabled = !ready;
+      btn.style.opacity = ready ? 1 : .5;
+      if (ready) {
+        btn.innerHTML = `Procedi · ${selectedDay} mag · ${selectedTime} ` + aIcon('arrow-right', { size: 16 });
+      } else if (!selectedTime) {
+        btn.textContent = 'Seleziona uno slot';
+      } else {
+        btn.textContent = 'Allega la ricetta medica';
+        document.getElementById('rx-error').classList.add('show');
+      }
+    }
+
     let selectedDay = null;
     let selectedTime = null;
     function openSheet(day) {
@@ -313,10 +437,7 @@
       closeSheet();
       document.getElementById('row-datetime').style.display = 'flex';
       document.getElementById('row-datetime-v').textContent = `${selectedDay} maggio 2026 · ${selectedTime}`;
-      const btn = document.getElementById('proceed-btn');
-      btn.disabled = false;
-      btn.style.opacity = 1;
-      btn.innerHTML = `Procedi · ${selectedDay} mag · ${selectedTime} ` + aIcon('arrow-right', {size:16});
+      updateProceed();
     }
     // Il trasporto Layer 1 è sempre gratuito: nessun costo entra mai in prenotazione.
     function setShuttle(on) {
@@ -339,10 +460,13 @@
     if (isCycle) setShuttle(true);
 
     function proceed() {
+      if (!rxChoice) { updateProceed(); return showToast('La ricetta medica è obbligatoria', 'error'); }
       const shuttle = document.getElementById('shuttle-toggle').classList.contains('on');
       const params = new URLSearchParams({
         day: selectedDay, time: selectedTime, shuttle: shuttle ? '1' : '0'
       });
+      // Il riepilogo deve poter dichiarare che la ricetta è allegata (e se già verificata).
+      params.set('rx', rxChoice);
       // La struttura scelta deve arrivare fino al riepilogo (mappa, handoff, indirizzo)
       params.set('structure', selected.id);
       params.set('service', service.id);
