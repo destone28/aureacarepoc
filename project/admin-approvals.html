@@ -169,6 +169,7 @@
   <script src="data/mock-data.js"></script>
   <script src="js/icons.js"></script>
   <script src="js/navigation.js"></script>
+  <script src="js/invoice.js"></script>
   <script>
     // Icons
     document.getElementById('sb1').outerHTML = aIcon('bar-chart', { size: 20 });
@@ -194,6 +195,29 @@
     // Lookup livello di accesso Carelink (1 urgenza · 2 ISEE · 3 due diligence)
     const accessLevelOf = lvl => MOCK.access_levels.find(a => a.level === lvl);
 
+    // Fattura verificabile CSRD: disponibile sulle richieste con voucher validato
+    // (stato "Approvata"). È la console del Coordinatore a emetterla — l'app
+    // paziente non espone alcuna componente economica.
+    const isInvoiceable = r => r.status === 'approved';
+    function invoiceFor(id) {
+      const r = MOCK.admin_requests.find(x => x.id === id);
+      if (!r || !isInvoiceable(r)) return;
+      const st = (MOCK.structures || []).find(s => s.id === r.structure_id);
+      downloadCsrdInvoice({
+        id: r.id,
+        date: r.date.replace(' · ', ' 2026 · '), // "26 mag · 15:30" → "26 mag 2026 · 15:30"
+        patient: r.patient,
+        cf: r.cf,
+        structure_name: r.structure,
+        cert: st ? st.cert : 'ISO 9001',
+        service_name: r.service,
+        status_label: statusBadge[r.status][1],
+        list_price: r.list_price,
+        esg_price: r.esg_price,
+        voucher_id: r.voucher_id
+      });
+    }
+
     const rows = MOCK.admin_requests.map(r => {
       const [b, l] = statusBadge[r.status];
       const al = accessLevelOf(r.access_level);
@@ -203,7 +227,10 @@
              <button class="btn btn--ghost btn--sm" title="Approva veloce" onclick="quickApprove('${r.id}')">${aIcon('check',{size:14})}</button>
              <button class="btn btn--ghost btn--sm" title="Rifiuta veloce" style="color:var(--error)" onclick="quickReject('${r.id}')">${aIcon('x',{size:14})}</button>
            </div>`
-        : `<button class="btn btn--ghost btn--sm" onclick="openReview('${r.id}')">Dettagli</button>`;
+        : `<div class="actions">
+             <button class="btn btn--ghost btn--sm" onclick="openReview('${r.id}')">Dettagli</button>
+             ${isInvoiceable(r) ? `<button class="btn btn--secondary btn--sm" title="Scarica fattura CSRD" onclick="invoiceFor('${r.id}')">${aIcon('file-check',{size:14})}<span>Fattura CSRD</span></button>` : ''}
+           </div>`;
       return `<tr data-id="${r.id}">
         <td data-th=""><input type="checkbox"></td>
         <td data-th="ID"><span class="font-mono" style="font-size:12px;font-weight:700">${r.id}</span></td>
@@ -259,6 +286,13 @@
               <div style="display:flex;justify-content:space-between"><span class="text-muted">Copertura</span><strong>Trasporto Layer 1 · nessun voucher consumato</strong></div>
               <div style="display:flex;justify-content:space-between"><span class="text-muted">Quota paziente</span><strong>€0</strong></div>
             </div>`}
+
+            ${isInvoiceable(r) ? `
+            <div class="mt-12">
+              <button class="btn btn--secondary btn--block" onclick="invoiceFor('${r.id}')">${aIcon('file-check',{size:16})}<span>Scarica fattura CSRD</span></button>
+              <p class="caption mt-8" style="display:flex;align-items:flex-start;gap:6px;color:#0F6E56">${aIcon('shield-check',{size:14})}<span>Riporta listino ufficiale, sconto contrattuale <strong>−15%</strong>, tariffa ESG e ID voucher: è il documento verificabile dal <strong>revisore CSRD</strong> del programma.</span></p>
+            </div>` : `
+            <p class="caption mt-12">La fattura verificabile CSRD sarà disponibile dopo la validazione del voucher.</p>`}
 
             <p class="eyebrow mt-20 mb-8">Note del Coordinatore</p>
             <div class="input-container"><textarea class="input" placeholder="Aggiungi nota visibile al paziente (opzionale)"></textarea></div>
