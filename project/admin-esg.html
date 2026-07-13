@@ -190,6 +190,47 @@
     }
     .heat-row .heat-bar > div { height: 100%; background: var(--care-blue); border-radius: 999px; }
 
+    /* Target anno 1 · barre di avanzamento */
+    .tgt-row { margin-bottom: 14px; }
+    .tgt-row:last-child { margin-bottom: 0; }
+    .tgt-head {
+      display: flex; justify-content: space-between; align-items: baseline;
+      gap: 10px; margin-bottom: 6px; font-size: 13px;
+    }
+    .tgt-head .l { font-weight: 600; color: var(--ink); }
+    .tgt-head .v { font-weight: 700; font-size: 12px; color: var(--medium-gray); }
+    .tgt-head .v strong { color: #0F6E56; font-size: 13px; }
+    .tgt-track { height: 10px; background: var(--light-gray); border-radius: 999px; overflow: hidden; }
+    .tgt-fill { height: 100%; border-radius: 999px; background: #0F6E56; transition: width 800ms ease-out; }
+
+    /* Tabelle benefici / pluriennale */
+    .esg-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    .esg-table th {
+      text-align: left; font-size: 11px; font-weight: 700; letter-spacing: .05em;
+      text-transform: uppercase; color: var(--medium-gray);
+      padding: 8px 10px; border-bottom: 1px solid var(--border-soft);
+    }
+    .esg-table td { padding: 9px 10px; border-bottom: 1px solid #F2F2F2; }
+    .esg-table td.num, .esg-table th.num { text-align: right; font-variant-numeric: tabular-nums; }
+    .esg-table tr:last-child td { border-bottom: none; }
+    .esg-table .code {
+      font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 600;
+      color: var(--care-blue-dark); background: var(--care-blue-light);
+      padding: 2px 6px; border-radius: 5px;
+    }
+    .esg-table tr.total td { font-weight: 700; background: #F4FBF6; color: #0F6E56; border-bottom: none; }
+    .table-scroll { overflow-x: auto; }
+
+    /* Drop-out / aderenza */
+    .dropout-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+    .dropout-cell {
+      padding: 16px; border-radius: 10px; text-align: center;
+      background: #F4FBF6; border: 1px solid #C8E6CF;
+    }
+    .dropout-cell .v { font-size: 28px; font-weight: 700; color: #0F6E56; line-height: 1.1; }
+    .dropout-cell .l { font-size: 12px; color: var(--medium-gray); font-weight: 600; margin-top: 4px; }
+    @media (max-width: 760px) { .dropout-grid { grid-template-columns: 1fr; } }
+
     /* Footer disclaimer */
     .esg-disclaimer {
       padding: 14px 18px;
@@ -220,7 +261,7 @@
     <div class="admin-main">
       <header class="admin-topbar">
         <h1>KPI ESG · Impatto sociale</h1>
-        <span class="badge badge--approved" style="font-size:13px;padding:6px 12px"><strong>SROI 3.2×</strong></span>
+        <span class="badge badge--approved" style="font-size:13px;padding:6px 12px"><strong>SROI combinato 3,2×</strong></span>
         <button class="icon-btn" style="width:38px;height:38px;background:var(--light-gray);border:none;border-radius:10px" onclick="exportESG()"><span id="ico-dl"></span></button>
         <button class="icon-btn" style="width:38px;height:38px;background:var(--light-gray);border:none;border-radius:10px" onclick="showToast('Report completo in PDF: in arrivo','info')"><span id="ico-bell"></span></button>
         <button class="switch-view" onclick="switchToPatientLogin()" title="Vai al login paziente"><span class="ico-sv"></span><span class="label-full">Vista paziente</span></button>
@@ -229,19 +270,45 @@
 
       <div class="admin-content">
         <div class="crumbs mb-16" style="font-size:13px;color:var(--medium-gray)">
-          Console &rsaquo; <strong style="color:var(--ink)">KPI ESG</strong> · ultimi 12 mesi · 142 pazienti attivi
+          Console &rsaquo; <strong style="color:var(--ink)">KPI ESG</strong> · anno 1 · 3.120 pazienti attivi (640 Layer 1 · 2.480 Layer 2)
         </div>
 
-        <!-- HERO: 4 KPI principali -->
+        <!-- HERO: SROI per layer + valore sociale -->
         <div class="esg-hero">
           <div class="esg-hero-head">
             <div>
-              <h2>Impatto AureaCare · Q2 2026</h2>
-              <p class="caption">Indicatori di sostenibilità ambientale, sociale ed economica. Aggiornati settimanalmente.</p>
+              <h2>Impatto Programma ESG Carelink · Roma · Anno 1</h2>
+              <p class="caption">SROI per layer, valore sociale generato e indicatori ambientali/sociali. <strong>SROI validato ex-post da primaria società di revisione · metodologia Social Value International.</strong></p>
             </div>
-            <button class="btn btn--secondary btn--sm" onclick="showToast('Periodo: ultimi 12 mesi','info')">Periodo: 12 mesi ▾</button>
+            <button class="btn btn--secondary btn--sm" onclick="showToast('Periodo: anno 1 · YTD Gen–Lug 2026','info')">Periodo: anno 1 ▾</button>
           </div>
           <div class="esg-kpi-grid" id="hero-kpi"></div>
+          <div class="esg-kpi-grid" id="hero-kpi-2" style="margin-top:12px"></div>
+        </div>
+
+        <!-- ADERENZA & DROP-OUT -->
+        <div class="esg-section">
+          <div class="esg-section-head">
+            <div class="ico-wrap ico-env"><span id="ico-drop"></span></div>
+            <div style="flex:1;min-width:0">
+              <h3>Aderenza terapeutica e drop-out evitato</h3>
+              <p class="sub">Outcome fondante del programma: il trasporto gratuito Layer 1 e i voucher Layer 2 evitano l'interruzione delle cure</p>
+            </div>
+          </div>
+          <div class="dropout-grid" id="dropout-grid"></div>
+          <p class="caption mt-12" style="line-height:1.55">Il <strong>drop-out terapeutico</strong> (interruzione di un ciclo di cure per impossibilità di raggiungere il centro o di sostenerne il costo) è il rischio che il programma Carelink abbatte: ogni seduta salvata evita ricadute cliniche e costi SSN a valle (voce <strong>A1</strong> del modello SROI).</p>
+        </div>
+
+        <!-- TARGET ANNO 1 -->
+        <div class="esg-section">
+          <div class="esg-section-head">
+            <div class="ico-wrap ico-soc"><span id="ico-tgt"></span></div>
+            <div style="flex:1;min-width:0">
+              <h3>Avanzamento sui target anno 1</h3>
+              <p class="sub">Roma · fondo ESG €9.000.000 · YTD Gen–Lug 2026</p>
+            </div>
+          </div>
+          <div id="targets"></div>
         </div>
 
         <!-- TREND CHART: SROI / CO2 / Caregiver -->
@@ -249,13 +316,14 @@
           <div class="esg-section-head">
             <div class="ico-wrap ico-gov"><span id="ico-trend"></span></div>
             <div style="flex:1;min-width:0">
-              <h3>Trend ESG mensile</h3>
-              <p class="sub">SROI sanitario, CO₂ evitata e ore caregiver risparmiate · ultimi 7 mesi</p>
+              <h3>Trend ESG mensile · anno 1</h3>
+              <p class="sub">SROI combinato, CO₂ evitata e ore caregiver (cumulate YTD), voucher validati per mese · Gen–Lug 2026</p>
             </div>
             <div class="tabs" id="trend-metric" style="background:#fff;border:1px solid var(--border-soft);padding:2px">
               <button class="tab active" data-metric="sroi">SROI</button>
               <button class="tab" data-metric="co2">CO₂</button>
               <button class="tab" data-metric="caregiver">Caregiver</button>
+              <button class="tab" data-metric="vouchers">Voucher</button>
             </div>
           </div>
           <svg id="esg-trend" width="100%" height="260" viewBox="0 0 800 260" preserveAspectRatio="none">
@@ -308,20 +376,24 @@
               <p class="caption mt-8">In media i pazienti AureaCare percorrono <strong>5.5 km in meno per visita</strong> grazie alla prossimità delle strutture convenzionate.</p>
             </div>
             <div>
-              <p class="eyebrow mb-8">KPI ambientali</p>
+              <p class="eyebrow mb-8">KPI ambientali · target anno 1</p>
               <div style="display:grid;gap:10px">
                 <div style="padding:14px;background:#F4FBF6;border-radius:10px">
-                  <div class="flex justify-between items-center"><span class="text-muted">Km evitati (Q2)</span><strong style="font-size:18px;color:#0F6E56">12.480 km</strong></div>
+                  <div class="flex justify-between items-center"><span class="text-muted">CO₂ evitata · target anno 1</span><strong style="font-size:18px;color:#0F6E56">52 t</strong></div>
+                  <p class="caption" style="margin-top:4px;font-size:11px">≈ 3.500 alberi piantati</p>
                 </div>
                 <div style="padding:14px;background:#F4FBF6;border-radius:10px">
-                  <div class="flex justify-between items-center"><span class="text-muted">CO₂ evitata / visita</span><strong style="font-size:18px;color:#0F6E56">17.7 kg</strong></div>
+                  <div class="flex justify-between items-center"><span class="text-muted">CO₂ evitata · YTD</span><strong style="font-size:18px;color:#0F6E56">21,4 t</strong></div>
+                  <p class="caption" style="margin-top:4px;font-size:11px">≈ 1.020 alberi · 41% del target</p>
                 </div>
                 <div style="padding:14px;background:#F4FBF6;border-radius:10px">
-                  <div class="flex justify-between items-center"><span class="text-muted">Quota trasporto Shuttle</span><strong style="font-size:18px;color:var(--primary-orange)">54%</strong></div>
+                  <div class="flex justify-between items-center"><span class="text-muted">Km evitati (YTD)</span><strong style="font-size:18px;color:#0F6E56">249.600 km</strong></div>
                 </div>
                 <div style="padding:14px;background:#F4FBF6;border-radius:10px">
-                  <div class="flex justify-between items-center"><span class="text-muted">Equivalente alberi piantati*</span><strong style="font-size:18px;color:#0F6E56">≈ 198</strong></div>
-                  <p class="caption" style="margin-top:4px;font-size:11px">*Calcolo: 21 kg CO₂/anno per albero adulto</p>
+                  <div class="flex justify-between items-center"><span class="text-muted">CO₂ evitata / prestazione</span><strong style="font-size:18px;color:#0F6E56">17,7 kg</strong></div>
+                </div>
+                <div style="padding:14px;background:#F4FBF6;border-radius:10px">
+                  <div class="flex justify-between items-center"><span class="text-muted">Quota trasporto Samarcanda</span><strong style="font-size:18px;color:var(--primary-orange)">54%</strong></div>
                 </div>
               </div>
             </div>
@@ -351,8 +423,8 @@
             </div>
             <div style="padding:14px;background:#FFF6E8;border:1px solid var(--bg-warm-br);border-radius:10px;text-align:center">
               <p style="font-size:11px;color:#B45309;font-weight:700;letter-spacing:.05em;text-transform:uppercase">Ore caregiver liberate</p>
-              <p style="font-size:26px;font-weight:700;color:#B45309;margin-top:4px">824h</p>
-              <p class="caption">questo trimestre</p>
+              <p style="font-size:26px;font-weight:700;color:#B45309;margin-top:4px">16.500h</p>
+              <p class="caption">YTD · voci A3 e A5 del modello</p>
             </div>
           </div>
 
@@ -375,41 +447,86 @@
             <div class="ico-wrap ico-gov"><span id="ico-gov"></span></div>
             <div style="flex:1;min-width:0">
               <h3>Governance & impatto economico</h3>
-              <p class="sub">SROI breakdown, valore erogato, tariffe convenzionate</p>
+              <p class="sub">Composizione SROI, valore coperto dal Fondo, tariffa ESG</p>
             </div>
           </div>
 
           <div class="esg-grid-2">
             <div>
-              <p class="eyebrow mb-8">Composizione SROI <strong style="color:var(--ink);font-weight:700">3.2×</strong></p>
+              <p class="eyebrow mb-8">Composizione SROI combinato <strong style="color:var(--ink);font-weight:700">3.2×</strong></p>
               <div class="sroi-stack" id="sroi-stack"></div>
               <div id="sroi-legend" class="donut-legend"></div>
-              <p class="caption mt-12">Per ogni euro investito nella convenzione AureaCare, si generano <strong>€3.20 di valore sociale</strong> distribuito su risparmio SSN, tempo liberato e accesso.</p>
+              <p class="caption mt-12">Per ogni euro del Fondo ESG investito nel programma si generano <strong>€3,20 di valore sociale</strong> (range documento 2,76–3,64×), distribuito su minori costi SSN, QALY/WELLBY, out-of-pocket evitato e produttività.</p>
             </div>
             <div>
               <p class="eyebrow mb-8">Indicatori economici</p>
               <div style="display:grid;gap:10px">
                 <div style="padding:14px;background:#FAFAFA;border-radius:10px">
-                  <div class="flex justify-between items-center"><span class="text-muted">Valore erogato YTD</span><strong style="font-size:18px;color:var(--care-blue-dark)">€91.200</strong></div>
+                  <div class="flex justify-between items-center"><span class="text-muted">Valore coperto dal Fondo YTD</span><strong style="font-size:18px;color:var(--care-blue-dark)">€1.672.170</strong></div>
+                  <p class="caption" style="margin-top:4px;font-size:11px">13.900 voucher validati · quota a carico paziente €0</p>
                 </div>
                 <div style="padding:14px;background:#FAFAFA;border-radius:10px">
-                  <div class="flex justify-between items-center"><span class="text-muted">% approvazione media</span><strong style="font-size:18px">87%</strong></div>
+                  <div class="flex justify-between items-center"><span class="text-muted">% validazione media</span><strong style="font-size:18px">87%</strong></div>
                 </div>
                 <div style="padding:14px;background:#FAFAFA;border-radius:10px">
-                  <div class="flex justify-between items-center"><span class="text-muted">Costo per cura completata</span><strong style="font-size:18px;color:var(--ink)">€372</strong></div>
+                  <div class="flex justify-between items-center"><span class="text-muted">Valore medio per voucher</span><strong style="font-size:18px;color:var(--ink)">€120</strong></div>
                 </div>
                 <div class="compare-box" style="margin-top:0">
                   <div class="compare-cell">
-                    <div class="v" style="color:#999">€105</div>
-                    <div class="l">Tariffa media mercato</div>
+                    <div class="v" style="color:#999">€141</div>
+                    <div class="l">Listino medio struttura</div>
                   </div>
                   <div class="compare-cell highlight">
-                    <div class="v" style="color:#0F6E56">€78</div>
-                    <div class="l">Tariffa convenzionata</div>
+                    <div class="v" style="color:#0F6E56">€120</div>
+                    <div class="l">Tariffa ESG (−15%)</div>
                   </div>
                 </div>
-                <p class="caption">Risparmio medio per il paziente: <strong style="color:#0F6E56">−26% vs mercato libero</strong>.</p>
+                <p class="caption">Sconto contrattuale fisso <strong style="color:#0F6E56">−15%</strong> verificabile su ogni fattura dal revisore CSRD. Quota a carico del paziente: <strong style="color:#0F6E56">€0</strong>.</p>
               </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- BENEFICI MONETIZZATI ANNO 1 -->
+        <div class="esg-section">
+          <div class="esg-section-head">
+            <div class="ico-wrap ico-gov"><span id="ico-ben"></span></div>
+            <div style="flex:1;min-width:0">
+              <h3>Benefici monetizzati · anno 1</h3>
+              <p class="sub">Layer 1 (A1–A6) e Layer 2 (B1–B3) · investimento €4,5M per layer · QALY e WELLBY inclusi</p>
+            </div>
+          </div>
+          <div class="esg-grid-2">
+            <div>
+              <p class="eyebrow mb-8">Layer 1 — Mobilità sanitaria assistita</p>
+              <div class="table-scroll"><table class="esg-table" id="ben-l1"></table></div>
+              <p class="caption mt-8">Investimento €4,5M · SROI <strong>0,89×</strong> (0,82–0,97). Il Layer 1 non si ripaga da solo: <strong>abilita</strong> il Layer 2 evitando il drop-out.</p>
+            </div>
+            <div>
+              <p class="eyebrow mb-8">Layer 2 — Accesso alle cure (voucher ESG)</p>
+              <div class="table-scroll"><table class="esg-table" id="ben-l2"></table></div>
+              <p class="caption mt-8">Investimento €4,5M · SROI <strong>5,4×</strong> (4,56–6,31). Valore sociale combinato anno 1: <strong style="color:#0F6E56">€24,8M – 32,7M</strong>.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- TRAIETTORIA PLURIENNALE -->
+        <div class="esg-section">
+          <div class="esg-section-head">
+            <div class="ico-wrap ico-dem"><span id="ico-my"></span></div>
+            <div style="flex:1;min-width:0">
+              <h3>Traiettoria pluriennale · incidenza costi → SROI</h3>
+              <p class="sub">Al calare dell'incidenza dei costi di programma, lo SROI di entrambi i layer converge verso ~3×</p>
+            </div>
+          </div>
+          <div class="esg-grid-2">
+            <div>
+              <p class="eyebrow mb-8">Layer 1</p>
+              <div class="table-scroll"><table class="esg-table" id="my-l1"></table></div>
+            </div>
+            <div>
+              <p class="eyebrow mb-8">Layer 2</p>
+              <div class="table-scroll"><table class="esg-table" id="my-l2"></table></div>
             </div>
           </div>
         </div>
@@ -460,10 +577,11 @@
 
         <!-- DISCLAIMER -->
         <div class="esg-disclaimer">
-          <strong>Metodologia:</strong> i KPI ESG sono calcolati sui dati operativi AureaCare degli ultimi 12 mesi.
-          Il <strong>SROI</strong> segue lo standard <em>Social Value International</em> (2023) usando proxy finanziari per
-          tempo caregiver liberato (€18/h), CO₂ evitata (€85/tCO₂), risparmio sanitario (tariffe regionali Lazio).
-          La metrica <em>fragilità servita</em> aggrega ISEE, età, condizioni croniche dichiarate in onboarding.
+          <strong>Metodologia:</strong> i KPI ESG sono calcolati sui dati operativi del Programma Carelink · Roma · anno 1.
+          Il <strong>SROI</strong> segue lo standard <em>Social Value International</em> ed è <strong>validato ex-post da una primaria società di revisione</strong>
+          (verifica CSRD su ogni fattura, incluso lo sconto contrattuale del 15%). Proxy finanziari: tempo caregiver liberato (€18/h),
+          <strong>QALY</strong> (valore anno di vita in buona salute) e <strong>WELLBY</strong> (benessere caregiver), CO₂ evitata (€85/tCO₂),
+          risparmio sanitario su tariffe regionali Lazio. La metrica <em>fragilità servita</em> aggrega ISEE, età e condizioni croniche dichiarate in onboarding.
           Tutti i dati sono <strong>aggregati e anonimizzati</strong>: nessuna informazione paziente individuale è esposta.
         </div>
 
@@ -497,29 +615,109 @@
     document.getElementById('ico-soc').outerHTML = aIcon('users', { size: 18 });
     document.getElementById('ico-gov').outerHTML = aIcon('wallet', { size: 18 });
     document.getElementById('ico-dem').outerHTML = aIcon('user', { size: 18 });
+    document.getElementById('ico-drop').outerHTML = aIcon('activity', { size: 18 });
+    document.getElementById('ico-tgt').outerHTML = aIcon('check-circle', { size: 18 });
+    document.getElementById('ico-ben').outerHTML = aIcon('shield-check', { size: 18 });
+    document.getElementById('ico-my').outerHTML = aIcon('trending-up', { size: 18 });
 
     const E = MOCK.esg;
+    // €4.500.000 → "€4,50M"
+    const eurM = v => '€' + (v / 1000000).toLocaleString('it-IT', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + 'M';
 
-    // ---- HERO KPI ----
-    const heroEl = document.getElementById('hero-kpi');
-    const heroOrder = ['sroi','co2_saved','caregiver_h','fragile_served'];
-    heroEl.innerHTML = heroOrder.map(k => {
-      const m = E.headline[k];
+    // ---- HERO KPI: SROI per layer + valore sociale ----
+    const H = E.headline;
+    document.getElementById('hero-kpi').innerHTML = ['sroi','sroi_l1','sroi_l2'].map(k => {
+      const m = H[k];
+      return `<div class="esg-kpi">
+        <div class="lbl">${m.label}</div>
+        <div class="val">${m.value.toLocaleString('it-IT', { minimumFractionDigits: 1, maximumFractionDigits: 2 })}<span class="unit">${m.unit}</span></div>
+        <div class="delta">${aIcon('trending-up',{size:12})} range documento ${m.range}</div>
+      </div>`;
+    }).join('') + `<div class="esg-kpi">
+        <div class="lbl">Valore sociale anno 1</div>
+        <div class="val" style="font-size:20px">${H.social_value_y1}</div>
+        <div class="delta">${aIcon('check-circle',{size:12})} su €9M di Fondo ESG</div>
+      </div>`;
+
+    // ---- HERO KPI (riga 2): ambiente, caregiver, fragilità, aderenza ----
+    document.getElementById('hero-kpi-2').innerHTML = ['co2_saved','caregiver_h','fragile_served'].map(k => {
+      const m = H[k];
       const sign = m.delta >= 0 ? '+' : '';
       return `<div class="esg-kpi">
         <div class="lbl">${m.label}</div>
         <div class="val">${m.value.toLocaleString('it-IT')}<span class="unit">${m.unit}</span></div>
-        <div class="delta">${aIcon('trending-up',{size:12})} ${sign}${m.delta}${k==='sroi'||k==='fragile_served'?'':' %'} vs Q1</div>
+        <div class="delta">${aIcon('trending-up',{size:12})} ${sign}${m.delta}${k==='fragile_served'?' pt':'%'} vs semestre prec.</div>
+      </div>`;
+    }).join('') + `<div class="esg-kpi">
+        <div class="lbl">Aderenza alle cure</div>
+        <div class="val">${E.dropout.adherence_rate}<span class="unit">%</span></div>
+        <div class="delta">${aIcon('check-circle',{size:12})} ${E.dropout.dropout_avoided} drop-out evitati</div>
+      </div>`;
+
+    // ---- ADERENZA / DROP-OUT ----
+    document.getElementById('dropout-grid').innerHTML = [
+      { v: E.dropout.adherence_rate + '%',                          l: 'Aderenza alle sedute programmate' },
+      { v: E.dropout.dropout_avoided.toLocaleString('it-IT'),        l: E.dropout.label + ' (percorsi non interrotti)' },
+      { v: E.dropout.sessions_saved.toLocaleString('it-IT'),         l: 'Sedute salvate dal trasporto gratuito Layer 1' }
+    ].map(c => `<div class="dropout-cell"><div class="v">${c.v}</div><div class="l">${c.l}</div></div>`).join('');
+
+    // ---- TARGET ANNO 1 ----
+    const T = E.year1_targets, Y = E.ytd;
+    document.getElementById('targets').innerHTML = [
+      { l: 'Corse Samarcanda coordinate (Layer 1)', v: Y.rides,      t: T.rides },
+      { l: 'Voucher ESG validati (Layer 2)',        v: Y.vouchers,   t: T.vouchers },
+      { l: 'Pazienti attivi Layer 1',               v: Y.patients_l1, t: T.patients_l1 },
+      { l: 'Pazienti attivi Layer 2',               v: Y.patients_l2, t: T.patients_l2 },
+      { l: 'CO₂ evitata (tonnellate)',              v: E.environmental.co2_ytd_t, t: E.environmental.co2_target_t, dec: true }
+    ].map(r => {
+      const pct = Math.min(100, (r.v / r.t) * 100);
+      const fmt = n => r.dec ? n.toLocaleString('it-IT', { minimumFractionDigits: 1, maximumFractionDigits: 1 }) : n.toLocaleString('it-IT');
+      return `<div class="tgt-row">
+        <div class="tgt-head">
+          <span class="l">${r.l}</span>
+          <span class="v"><strong>${fmt(r.v)}</strong> / ${fmt(r.t)} · ${pct.toFixed(0)}%</span>
+        </div>
+        <div class="tgt-track"><div class="tgt-fill" style="width:${pct.toFixed(1)}%"></div></div>
       </div>`;
     }).join('');
 
+    // ---- BENEFICI MONETIZZATI ANNO 1 ----
+    function renderBenefits(elId, block, totalLabel) {
+      const rows = block.items.map(i => `<tr>
+        <td><span class="code">${i.id}</span></td>
+        <td>${i.label}</td>
+        <td class="num">${i.from === i.to ? eurM(i.from) : eurM(i.from) + ' – ' + eurM(i.to)}</td>
+      </tr>`).join('');
+      document.getElementById(elId).innerHTML = `
+        <thead><tr><th style="width:44px">ID</th><th>Beneficio monetizzato</th><th class="num" style="width:150px">Valore anno 1</th></tr></thead>
+        <tbody>${rows}
+          <tr class="total"><td colspan="2">${totalLabel}</td><td class="num">${eurM(block.value_from)} – ${eurM(block.value_to)}</td></tr>
+        </tbody>`;
+    }
+    renderBenefits('ben-l1', E.benefits_l1, 'Totale valore sociale Layer 1');
+    renderBenefits('ben-l2', E.benefits_l2, 'Totale valore sociale Layer 2');
+
+    // ---- TRAIETTORIA PLURIENNALE ----
+    function renderMultiyear(elId, rows) {
+      document.getElementById(elId).innerHTML = `
+        <thead><tr><th>Anno</th><th class="num">Incidenza costi</th><th class="num">SROI</th></tr></thead>
+        <tbody>${rows.map(r => `<tr>
+          <td><strong>Anno ${r.year}</strong></td>
+          <td class="num">${r.cost_incidence}%</td>
+          <td class="num" style="color:#0F6E56;font-weight:700">${r.sroi.toLocaleString('it-IT', { minimumFractionDigits: 2 })}×</td>
+        </tr>`).join('')}</tbody>`;
+    }
+    renderMultiyear('my-l1', E.multiyear.l1);
+    renderMultiyear('my-l2', E.multiyear.l2);
+
     // ---- TREND CHART (toggleable) ----
     const chartCfg = {
-      sroi:      { color: '#0F6E56', yMax: 4,    yTicks: [4,3,2,1],          fmt: v => v.toFixed(1)+'×',     suffix: ' SROI' },
-      co2:       { color: '#0F6E56', yMax: 5000, yTicks: [5000,3750,2500,1250], fmt: v => (v/1000).toFixed(1)+'k', suffix: ' kg CO₂' },
-      caregiver: { color: '#0F6E56', yMax: 1000, yTicks: [1000,750,500,250],  fmt: v => v.toFixed(0)+'h',     suffix: ' ore caregiver' }
+      sroi:      { color: '#0F6E56', yMax: 4,     yTicks: [4,3,2,1],                    fmt: v => v.toFixed(1)+'×',            suffix: ' SROI' },
+      co2:       { color: '#0F6E56', yMax: 24000, yTicks: [24000,18000,12000,6000],     fmt: v => (v/1000).toFixed(0)+'t',     suffix: ' kg CO₂ (cum.)' },
+      caregiver: { color: '#0F6E56', yMax: 20000, yTicks: [20000,15000,10000,5000],     fmt: v => (v/1000).toFixed(0)+'k h',   suffix: ' ore caregiver (cum.)' },
+      vouchers:  { color: '#0F6E56', yMax: 3000,  yTicks: [3000,2250,1500,750],         fmt: v => v.toLocaleString('it-IT'),   suffix: ' voucher/mese' }
     };
-    const dataByMetric = { sroi: E.trend.sroi, co2: E.trend.co2_kg, caregiver: E.trend.caregiver_h };
+    const dataByMetric = { sroi: E.trend.sroi, co2: E.trend.co2_kg, caregiver: E.trend.caregiver_h, vouchers: E.trend.vouchers };
 
     function renderTrend(metric) {
       const cfg = chartCfg[metric];
@@ -658,16 +856,44 @@
     // ---- EXPORT report ESG (CSV mock) ----
     function exportESG() {
       const lines = [
-        'REPORT ESG AureaCare · Q2 2026',
+        'REPORT ESG · PROGRAMMA CARELINK — Alphio APS · Roma · Anno 1 (YTD Gen-Lug 2026)',
         '',
         'KPI HEADLINE',
-        'SROI sanitario,' + E.headline.sroi.value + '×',
-        'CO2 evitata (kg),' + E.headline.co2_saved.value,
+        'SROI combinato,' + E.headline.sroi.value + '× (range ' + E.headline.sroi.range + ')',
+        'SROI Layer 1 (mobilita),' + E.headline.sroi_l1.value + '× (range ' + E.headline.sroi_l1.range + ')',
+        'SROI Layer 2 (cure),' + E.headline.sroi_l2.value + '× (range ' + E.headline.sroi_l2.range + ')',
+        'Valore sociale anno 1,' + E.headline.social_value_y1,
+        'CO2 evitata YTD (kg),' + E.headline.co2_saved.value,
         'Ore caregiver risparmiate,' + E.headline.caregiver_h.value,
         'Pazienti fragili serviti (%),' + E.headline.fragile_served.value,
         '',
+        'ADERENZA E DROP-OUT',
+        'Aderenza alle sedute (%),' + E.dropout.adherence_rate,
+        'Drop-out terapeutico evitato,' + E.dropout.dropout_avoided,
+        'Sedute salvate dal trasporto L1,' + E.dropout.sessions_saved,
+        '',
+        'TARGET ANNO 1 vs YTD',
+        'Corse,' + E.ytd.rides + '/' + E.year1_targets.rides,
+        'Voucher,' + E.ytd.vouchers + '/' + E.year1_targets.vouchers,
+        'Pazienti Layer 1,' + E.ytd.patients_l1 + '/' + E.year1_targets.patients_l1,
+        'Pazienti Layer 2,' + E.ytd.patients_l2 + '/' + E.year1_targets.patients_l2,
+        'CO2 (t),' + E.environmental.co2_ytd_t + '/' + E.environmental.co2_target_t,
+        'Alberi equivalenti,' + E.environmental.trees_ytd + '/' + E.environmental.trees_target,
+        '',
+        'BENEFICI MONETIZZATI ANNO 1 — LAYER 1 (investimento €' + E.benefits_l1.investment + ')',
+        ...E.benefits_l1.items.map(i => i.id + ' ' + i.label + ',' + i.from + ' - ' + i.to),
+        'Totale Layer 1,' + E.benefits_l1.value_from + ' - ' + E.benefits_l1.value_to,
+        '',
+        'BENEFICI MONETIZZATI ANNO 1 — LAYER 2 (investimento €' + E.benefits_l2.investment + ')',
+        ...E.benefits_l2.items.map(i => i.id + ' ' + i.label + ',' + i.from + ' - ' + i.to),
+        'Totale Layer 2,' + E.benefits_l2.value_from + ' - ' + E.benefits_l2.value_to,
+        '',
+        'TRAIETTORIA PLURIENNALE (incidenza costi -> SROI)',
+        ...E.multiyear.l1.map(r => 'Layer 1 anno ' + r.year + ',' + r.cost_incidence + '%,' + r.sroi + '×'),
+        ...E.multiyear.l2.map(r => 'Layer 2 anno ' + r.year + ',' + r.cost_incidence + '%,' + r.sroi + '×'),
+        '',
         'AMBIENTALE',
-        'Km evitati Q2,' + E.environmental.km_avoided,
+        'Km evitati YTD,' + E.environmental.km_avoided,
         'CO2 per visita (kg),' + E.environmental.co2_per_visit_avg,
         'Quota Shuttle (%),' + E.environmental.shuttle_share,
         'Km medio per visita AureaCare,' + E.environmental.avg_km_per_visit.aureacare,
@@ -684,15 +910,16 @@
         ...E.social.district_top.map(d => d.name + ',' + d.patients + ' pazienti,' + d.completed + ' cure'),
         '',
         'GOVERNANCE',
-        'Valore erogato YTD (€),' + E.governance.value_disbursed_ytd,
-        '% approvazione,' + E.governance.approval_rate,
-        'Costo per cura (€),' + E.governance.cost_per_outcome,
-        'Tariffa convenzionata (€),' + E.governance.tariff_avg_vs_market.aureacare,
-        'Tariffa mercato (€),' + E.governance.tariff_avg_vs_market.market,
+        'Valore coperto dal Fondo YTD (€),' + E.governance.value_covered_ytd,
+        '% validazione,' + E.governance.approval_rate,
+        'Valore medio per voucher (€),' + E.governance.cost_per_voucher,
+        'Tariffa ESG media (€),' + E.governance.tariff_avg.esg,
+        'Listino medio struttura (€),' + E.governance.tariff_avg.list,
         '',
         'SROI breakdown:',
         ...E.governance.sroi_breakdown.map(s => s.label + ',' + s.value + '×'),
         '',
+        E.governance.auditor_note,
         '— Generato dalla console Coordinatore Alphio · Programma ESG Carelink · ' + new Date().toLocaleString('it-IT')
       ];
       const blob = new Blob([lines.join('\n')], { type: 'text/csv;charset=utf-8' });

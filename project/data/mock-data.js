@@ -152,17 +152,21 @@ window.MOCK = (function () {
   ];
 
   // ---------- Admin: KPI dashboard ----------
+  // Scala anno 1 Roma: 33.500 voucher e 35.100 corse a target; YTD (Gen–Lug) 13.900 voucher e 14.620 corse.
   const admin_kpi = {
-    services_month: { value: 247, delta: 12.5 }, // voucher validati (mese)
-    value_covered: { value: 18420, delta: 8.7 }, // valore coperto dal Fondo (mese)
+    voucher_month: { value: 2790, delta: 12.5 },  // voucher validati (mese corrente = Lug)
+    value_covered: { value: 318000, delta: 8.7 }, // € coperti dal Fondo ESG (mese)
+    rides_month:   { value: 2940, delta: 5.8 },   // corse Samarcanda coordinate (mese)
     approval_rate: { value: 87, delta: 2.4 },
-    sroi: { value: 3.2, delta: 0.4 }
+    sroi:          { value: 3.2, delta: 0.4 }     // SROI combinato (range documento 2,76–3,64×)
   };
 
-  // SROI / prestazioni trend (7 mesi)
+  // Voucher / corse / SROI · trend 7 mesi (anno 1: Gen–Lug 2026)
+  // Somme YTD: vouchers = 13.900 · rides = 14.620 (coerenti con fund.committed_ytd).
   const admin_trend = {
-    labels:    ['Nov','Dic','Gen','Feb','Mar','Apr','Mag'],
-    services:  [142, 168, 175, 190, 215, 232, 247],
+    labels:    ['Gen','Feb','Mar','Apr','Mag','Giu','Lug'],
+    vouchers:  [1180, 1520, 1820, 2010, 2100, 2480, 2790],
+    rides:     [1050, 1450, 1800, 2150, 2450, 2780, 2940],
     sroi:      [2.3, 2.5, 2.7, 2.8, 3.0, 3.1, 3.2]
   };
 
@@ -184,104 +188,167 @@ window.MOCK = (function () {
     { id: 'PAT-00131', name: 'Stefano Marino',   cf: 'MRNSFN77H15H501K', vouchers_left: 9,  access_level: 2, completed: 16, last_login: '3 giorni fa', docs_status: 'complete' }
   ];
 
-  // ---------- ESG: KPI aggregati + breakdown ----------
-  // Numeri coerenti con admin_kpi (247 prestazioni mese, 142 pazienti attivi).
-  // Tutti i valori sono mock plausibili — il calcolo reale richiederebbe
-  // dataset di mobilità urbana, ISEE medio, ore caregiver dichiarate, ecc.
+  // ---------- ESG: KPI anno 1 Carelink + breakdown ----------
+  // Scala anno 1 Roma (documento Alphio Carelink): fondo €9M, 35.100 corse, 33.500 voucher,
+  // 1.400 pazienti L1 + 5.580 L2, 52 t CO₂ ≈ 3.500 alberi, SROI combinato 2,76–3,64×.
+  // YTD (Gen–Lug 2026): 14.620 corse, 13.900 voucher, 3.120 pazienti attivi (640 L1 + 2.480 L2).
+  // Tutti i valori sono mock plausibili — il calcolo reale richiederebbe dataset di
+  // mobilità urbana, ISEE, ore caregiver dichiarate, esiti clinici, ecc.
   const esg = {
     headline: {
-      sroi:           { value: 3.2,  unit: '×',   delta: +0.4, label: 'SROI sanitario' },
-      co2_saved:      { value: 4180, unit: 'kg',  delta: +18.2, label: 'CO₂ evitata (Q2)' },
-      caregiver_h:    { value: 824,  unit: 'h',   delta: +12.5, label: 'Ore caregiver risparmiate' },
-      fragile_served: { value: 38,   unit: '%',   delta: +4.1,  label: 'Pazienti fragili serviti' }
+      sroi:            { value: 3.2,  unit: '×', delta: +0.4,  label: 'SROI combinato',        range: '2,76 – 3,64×' },
+      sroi_l1:         { value: 0.89, unit: '×', delta: +0.05, label: 'SROI Layer 1 · mobilità', range: '0,82 – 0,97×' },
+      sroi_l2:         { value: 5.4,  unit: '×', delta: +0.6,  label: 'SROI Layer 2 · cure',     range: '4,56 – 6,31×' },
+      social_value_y1: '€24,8M – 32,7M', // valore sociale generato anno 1 su €9M di fondo
+      co2_saved:       { value: 21400, unit: 'kg', delta: +18.2, label: 'CO₂ evitata (YTD)' },
+      caregiver_h:     { value: 16500, unit: 'h',  delta: +12.5, label: 'Ore caregiver risparmiate' },
+      fragile_served:  { value: 38,    unit: '%',  delta: +4.1,  label: 'Pazienti fragili serviti' }
     },
 
-    // Trend 7 mesi (allineato con admin_trend)
+    // ---------- Aderenza terapeutica: outcome fondante del programma ----------
+    dropout: {
+      adherence_rate: 94,     // % sedute onorate dai pazienti in cure ricorsive
+      sessions_saved: 3120,   // sedute salvate grazie al trasporto gratuito L1
+      dropout_avoided: 186,   // percorsi di cura interrotti evitati
+      label: 'Drop-out terapeutico evitato'
+    },
+
+    // ---------- Target anno 1 vs avanzamento YTD ----------
+    year1_targets: { patients_l1: 1400, rides: 35100, vouchers: 33500, patients_l2: 5580, fund: 9000000 },
+    ytd:           { rides: 14620, vouchers: 13900, patients_l1: 640, patients_l2: 2480 },
+
+    // ---------- Benefici monetizzati anno 1 (documento) ----------
+    // Layer 1 — investimento €4,5M → valore sociale €3,71M – 4,36M
+    benefits_l1: {
+      investment: 4500000, value_from: 3710000, value_to: 4360000,
+      items: [
+        { id: 'A1', label: 'Risparmio SSN da drop-out evitati',   from: 270000,  to: 300000 },
+        { id: 'A2', label: 'Risparmio out-of-pocket trasporto',   from: 1200000, to: 1200000 },
+        { id: 'A3', label: 'Valore caregiver liberati',           from: 800000,  to: 1300000 },
+        { id: 'A4', label: 'QALY paziente',                       from: 400000,  to: 400000 },
+        { id: 'A5', label: 'WELLBY caregiver',                    from: 840000,  to: 840000 },
+        { id: 'A6', label: 'Produttività',                        from: 200000,  to: 320000 }
+      ]
+    },
+    // Layer 2 — investimento €4,5M → valore sociale €20,5M – 28,4M
+    benefits_l2: {
+      investment: 4500000, value_from: 20500000, value_to: 28400000,
+      items: [
+        { id: 'B1', label: 'Minori costi SSN',                             from: 5200000,  to: 6500000 },
+        { id: 'B2', label: 'Risparmio out-of-pocket pazienti',             from: 3200000,  to: 3200000 },
+        { id: 'B3', label: 'QALY qualità di vita e accesso tempestivo',    from: 12100000, to: 12100000 }
+      ]
+    },
+
+    // ---------- Traiettoria pluriennale: incidenza costi → SROI ----------
+    multiyear: {
+      l1: [
+        { year: 1, cost_incidence: 11, sroi: 2.76 },
+        { year: 2, cost_incidence: 9,  sroi: 2.86 },
+        { year: 3, cost_incidence: 7,  sroi: 2.92 },
+        { year: 4, cost_incidence: 5,  sroi: 2.98 }
+      ],
+      l2: [
+        { year: 1, cost_incidence: 8, sroi: 2.81 },
+        { year: 2, cost_incidence: 7, sroi: 2.87 },
+        { year: 3, cost_incidence: 5, sroi: 2.93 },
+        { year: 4, cost_incidence: 5, sroi: 2.98 }
+      ]
+    },
+
+    // Trend 7 mesi (allineato con admin_trend · CO₂ e ore caregiver cumulate YTD)
     trend: {
-      labels:       ['Nov','Dic','Gen','Feb','Mar','Apr','Mag'],
+      labels:       ['Gen','Feb','Mar','Apr','Mag','Giu','Lug'],
       sroi:         [2.3, 2.5, 2.7, 2.8, 3.0, 3.1, 3.2],
-      co2_kg:       [1820, 2240, 2510, 2960, 3340, 3760, 4180],
-      caregiver_h:  [340, 410, 480, 560, 640, 730, 824]
+      co2_kg:       [1850, 4320, 7480, 11020, 14680, 18100, 21400],
+      caregiver_h:  [1420, 3350, 5780, 8400, 11200, 13900, 16500],
+      vouchers:     [1180, 1520, 1820, 2010, 2100, 2480, 2790]
     },
 
     // ---------- Ambientale ----------
     environmental: {
-      co2_per_visit_avg: 17.7,  // kg CO2 evitata per visita media (vs ospedale lontano)
-      km_avoided:        12480, // km totali risparmiati grazie a strutture in zona
-      shuttle_share:     54,    // % visite con trasporto AureaShuttle vs auto privata
+      co2_per_visit_avg: 17.7,   // kg CO2 evitata per prestazione media (vs percorso senza programma)
+      km_avoided:        249600, // km totali risparmiati (prossimità strutture + corse condivise)
+      shuttle_share:     54,     // % prestazioni raggiunte con trasporto Samarcanda/AureaShuttle
       shuttle_breakdown: [
-        { label: 'AureaShuttle (condiviso)', value: 54, color: 'var(--primary-orange)' },
-        { label: 'Mezzo pubblico',           value: 23, color: 'var(--care-blue)' },
-        { label: 'Auto privata',             value: 18, color: '#999' },
-        { label: 'A piedi / bici',           value: 5,  color: '#0F6E56' }
+        { label: 'AureaShuttle (Samarcanda)', value: 54, color: 'var(--primary-orange)' },
+        { label: 'Mezzo pubblico',            value: 23, color: 'var(--care-blue)' },
+        { label: 'Auto privata',              value: 18, color: '#999' },
+        { label: 'A piedi / bici',            value: 5,  color: '#0F6E56' }
       ],
+      // Target anno 1 e avanzamento (documento: 52 t CO₂ ≈ 3.500 alberi)
+      co2_target_t: 52,  trees_target: 3500,
+      co2_ytd_t:    21.4, trees_ytd:   1020,
       // Confronto km medi per categoria
       avg_km_per_visit:  { aureacare: 3.4, baseline_roma: 8.9 }
     },
 
     // ---------- Sociale ----------
     social: {
+      // Su 3.120 pazienti attivi YTD (640 Layer 1 + 2.480 Layer 2)
       fragile_categories: [
-        { label: 'ISEE < 20.000 €',    count: 42, pct: 30, color: '#3B82F6' },
-        { label: 'Over 70',            count: 35, pct: 25, color: '#0F6E56' },
-        { label: 'Patologia cronica',  count: 28, pct: 20, color: '#F59E0B' },
-        { label: 'Genitore single',    count: 12, pct: 8,  color: '#E91E63' },
-        { label: 'Disabilità motoria', count: 8,  pct: 6,  color: '#6366F1' }
+        { label: 'ISEE < 20.000 €',    count: 936, pct: 30, color: '#3B82F6' },
+        { label: 'Over 70',            count: 780, pct: 25, color: '#0F6E56' },
+        { label: 'Patologia cronica',  count: 624, pct: 20, color: '#F59E0B' },
+        { label: 'Genitore single',    count: 250, pct: 8,  color: '#E91E63' },
+        { label: 'Disabilità motoria', count: 187, pct: 6,  color: '#6366F1' }
       ],
       district_coverage: 14, // quartieri Roma coperti
       total_districts:   22, // di cui obiettivo totale
       district_top: [
-        { name: 'Tuscolano',       patients: 22, completed: 184 },
-        { name: 'EUR',             patients: 18, completed: 152 },
-        { name: 'Trionfale',       patients: 16, completed: 138 },
-        { name: 'Parioli',         patients: 14, completed: 119 },
-        { name: 'Monteverde',      patients: 12, completed: 98  },
-        { name: 'Pietralata',      patients: 11, completed: 84  },
-        { name: 'Trastevere',      patients: 10, completed: 79  },
-        { name: 'San Giovanni',    patients: 9,  completed: 71  },
-        { name: 'Gianicolo',       patients: 8,  completed: 62  },
-        { name: 'Aurelio',         patients: 7,  completed: 54  },
-        { name: 'Borgo',           patients: 6,  completed: 48  },
-        { name: 'Salario',         patients: 5,  completed: 39  },
-        { name: 'Tor Vergata',     patients: 3,  completed: 24  },
-        { name: 'Grottaferrata',   patients: 1,  completed: 8   }
+        { name: 'Tuscolano',       patients: 440, completed: 1840 },
+        { name: 'EUR',             patients: 360, completed: 1520 },
+        { name: 'Trionfale',       patients: 320, completed: 1380 },
+        { name: 'Parioli',         patients: 280, completed: 1190 },
+        { name: 'Monteverde',      patients: 240, completed: 980  },
+        { name: 'Pietralata',      patients: 220, completed: 840  },
+        { name: 'Trastevere',      patients: 200, completed: 790  },
+        { name: 'San Giovanni',    patients: 180, completed: 710  },
+        { name: 'Gianicolo',       patients: 160, completed: 620  },
+        { name: 'Aurelio',         patients: 140, completed: 540  },
+        { name: 'Borgo',           patients: 120, completed: 480  },
+        { name: 'Salario',         patients: 100, completed: 390  },
+        { name: 'Tor Vergata',     patients: 60,  completed: 240  },
+        { name: 'Grottaferrata',   patients: 20,  completed: 80   }
       ],
-      facilitated_access_rate: 87 // % di richieste approvate (accesso facilitato)
+      facilitated_access_rate: 87 // % di richieste validate dal Coordinatore Alphio
     },
 
     // ---------- Governance / Economico ----------
     governance: {
       sroi_breakdown: [
-        { label: 'Risparmio sanità pubblica',    value: 1.4 },
-        { label: 'Tempo caregiver liberato',     value: 0.8 },
-        { label: 'Mobilità evitata (CO₂)',       value: 0.5 },
-        { label: 'Accesso facilitato (welfare)', value: 0.5 }
-      ], // somma = 3.2×
-      value_disbursed_ytd: 91200, // €
-      tariff_avg_vs_market: { aureacare: 78, market: 105 }, // €
+        { label: 'Minori costi SSN (B1 + A1)',        value: 1.4 },
+        { label: 'QALY e WELLBY (A4 · A5 · B3)',      value: 0.9 },
+        { label: 'Out-of-pocket evitato (A2 · B2)',   value: 0.6 },
+        { label: 'Produttività e caregiver (A3 · A6)', value: 0.3 }
+      ], // somma = 3.2× (SROI combinato)
+      value_covered_ytd: 1672170, // € coperti dal Fondo ESG per i voucher validati YTD
+      tariff_avg: { list: 141, esg: 120 }, // € listino medio → tariffa ESG media (−15%)
       approval_rate: 87,
-      cost_per_outcome: 372 // € per cura completata
+      cost_per_voucher: 120, // € medi coperti dal fondo per voucher validato
+      auditor_note: 'SROI validato ex-post da primaria società di revisione · metodologia Social Value International'
     },
 
     // ---------- Demografia paziente ----------
     demographics: {
       age_buckets: [
-        { label: '0-17',   count: 6,  pct: 4  },
-        { label: '18-30',  count: 18, pct: 13 },
-        { label: '31-45',  count: 32, pct: 23 },
-        { label: '46-60',  count: 38, pct: 27 },
-        { label: '61-75',  count: 34, pct: 24 },
-        { label: '76+',    count: 14, pct: 10 }
+        { label: '0-17',   count: 125, pct: 4  },
+        { label: '18-30',  count: 406, pct: 13 },
+        { label: '31-45',  count: 718, pct: 23 },
+        { label: '46-60',  count: 842, pct: 27 },
+        { label: '61-75',  count: 749, pct: 24 },
+        { label: '76+',    count: 280, pct: 9  }
       ],
       gender_split: { female: 58, male: 41, other: 1 }, // %
+      // Voucher validati YTD per specialità (somma = 13.900)
       top_specialties: [
-        { label: 'Oncologia',          count: 78 },
-        { label: 'Radiologia',         count: 61 },
-        { label: 'Cardiologia',        count: 46 },
-        { label: 'Nefrologia',         count: 32 },
-        { label: 'Neurologia',         count: 24 },
-        { label: 'Medicina nucleare',  count: 17 },
-        { label: 'Pediatria',          count: 12 }
+        { label: 'Oncologia',          count: 4180 },
+        { label: 'Radiologia',         count: 3260 },
+        { label: 'Cardiologia',        count: 2140 },
+        { label: 'Nefrologia',         count: 1520 },
+        { label: 'Neurologia',         count: 1180 },
+        { label: 'Medicina nucleare',  count: 980  },
+        { label: 'Pediatria',          count: 640  }
       ],
       recurrence: { single: 32, two_three: 45, four_plus: 23 } // % pazienti per # prenotazioni
     }
