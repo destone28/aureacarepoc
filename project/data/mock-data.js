@@ -68,11 +68,33 @@ window.MOCK = (function () {
   // Coordinatore (segmentazione pazienti, due diligence, revisione richieste).
   // `label_patient` è la sola label ammessa nell'app paziente: nessun importo,
   // nessun simbolo di valuta (invariante "zero componente economica" lato paziente).
+  // `doc_key` / `doc_label` = l'UNICO documento obbligatorio del livello. Dalla
+  // revisione cliente: l'ISEE non è più richiesto a tutti (contraddiceva
+  // l'alternatività dei livelli) ma solo a chi accede per soglia ISEE.
   const access_levels = [
-    { level: 1, label: 'Urgenza clinica',  label_patient: 'Urgenza clinica',                       desc: 'Certificata da SSN/MMG' },
-    { level: 2, label: 'ISEE < €20.000',   label_patient: 'ISEE sotto la soglia del programma',    desc: 'Attestazione ISEE in corso di validità' },
-    { level: 3, label: 'Due diligence',    label_patient: 'Due diligence',                          desc: 'Valutazione documentale del Comitato ESG' }
+    { level: 1, label: 'Urgenza clinica',  label_patient: 'Urgenza clinica',                       desc: 'Certificata da SSN/MMG',                     doc_key: 'urgenza',      doc_label: 'Certificato di urgenza SSN/MMG' },
+    { level: 2, label: 'ISEE < €20.000',   label_patient: 'ISEE sotto la soglia del programma',    desc: 'Attestazione ISEE in corso di validità',     doc_key: 'isee',         doc_label: 'Modello ISEE' },
+    { level: 3, label: 'Due diligence',    label_patient: 'Due diligence',                          desc: 'Valutazione documentale del Comitato ESG',  doc_key: 'duediligence', doc_label: 'Relazione di due diligence del Comitato ESG' }
   ];
+
+  // ---------- Enti segnalanti e codici di segnalazione ----------
+  // Dalla revisione cliente: l'ingresso non è più autodichiarato dal paziente.
+  // L'ente che segnala rilascia un codice; la registrazione lo richiede e il
+  // sistema risolve da lì l'ente, esattamente come AureaShuttle risolve lo
+  // sponsor territoriale dal codice di accesso del beneficiario.
+  const referral_bodies = [
+    { prefix: 'RMCM', channel: 'Comune di Roma',   name: 'Comune di Roma — Servizi Sociali',        association: 'Associazione Insieme per la Cura ODV' },
+    { prefix: 'RMRL', channel: 'Regione Lazio',    name: 'Regione Lazio — Sanità territoriale',     association: 'Associazione Argo Salute ODV' },
+    { prefix: 'RMAS', channel: 'Associazione',     name: 'Associazione Insieme per la Cura ODV',    association: 'Associazione Insieme per la Cura ODV' },
+    { prefix: 'RMMG', channel: 'SSN/MMG',          name: 'SSN — Medico di medicina generale',       association: 'Associazione Argo Salute ODV' }
+  ];
+
+  // Risolve l'ente segnalante dal codice (prefisso prima del primo trattino).
+  function referralFromCode(code) {
+    if (!code) return null;
+    const prefix = String(code).split('-')[0].toUpperCase();
+    return referral_bodies.find(b => b.prefix === prefix) || null;
+  }
 
   // ---------- Paziente loggato ----------
   // Dati di contatto (email/phone) volutamente non mockati: il POC mostra
@@ -92,17 +114,23 @@ window.MOCK = (function () {
     // Ingresso mediato: Comuni/Regione segnalano i pazienti alle Associazioni,
     // che curano onboarding e privacy prima della presa in carico del Coordinatore.
     referred_by: {
-      channel: 'Associazione',
-      name: 'Associazione Insieme per la Cura ODV',
+      code: 'RMCM-2026-0412',
+      channel: 'Comune di Roma',
+      name: 'Comune di Roma — Servizi Sociali',
       flagged_by: 'Comune di Roma — Servizi Sociali',
+      association: 'Associazione Insieme per la Cura ODV',
       onboarding_date: '04/01/2026'
     },
+    // `expires` = scadenza del documento. Dalla revisione cliente: i documenti
+    // scadono e il paziente va avvisato 30 giorni prima (docExpiryState() in
+    // navigation.js calcola lo stato: valido / in scadenza / scaduto).
+    // `signed` = documento controfirmato in fase di sottoscrizione FEA.
     docs: {
-      ricetta:  { status: 'verified',  uploaded: '12/04/2026', name: 'Ricetta rossa', file: 'ricetta_marchetti_apr26.pdf' },
-      isee:     { status: 'verified',  uploaded: '02/02/2026', name: 'Modello ISEE', file: 'isee_marchetti_2026.pdf' },
-      urgenza:  { status: 'not_required', name: 'Certificato urgenza SSN/MMG' },
-      cie:      { status: 'verified',  uploaded: '04/01/2026', name: 'CIE',            file: 'cie_marchetti.jpg' },
-      spid:     { status: 'verified',  uploaded: '04/01/2026', name: 'SPID',           file: '—' }
+      ricetta:  { status: 'verified',  uploaded: '12/04/2026', expires: '12/10/2026', name: 'Ricetta rossa',   file: 'ricetta_marchetti_apr26.pdf' },
+      isee:     { status: 'verified',  uploaded: '02/02/2026', expires: '15/06/2026', name: 'Modello ISEE',    file: 'isee_marchetti_2026.pdf' },
+      urgenza:  { status: 'not_required', name: 'Certificato di urgenza SSN/MMG' },
+      duediligence: { status: 'not_required', name: 'Relazione di due diligence del Comitato ESG' },
+      cie:      { status: 'verified',  uploaded: '04/01/2026', expires: '20/11/2031', name: 'Carta d\'identità elettronica', file: 'cie_marchetti.jpg' }
     },
     // Dichiarazioni obbligatorie: accettate in registrazione, non revocabili
     // finché il paziente resta nel programma. Sono storicizzate (ts, versione
@@ -111,9 +139,22 @@ window.MOCK = (function () {
       truthful_docs:    { accepted: true, label: 'Dichiaro che la documentazione caricata è veritiera', ts: '04/01/2026 10:32', version: 'v1.0', ip: '93.51.xxx.xxx' },
       authority_checks: { accepted: true, label: 'Autorizzo il contatto con le autorità competenti per eventuali verifiche', ts: '04/01/2026 10:32', version: 'v1.0', ip: '93.51.xxx.xxx' }
     },
+    // Sottoscrizione con firma elettronica avanzata (FEA): la spunta da sola
+    // non basta a rendere la dichiarazione non ripudiabile, serve un secondo
+    // fattore legato alla persona. Nel POC l'OTP è simulato (nessun servizio
+    // esterno): quello che conta è il modello del dato conservato.
+    signature: {
+      type:      'Firma elettronica avanzata (FEA)',
+      method:    'OTP via e-mail + marca temporale',
+      otp_ref:   'OTP-4C19-8802',
+      ts:        '04/01/2026 10:32',
+      ip:        '93.51.xxx.xxx',
+      doc_hash:  'a7f3c9d2e1b48065fa2c7d31e9b40a5c',
+      doc_version: 'Condizioni del Programma Carelink v1.0'
+    },
     declarations_history: [
-      { date: '04/01/2026 10:32', action: 'Accettate in fase di registrazione', version: 'v1.0', channel: 'Onboarding · step 5' },
-      { date: '12/04/2026 09:05', action: 'Riconfermate al caricamento di nuova ricetta', version: 'v1.0', channel: 'Prenotazione BOOK-097' }
+      { date: '04/01/2026 10:32', action: 'Sottoscritte con FEA in fase di registrazione', version: 'v1.0', channel: 'Onboarding · step 5', otp_ref: 'OTP-4C19-8802' },
+      { date: '12/04/2026 09:05', action: 'Riconfermate al caricamento di nuova ricetta',  version: 'v1.0', channel: 'Prenotazione BOOK-097', otp_ref: 'OTP-9B27-1140' }
     ]
   };
 
@@ -167,14 +208,14 @@ window.MOCK = (function () {
   // I list_price sono multipli di 20 dentro il range di listino del servizio, così
   // che esg_price = list_price × 0,85 sia esatto al centesimo (verificabile CSRD).
   const bookings = [
-    { id: 'BOOK-099', patient_id: 'PAT-00142', service_id: 'SRV-A01', service_name: 'Prima visita oncologica',        structure_id: 'STR-001', structure_name: 'Policlinico Gemelli',            date: '22 mag', time: '14:30', list_price: 180,  esg_price: 153,  voucher_id: 'VCH-2026-0139', status: 'approved',  shuttle: true,  doctor: 'Dr.ssa Elena Conti' },
-    { id: 'BOOK-098', patient_id: 'PAT-00142', service_id: 'SRV-L01', service_name: 'Ciclo oncologico ambulatoriale', structure_id: 'STR-001', structure_name: 'Policlinico Gemelli',            date: '24 mag', time: '09:00', list_price: 0,    esg_price: 0,    voucher_id: null,            status: 'pending',  shuttle: true,  doctor: 'Dr. Marco Pace' },
-    { id: 'BOOK-097', patient_id: 'PAT-00142', service_id: 'SRV-B01', service_name: 'RMN cranio/rachide',             structure_id: 'STR-015', structure_name: 'Centro Diagnostico Italiano Eur', date: '14 mag', time: '11:00', list_price: 360,  esg_price: 306,  voucher_id: 'VCH-2026-0137', status: 'approved', shuttle: true,  doctor: 'Dr. Luca Ferri' },
-    { id: 'BOOK-096', patient_id: 'PAT-00142', service_id: 'SRV-B03', service_name: 'Ecografia addome',               structure_id: 'STR-001', structure_name: 'Policlinico Gemelli',            date: '12 mag', time: '17:30', list_price: 160,  esg_price: 136,  voucher_id: 'VCH-2026-0136', status: 'approved', shuttle: false, doctor: 'Dr.ssa Anna Lobello' },
-    { id: 'BOOK-095', patient_id: 'PAT-00142', service_id: 'SRV-A02', service_name: 'Visita oncologica di controllo', structure_id: 'STR-009', structure_name: 'Aurelia Hospital',               date: '08 mag', time: '10:00', list_price: 140,  esg_price: 119,  voucher_id: 'VCH-2026-0133', status: 'approved', shuttle: false, doctor: 'Dr.ssa Sara Vitali' },
-    { id: 'BOOK-094', patient_id: 'PAT-00142', service_id: 'SRV-A03', service_name: 'Prima visita cardiologica',      structure_id: 'STR-003', structure_name: 'Clinica Villa Gianicolense',     date: '30 mag', time: '15:00', list_price: 180,  esg_price: 153,  voucher_id: 'VCH-2026-0121', status: 'pending',  shuttle: false, doctor: 'Dr. Paolo Sini' },
-    { id: 'BOOK-093', patient_id: 'PAT-00142', service_id: 'SRV-B04', service_name: 'PET scan oncologico',            structure_id: 'STR-001', structure_name: 'Policlinico Gemelli',            date: '28 apr', time: '16:30', list_price: 1300, esg_price: 1105, voucher_id: 'VCH-2026-0128', status: 'approved', shuttle: true,  doctor: 'Dr.ssa Marta Bui' },
-    { id: 'BOOK-100', patient_id: 'PAT-00142', service_id: 'SRV-A05', service_name: 'Visita nefrologica',             structure_id: 'STR-003', structure_name: 'Clinica Villa Gianicolense',     date: '27 mag', time: '17:00', list_price: 140,  esg_price: 119,  voucher_id: 'VCH-2026-0142', status: 'pending',   shuttle: false, doctor: 'Dr. Mauro Genna' }
+    { id: 'BOOK-099', patient_id: 'PAT-00142', service_id: 'SRV-A01', service_name: 'Prima visita oncologica',        structure_id: 'STR-001', structure_name: 'Policlinico Gemelli',            date: '22 mag', time: '14:30', list_price: 180,  esg_price: 153,  voucher_id: 'VCH-2026-0139', status: 'approved',  shuttle: true,  companion: true, doctor: 'Dr.ssa Elena Conti' },
+    { id: 'BOOK-098', patient_id: 'PAT-00142', service_id: 'SRV-L01', service_name: 'Ciclo oncologico ambulatoriale', structure_id: 'STR-001', structure_name: 'Policlinico Gemelli',            date: '24 mag', time: '09:00', list_price: 0,    esg_price: 0,    voucher_id: null,            status: 'pending',  shuttle: true,  companion: true, doctor: 'Dr. Marco Pace' },
+    { id: 'BOOK-097', patient_id: 'PAT-00142', service_id: 'SRV-B01', service_name: 'RMN cranio/rachide',             structure_id: 'STR-015', structure_name: 'Centro Diagnostico Italiano Eur', date: '14 mag', time: '11:00', list_price: 360,  esg_price: 306,  voucher_id: 'VCH-2026-0137', status: 'approved', shuttle: true,  companion: false, doctor: 'Dr. Luca Ferri' },
+    { id: 'BOOK-096', patient_id: 'PAT-00142', service_id: 'SRV-B03', service_name: 'Ecografia addome',               structure_id: 'STR-001', structure_name: 'Policlinico Gemelli',            date: '12 mag', time: '17:30', list_price: 160,  esg_price: 136,  voucher_id: 'VCH-2026-0136', status: 'approved', shuttle: false, companion: true, doctor: 'Dr.ssa Anna Lobello' },
+    { id: 'BOOK-095', patient_id: 'PAT-00142', service_id: 'SRV-A02', service_name: 'Visita oncologica di controllo', structure_id: 'STR-009', structure_name: 'Aurelia Hospital',               date: '08 mag', time: '10:00', list_price: 140,  esg_price: 119,  voucher_id: 'VCH-2026-0133', status: 'approved', shuttle: false, companion: false, doctor: 'Dr.ssa Sara Vitali' },
+    { id: 'BOOK-094', patient_id: 'PAT-00142', service_id: 'SRV-A03', service_name: 'Prima visita cardiologica',      structure_id: 'STR-003', structure_name: 'Clinica Villa Gianicolense',     date: '30 mag', time: '15:00', list_price: 180,  esg_price: 153,  voucher_id: 'VCH-2026-0121', status: 'pending',  shuttle: false, companion: false, doctor: 'Dr. Paolo Sini' },
+    { id: 'BOOK-093', patient_id: 'PAT-00142', service_id: 'SRV-B04', service_name: 'PET scan oncologico',            structure_id: 'STR-001', structure_name: 'Policlinico Gemelli',            date: '28 apr', time: '16:30', list_price: 1300, esg_price: 1105, voucher_id: 'VCH-2026-0128', status: 'approved', shuttle: true,  companion: true, doctor: 'Dr.ssa Marta Bui' },
+    { id: 'BOOK-100', patient_id: 'PAT-00142', service_id: 'SRV-A05', service_name: 'Visita nefrologica',             structure_id: 'STR-003', structure_name: 'Clinica Villa Gianicolense',     date: '27 mag', time: '17:00', list_price: 140,  esg_price: 119,  voucher_id: 'VCH-2026-0142', status: 'pending',   shuttle: false, companion: false, doctor: 'Dr. Mauro Genna' }
   ];
 
   // ---------- Admin: richieste di validazione voucher (estese — 12 visibili) ----------
@@ -225,18 +266,18 @@ window.MOCK = (function () {
   // referral = canale di ingresso istituzionale (Comuni/Regione segnalano alle
   // Associazioni, che curano onboarding e privacy; SSN/MMG certifica l'urgenza).
   const admin_patients = [
-    { id: 'PAT-00142', name: 'Lucia Marchetti',  cf: 'MRCLCU82M55H501T', vouchers_left: 7,  access_level: 2, referral: 'Associazione Insieme per la Cura ODV', completed: 4, last_login: 'Oggi 09:14', docs_status: 'complete' },
-    { id: 'PAT-00141', name: 'Andrea Rossi',     cf: 'RSSNDR79H03H501Z', vouchers_left: 6,  access_level: 1, referral: 'SSN/MMG', completed: 12, last_login: 'Ieri 19:42', docs_status: 'complete' },
-    { id: 'PAT-00140', name: 'Giulia Bianchi',   cf: 'BNCGLI91D52H501W', vouchers_left: 3,  access_level: 2, referral: 'Comune di Roma', completed: 6, last_login: 'Ieri 15:08', docs_status: 'complete' },
-    { id: 'PAT-00139', name: 'Marco De Luca',    cf: 'DLCMRC85A12H501P', vouchers_left: 5,  access_level: 3, referral: 'Regione Lazio', completed: 9, last_login: '2 giorni fa', docs_status: 'partial' },
-    { id: 'PAT-00138', name: 'Sofia Ferri',      cf: 'FRRSFO88P54H501M', vouchers_left: 2,  access_level: 2, referral: 'Associazione Argo Salute ODV', completed: 3, last_login: '3 giorni fa', docs_status: 'complete' },
-    { id: 'PAT-00137', name: 'Paolo Esposito',   cf: 'SPSPLA72L08F839B', vouchers_left: 4,  access_level: 1, referral: 'SSN/MMG', completed: 14, last_login: '4 giorni fa', docs_status: 'complete' },
-    { id: 'PAT-00136', name: 'Chiara Romano',    cf: 'RMNCHR93T67H501S', vouchers_left: 7,  access_level: 2, referral: 'Comune di Roma', completed: 5, last_login: '5 giorni fa', docs_status: 'complete' },
-    { id: 'PAT-00135', name: 'Davide Greco',     cf: 'GRCDVD80E21H501Y', vouchers_left: 1,  access_level: 3, referral: 'Regione Lazio', completed: 7, last_login: '1 settimana fa', docs_status: 'partial' },
-    { id: 'PAT-00134', name: 'Elena Riva',       cf: 'RVELNE76C44H501R', vouchers_left: 10, access_level: 1, referral: 'Associazione Insieme per la Cura ODV', completed: 22, last_login: 'Oggi 08:02', docs_status: 'complete' },
-    { id: 'PAT-00133', name: 'Roberto Conti',    cf: 'CNTRRT69M28H501F', vouchers_left: 5,  access_level: 2, referral: 'Comune di Roma', completed: 11, last_login: 'Ieri 22:00', docs_status: 'complete' },
-    { id: 'PAT-00132', name: 'Federica Santoro', cf: 'SNTFRC84S58H501J', vouchers_left: 0,  access_level: 1, referral: 'SSN/MMG', completed: 6, last_login: '2 giorni fa', docs_status: 'pending' },
-    { id: 'PAT-00131', name: 'Stefano Marino',   cf: 'MRNSFN77H15H501K', vouchers_left: 9,  access_level: 2, referral: 'Associazione Argo Salute ODV', completed: 16, last_login: '3 giorni fa', docs_status: 'complete' }
+    { id: 'PAT-00142', name: 'Lucia Marchetti',  cf: 'MRCLCU82M55H501T', vouchers_left: 7,  access_level: 2, referral_code: 'RMCM-2026-0412', referral: 'Associazione Insieme per la Cura ODV', completed: 4, last_login: 'Oggi 09:14', docs_status: 'complete' },
+    { id: 'PAT-00141', name: 'Andrea Rossi',     cf: 'RSSNDR79H03H501Z', vouchers_left: 6,  access_level: 1, referral_code: 'RMMG-2026-0388', referral: 'SSN/MMG', completed: 12, last_login: 'Ieri 19:42', docs_status: 'complete' },
+    { id: 'PAT-00140', name: 'Giulia Bianchi',   cf: 'BNCGLI91D52H501W', vouchers_left: 3,  access_level: 2, referral_code: 'RMCM-2026-0401', referral: 'Comune di Roma', completed: 6, last_login: 'Ieri 15:08', docs_status: 'complete' },
+    { id: 'PAT-00139', name: 'Marco De Luca',    cf: 'DLCMRC85A12H501P', vouchers_left: 5,  access_level: 3, referral_code: 'RMRL-2026-0377', referral: 'Regione Lazio', completed: 9, last_login: '2 giorni fa', docs_status: 'partial' },
+    { id: 'PAT-00138', name: 'Sofia Ferri',      cf: 'FRRSFO88P54H501M', vouchers_left: 2,  access_level: 2, referral_code: 'RMAS-2026-0366', referral: 'Associazione Argo Salute ODV', completed: 3, last_login: '3 giorni fa', docs_status: 'complete' },
+    { id: 'PAT-00137', name: 'Paolo Esposito',   cf: 'SPSPLA72L08F839B', vouchers_left: 4,  access_level: 1, referral_code: 'RMMG-2026-0359', referral: 'SSN/MMG', completed: 14, last_login: '4 giorni fa', docs_status: 'complete' },
+    { id: 'PAT-00136', name: 'Chiara Romano',    cf: 'RMNCHR93T67H501S', vouchers_left: 7,  access_level: 2, referral_code: 'RMCM-2026-0344', referral: 'Comune di Roma', completed: 5, last_login: '5 giorni fa', docs_status: 'complete' },
+    { id: 'PAT-00135', name: 'Davide Greco',     cf: 'GRCDVD80E21H501Y', vouchers_left: 1,  access_level: 3, referral_code: 'RMRL-2026-0330', referral: 'Regione Lazio', completed: 7, last_login: '1 settimana fa', docs_status: 'partial' },
+    { id: 'PAT-00134', name: 'Elena Riva',       cf: 'RVELNE76C44H501R', vouchers_left: 10, access_level: 1, referral_code: 'RMAS-2026-0318', referral: 'Associazione Insieme per la Cura ODV', completed: 22, last_login: 'Oggi 08:02', docs_status: 'complete' },
+    { id: 'PAT-00133', name: 'Roberto Conti',    cf: 'CNTRRT69M28H501F', vouchers_left: 5,  access_level: 2, referral_code: 'RMCM-2026-0302', referral: 'Comune di Roma', completed: 11, last_login: 'Ieri 22:00', docs_status: 'complete' },
+    { id: 'PAT-00132', name: 'Federica Santoro', cf: 'SNTFRC84S58H501J', vouchers_left: 0,  access_level: 1, referral_code: 'RMMG-2026-0291', referral: 'SSN/MMG', completed: 6, last_login: '2 giorni fa', docs_status: 'pending' },
+    { id: 'PAT-00131', name: 'Stefano Marino',   cf: 'MRNSFN77H15H501K', vouchers_left: 9,  access_level: 2, referral_code: 'RMAS-2026-0284', referral: 'Associazione Argo Salute ODV', completed: 16, last_login: '3 giorni fa', docs_status: 'complete' }
   ];
 
   // ---------- ESG: KPI anno 1 Carelink + breakdown ----------
@@ -251,8 +292,11 @@ window.MOCK = (function () {
       sroi_l1:         { value: 0.89, unit: '×', delta: +0.05, label: 'SROI Layer 1 · mobilità', range: '0,82 – 0,97×' },
       sroi_l2:         { value: 5.4,  unit: '×', delta: +0.6,  label: 'SROI Layer 2 · cure',     range: '4,56 – 6,31×' },
       social_value_y1: '€24,8M – 32,7M', // valore sociale generato anno 1 su €9M di fondo
-      co2_saved:       { value: 21400, unit: 'kg', delta: +18.2, label: 'CO₂ evitata (YTD)' },
-      caregiver_h:     { value: 16500, unit: 'h',  delta: +12.5, label: 'Ore caregiver risparmiate' },
+      // Entrambe le headline sono NETTE (revisione cliente): la CO₂ è al netto
+      // delle emissioni della flotta di servizio, le ore caregiver al netto
+      // delle prestazioni in cui il caregiver ha comunque accompagnato.
+      co2_saved:       { value: 21400, unit: 'kg', delta: +18.2, label: 'CO₂ evitata · netta (YTD)' },
+      caregiver_h:     { value: 16440, unit: 'h',  delta: +12.5, label: 'Ore caregiver liberate · nette' },
       // 68% = unione delle categorie di fragilità (le pct delle singole categorie
       // sommano 89% perché un paziente può rientrare in più categorie).
       fragile_served:  { value: 68,    unit: '%',  delta: +4.1,  label: 'Pazienti fragili serviti' }
@@ -314,15 +358,36 @@ window.MOCK = (function () {
       labels:       ['Gen','Feb','Mar','Apr','Mag','Giu','Lug'],
       sroi:         [2.3, 2.5, 2.7, 2.8, 3.0, 3.1, 3.2],
       co2_kg:       [1850, 4320, 7480, 11020, 14680, 18100, 21400],
-      caregiver_h:  [1420, 3350, 5780, 8400, 11200, 13900, 16500],
+      caregiver_h:  [1420, 3350, 5780, 8400, 11200, 13900, 16440],
       vouchers:     [1180, 1520, 1820, 2010, 2100, 2480, 2790]
     },
 
     // ---------- Ambientale ----------
+    // BILANCIO NETTO (revisione cliente: «se viene utilizzato il taxi, non
+    // consuma CO₂?»). Il programma non può contabilizzare solo i percorsi in
+    // auto privata evitati: le corse di servizio emettono, e l'emissione va
+    // sottratta. La catena è chiusa e verificabile:
+    //   lorda evitata  = private_km_avoided × private_factor_kg_km
+    //   emessa servizio= fleet_km_ytd       × fleet_factor_kg_km
+    //   NETTA          = lorda − emessa     ← è questo il dato rendicontato
+    //                                          e l'unico confrontabile col target
     environmental: {
-      // Scala canonica: 1,5 kg × 13.900 voucher YTD ≈ 21.400 kg = 21,4 t (co2_ytd_t).
-      co2_per_visit_avg: 1.5,    // kg CO2 evitata per prestazione media (vs percorso senza programma)
-      km_avoided:        76450,  // km totali risparmiati = 5,5 km/visita × 13.900 prestazioni YTD
+      // Percorsi in auto privata non effettuati: 13.900 prestazioni YTD ×
+      // 17,4 km A/R (8,7 km a tratta, media urbana di Roma verso l'ospedale).
+      private_km_avoided:   241500,
+      private_factor_kg_km: 0.168,  // auto privata media parco circolante Roma
+      co2_gross_t:          40.6,   // 241.500 × 0,168 = 40.572 kg
+
+      // Percorrenze della flotta di servizio Samarcanda: 14.620 corse YTD ×
+      // 13 km A/R medi (strutture convenzionate più vicine, 3,4 km a tratta,
+      // più i trasferimenti a vuoto tra una corsa e l'altra).
+      fleet_km_ytd:       190000,
+      fleet_factor_kg_km: 0.101,    // flotta ibrida/Euro 6 con riempimento condiviso
+      co2_fleet_t:        19.2,     // 190.000 × 0,101 = 19.190 kg
+
+      // Netto: 40,6 − 19,2 = 21,4 t · 21.400 kg / 13.900 prestazioni = 1,54 kg
+      co2_per_visit_avg: 1.5,    // kg CO2 NETTA evitata per prestazione media
+      km_avoided:        51500,  // km netti evitati = 241.500 − 190.000
       shuttle_share:     54,     // % prestazioni raggiunte con trasporto Samarcanda/AureaShuttle
       shuttle_breakdown: [
         { label: 'AureaShuttle (Samarcanda)', value: 54, color: 'var(--primary-orange)' },
@@ -335,6 +400,27 @@ window.MOCK = (function () {
       co2_ytd_t:    21.4, trees_ytd:   1020,
       // Confronto km medi per categoria
       avg_km_per_visit:  { aureacare: 3.4, baseline_roma: 8.9 }
+    },
+
+    // ---------- Tempo del caregiver ----------
+    // Revisione cliente: «se il caregiver può accompagnarlo, come si calcolano
+    // le ore risparmiate?». Non si contano tutte: quando il caregiver sale
+    // comunque in vettura il tempo NON è liberato per intero — è liberato solo
+    // il tempo di guida, parcheggio e attesa in struttura. Due coefficienti:
+    //   paziente da solo         → 3,4 h liberate (l'intero accompagnamento)
+    //   caregiver a bordo        → 1,2 h liberate (guida, parcheggio, attesa)
+    // Il dato "con accompagnatore" arriva dalla domanda già posta in
+    // prenotazione (booking.companion) e dal flag di corsa su AureaShuttle.
+    caregiver: {
+      h_per_visit_alone:       3.4,
+      h_per_visit_accompanied: 1.2,
+      visits_with_caregiver:   6000,  // su 13.900 prestazioni YTD
+      visits_alone:            4200,
+      visits_accompanied:      1800,
+      gross_h:                 20400, // 6.000 × 3,4 — se nessuno fosse stato accompagnato
+      accompanied_h:            2160, // 1.800 × 1,2
+      net_h:                   16440, // 4.200 × 3,4 + 1.800 × 1,2  ← headline
+      note: 'Ore nette: il tempo del caregiver che accompagna comunque il paziente è conteggiato per la sola quota effettivamente liberata (guida, parcheggio, attesa).'
     },
 
     // ---------- Sociale ----------
@@ -441,5 +527,5 @@ window.MOCK = (function () {
     samarcanda: { ride_cost: 72, split: '€61 tariffa + €8 fee + €3 piattaforma', margin: '41,7%', cert: 'ISO 9001:2015' }
   };
 
-  return { structures, services, access_levels, patient, patient_followups, patient_location, roma_center, vouchers, bookings, admin_requests, admin_kpi, admin_trend, admin_patients, esg, fund };
+  return { structures, services, access_levels, referral_bodies, referralFromCode, patient, patient_followups, patient_location, roma_center, vouchers, bookings, admin_requests, admin_kpi, admin_trend, admin_patients, esg, fund };
 })();

@@ -45,6 +45,18 @@
     .step-pane.active { display: block; animation: slideUp 250ms ease-out; }
     .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
     .consent-list { display: grid; gap: 12px; margin-top: 16px; }
+    .doc-link {
+      display: inline-block; margin-top: 5px;
+      color: var(--care-blue); font-weight: 700; font-size: 12px; text-decoration: none;
+    }
+    .doc-link:hover { text-decoration: underline; }
+    .fea-box {
+      display: flex; gap: 10px; align-items: flex-start;
+      margin-top: 14px; padding: 12px 14px;
+      background: #F4FBF6; border: 1px solid #C8E6CF; border-radius: var(--r-md);
+      color: #0F6E56;
+    }
+    .fea-box p.caption { color: var(--dark-gray); }
     .consent-row {
       display: flex; gap: 12px;
       padding: 14px;
@@ -109,7 +121,7 @@
       color: #fff; background: #0F6E56;
       padding: 2px 7px; border-radius: 999px;
     }
-    /* Documento obbligatorio a prescindere dal livello di accesso (Modello ISEE):
+    /* Documento obbligatorio del livello di accesso selezionato:
        senza upload la registrazione non prosegue. */
     .upload-card.mandatory { border-color: #0F6E56; box-shadow: 0 0 0 2px rgba(15,110,86,.14); position: relative; }
     .upload-card.mandatory::after {
@@ -123,7 +135,9 @@
     .upload-card.mandatory.done::after { content: 'Caricato'; background: var(--success); }
     .upload-card.mandatory.invalid { border-color: var(--error); box-shadow: 0 0 0 2px rgba(244,67,54,.14); background: #FCEBEB; }
     .upload-card.mandatory.invalid::after { background: var(--error); }
-    /* Precompilazione da identità digitale (SPID/CIE) — flusso simulato nel POC */
+    /* Precompilazione da identità digitale (CIE) — flusso simulato nel POC.
+       SPID rimosso su indicazione del committente: la CIE è l'unica identità
+       digitale prevista dal programma. */
     .sso-banner {
       border: 1px solid #C7DBF5;
       background: #F2F7FD;
@@ -192,10 +206,10 @@
         <div class="sso-banner">
           <div class="sso-banner-head">
             <span id="ico-sso"></span>
-            <p>I dati anagrafici possono essere <strong>precompilati da SPID/CIE</strong>: arrivano già verificati dall'identità digitale, senza doverli riscrivere.</p>
+            <p>I dati anagrafici possono essere <strong>precompilati dalla CIE</strong>: arrivano già verificati dall'identità digitale, senza doverli riscrivere.</p>
           </div>
-          <button type="button" class="btn btn--secondary btn--block" id="btn-prefill" onclick="prefillFromSpid()">
-            <span id="ico-prefill"></span> Precompila da SPID
+          <button type="button" class="btn btn--secondary btn--block" id="btn-prefill" onclick="prefillFromCie()">
+            <span id="ico-prefill"></span> Precompila da CIE
           </button>
         </div>
 
@@ -232,17 +246,20 @@
           <p class="field-hint">Verrà usata anche come login.</p>
         </div>
 
+        <!-- Ingresso su segnalazione: il canale NON è autodichiarato. L'ente
+             segnalante rilascia un codice, il sistema ne ricava l'ente. -->
         <div class="field">
-          <label class="field-label">Come sei arrivato al programma?</label>
-          <div class="input-container">
-            <select class="input" id="referral-channel">
-              <option value="Comune di Roma">Segnalazione Comune</option>
-              <option value="Regione Lazio">Regione Lazio</option>
-              <option value="Associazione" selected>Associazione</option>
-              <option value="SSN/MMG">SSN / Medico di medicina generale</option>
-            </select>
+          <label class="field-label">Codice di segnalazione</label>
+          <div class="input-container"><input class="input font-mono" id="referral-code" placeholder="RMCM-2026-0412" autocomplete="off"></div>
+          <p class="field-hint">Te lo ha rilasciato l'ente che ti ha segnalato: Comune, Regione Lazio, associazione o medico di medicina generale. Senza codice non è possibile completare la registrazione.</p>
+          <div class="form-error" id="referral-error">
+            <span id="ico-err-ref"></span>
+            <span id="referral-error-text">Inserisci il codice di segnalazione ricevuto dall'ente.</span>
           </div>
-          <p class="field-hint">Comuni e Regioni segnalano i pazienti alle Associazioni, che curano l'ingresso nel programma e la privacy.</p>
+          <div class="banner-roma mt-12" id="referral-ok" style="display:none">
+            <span id="ico-ref-ok"></span>
+            <p id="referral-ok-text"></p>
+          </div>
         </div>
       </section>
 
@@ -255,17 +272,17 @@
         <div class="access-list" id="access-list"></div>
 
         <p class="eyebrow mb-8">Carica i tuoi documenti</p>
-        <p class="caption mb-8" style="line-height:1.55">Il <strong>Modello ISEE è obbligatorio per tutti</strong>, qualunque sia il livello di accesso: senza non è possibile completare la registrazione. Gli altri documenti sono facoltativi, tranne quello richiesto dal livello che hai selezionato.</p>
+        <p class="caption mb-8" style="line-height:1.55">I tre livelli sono <strong>alternativi</strong>: ti serve solo il documento del livello che hai selezionato, più la <strong>carta d'identità</strong>. Il Modello ISEE è richiesto a chi accede per soglia ISEE (livello 2), non a tutti. Gli altri documenti sono facoltativi.</p>
         <div class="upload-grid" id="upload-grid"></div>
 
         <div class="form-error" id="docs-error">
           <span id="ico-err-docs"></span>
-          <span>Carica il Modello ISEE per proseguire: è obbligatorio per l'ingresso nel programma.</span>
+          <span id="docs-error-text">Carica i documenti obbligatori per proseguire.</span>
         </div>
 
         <div class="banner-roma mt-20">
           <span id="ico-info"></span>
-          <p>I documenti restano cifrati e visibili solo al Coordinatore Alphio, che ne verifica la validità. Puoi aggiornarli in qualsiasi momento dal profilo.</p>
+          <p>I documenti restano cifrati e visibili solo al Coordinatore Alphio, che ne verifica la validità. <strong>Ti avvisiamo 30 giorni prima della scadenza</strong> di ISEE e carta d'identità, così puoi rinnovarli senza interrompere le cure.</p>
         </div>
       </section>
 
@@ -390,7 +407,8 @@
             <input type="checkbox" id="dec-truthful" data-required>
             <div>
               <strong>Dichiarazione di veridicità dei documenti<span class="consent-req">Obbligatoria</span></strong>
-              <p>Dichiaro che la documentazione caricata è veritiera. Una dichiarazione non veritiera comporta l'<strong>esclusione dal Programma ESG Carelink</strong> e la revoca delle prestazioni già autorizzate.</p>
+              <p>Dichiaro che la documentazione caricata è veritiera. Una dichiarazione non veritiera comporta l'<strong>esclusione dal Programma ESG Carelink</strong> e la revoca delle prestazioni già autorizzate.<br>
+                <a href="#" class="doc-link" onclick="event.preventDefault();event.stopPropagation();openProgramDoc('declarations')">Leggi il testo integrale e scarica il PDF</a></p>
             </div>
           </label>
           <label class="consent-row required" data-decl="authority_checks">
@@ -404,14 +422,16 @@
             <input type="checkbox" checked>
             <div>
               <strong>Termini di servizio AureaCare</strong>
-              <p>Accetto le condizioni d'uso della piattaforma per la prenotazione di prestazioni sanitarie convenzionate.</p>
+              <p>Accetto le condizioni d'uso della piattaforma per la prenotazione di prestazioni sanitarie convenzionate.<br>
+                <a href="#" class="doc-link" onclick="event.preventDefault();event.stopPropagation();openProgramDoc('conditions')">Leggi le condizioni e scarica il PDF</a></p>
             </div>
           </label>
           <label class="consent-row">
             <input type="checkbox" checked>
             <div>
               <strong>Trattamento dati personali (GDPR)</strong>
-              <p>Autorizzo il trattamento dei miei dati anagrafici e clinici per la finalità di erogazione del servizio.</p>
+              <p>Autorizzo il trattamento dei miei dati anagrafici e clinici per la finalità di erogazione del servizio.<br>
+                <a href="#" class="doc-link" onclick="event.preventDefault();event.stopPropagation();openProgramDoc('privacy')">Leggi l'informativa e scarica il PDF</a></p>
             </div>
           </label>
           <label class="consent-row">
@@ -435,7 +455,13 @@
           <span>Per completare la registrazione devi accettare le due dichiarazioni obbligatorie.</span>
         </div>
 
-        <p class="caption mt-12" style="line-height:1.55">Le dichiarazioni obbligatorie vengono <strong>storicizzate</strong> con data, ora e versione del testo, e restano consultabili dal tuo profilo.</p>
+        <div class="fea-box">
+          <span id="ico-fea"></span>
+          <div>
+            <p style="font-weight:700;font-size:13.5px;margin:0 0 3px">Sottoscrizione con firma elettronica avanzata</p>
+            <p class="caption" style="margin:0;line-height:1.55">La spunta da sola non rende la dichiarazione non ripudiabile: al termine ti chiediamo un <strong>codice monouso</strong>. Della firma restano data e ora, versione del testo e impronta del documento, consultabili dal tuo profilo.</p>
+          </div>
+        </div>
       </section>
     </div>
 
@@ -450,6 +476,7 @@
   <script src="data/mock-data.js"></script>
   <script src="js/icons.js"></script>
   <script src="js/navigation.js"></script>
+  <script src="js/program-docs.js"></script>
   <script>
     let step = 1;
     const TOTAL = 5;
@@ -538,8 +565,12 @@
     });
 
     function goNextStep() {
+      if (step === 1 && !validateReferral()) {
+        showToast('Serve il codice rilasciato dall\'ente segnalante', 'error');
+        return;
+      }
       if (step === 2 && !validateDocs()) {
-        showToast('Il Modello ISEE è obbligatorio', 'error');
+        showToast('Mancano documenti obbligatori', 'error');
         return;
       }
       if (step === 4 && !validateHealthConsent()) {
@@ -552,9 +583,13 @@
           showToast('Accetta le dichiarazioni obbligatorie per proseguire', 'error');
           return;
         }
-        setAuth({ role: 'patient', patient_id: 'PAT-00142', name: 'Lucia Marchetti', apps: ['via','shuttle','care'] });
-        showToast('Account creato. Benvenuta in AureaCare!', 'care');
-        setTimeout(() => location.href = 'home.html', 900);
+        // La spunta non basta: le dichiarazioni si sottoscrivono con FEA.
+        requestFeaSignature({ doc: 'declarations' }, (sig) => {
+          try { localStorage.setItem('aureacare_declaration_signature', JSON.stringify(sig)); } catch (e) { /* storage pieno: la demo prosegue */ }
+          setAuth({ role: 'patient', patient_id: 'PAT-00142', name: 'Lucia Marchetti', apps: ['via','shuttle','care'] });
+          showToast('Dichiarazioni firmate · ' + sig.otp_ref, 'success');
+          setTimeout(() => location.href = 'home.html', 900);
+        });
       }
     }
     function goBackStep() {
@@ -568,13 +603,16 @@
     document.getElementById('ico-pin').outerHTML = aIcon('map-pin', { size: 18 });
     document.getElementById('ico-err').outerHTML = aIcon('alert', { size: 16 });
     document.getElementById('ico-err-docs').outerHTML = aIcon('alert', { size: 16 });
+    document.getElementById('ico-err-ref').outerHTML = aIcon('alert', { size: 16 });
+    document.getElementById('ico-fea').outerHTML = aIcon('shield-check', { size: 20 });
+    document.getElementById('ico-ref-ok').outerHTML = aIcon('shield-check', { size: 18 });
     document.getElementById('ico-err-health').outerHTML = aIcon('alert', { size: 16 });
     document.getElementById('ico-sso').outerHTML = aIcon('shield-check', { size: 18 });
     document.getElementById('ico-prefill').innerHTML = aIcon('user', { size: 16 });
 
     // Precompilazione da identità digitale: nel POC i dati arrivano dal mock,
-    // in produzione sarebbero gli attributi restituiti dall'Identity Provider.
-    function prefillFromSpid() {
+    // in produzione sarebbero gli attributi letti dalla CIE.
+    function prefillFromCie() {
       const p = MOCK.patient;
       document.getElementById('ob-first-name').value = p.first_name;
       document.getElementById('ob-last-name').value  = p.last_name;
@@ -582,20 +620,20 @@
       document.getElementById('ob-birth').value      = p.birth;
       document.getElementById('ob-address').value    = p.address.replace(/,\s*Roma$/, '');
       const btn = document.getElementById('btn-prefill');
-      btn.innerHTML = aIcon('check-circle', { size: 16 }) + ' Dati verificati da SPID';
+      btn.innerHTML = aIcon('check-circle', { size: 16 }) + ' Dati verificati da CIE';
       btn.disabled = true;
-      showToast('Dati anagrafici precompilati da SPID', 'success');
+      showToast('Dati anagrafici precompilati dalla CIE', 'success');
     }
 
-    // Upload grid (step 2). L'ISEE è l'unico documento obbligatorio per tutti:
-    // gli altri restano opzionali o legati al livello di accesso scelto.
+    // Upload grid (step 2). Obbligatori: la carta d'identità e il SOLO documento
+    // del livello di accesso selezionato — i tre livelli sono alternativi, quindi
+    // l'ISEE non è più richiesto a chi entra per urgenza clinica o due diligence.
     const docs = [
       { key: 'ricetta',      label: 'Ricetta rossa',    hint: 'PDF o foto, max 5MB',  done: false, icon: 'file' },
-      { key: 'urgenza',      label: 'Certificato urgenza SSN/MMG', hint: 'Richiesto per il livello 1', done: false, icon: 'file' },
-      { key: 'isee',         label: 'Modello ISEE',     hint: 'PDF, max 5MB · obbligatorio', done: false, icon: 'file-check', mandatory: true },
-      { key: 'duediligence', label: 'Documentazione aggiuntiva', hint: 'Per la valutazione del Comitato ESG', done: false, icon: 'file' },
-      { key: 'cie',          label: 'Carta identità (CIE)', hint: 'Fronte + retro',   done: false, icon: 'file' },
-      { key: 'spid',         label: 'Verifica SPID',     hint: 'Login federato',      done: false, icon: 'shield' }
+      { key: 'urgenza',      label: 'Certificato di urgenza SSN/MMG', hint: 'Richiesto dal livello 1', done: false, icon: 'file' },
+      { key: 'isee',         label: 'Modello ISEE',     hint: 'Richiesto dal livello 2', done: false, icon: 'file-check' },
+      { key: 'duediligence', label: 'Relazione di due diligence', hint: 'Richiesta dal livello 3', done: false, icon: 'file' },
+      { key: 'cie',          label: 'Carta identità (CIE)', hint: 'Fronte + retro · obbligatoria', done: false, icon: 'file-check', mandatory: true }
     ];
     const grid = document.getElementById('upload-grid');
     docs.forEach((d) => {
@@ -617,24 +655,33 @@
       grid.appendChild(card);
     });
 
-    // Documenti obbligatori: senza ISEE lo step 2 non si supera.
+    // Documenti obbligatori = carta d'identità + il documento del livello scelto.
+    // I livelli sono alternativi: non si chiede l'ISEE a chi entra per urgenza.
+    function requiredDocKeys() {
+      const lv = MOCK.access_levels.find(a => a.level === selectedLevel);
+      return ['cie'].concat(lv && lv.doc_key ? [lv.doc_key] : []);
+    }
     function validateDocs() {
-      const cards = document.querySelectorAll('.upload-card.mandatory');
-      let ok = true;
-      cards.forEach(c => {
-        const done = c.classList.contains('done');
-        c.classList.toggle('invalid', !done);
-        if (!done) ok = false;
+      const required = requiredDocKeys();
+      const missing = [];
+      document.querySelectorAll('.upload-card').forEach(c => {
+        const isReq = required.includes(c.dataset.doc);
+        const done  = c.classList.contains('done');
+        c.classList.toggle('invalid', isReq && !done);
+        if (isReq && !done) missing.push(c.querySelector('.upload-title').textContent);
       });
-      document.getElementById('docs-error').classList.toggle('show', !ok);
-      return ok;
+      const err = document.getElementById('docs-error');
+      document.getElementById('docs-error-text').textContent = missing.length
+        ? 'Carica per proseguire: ' + missing.join(' · ')
+        : 'Carica i documenti obbligatori per proseguire.';
+      err.classList.toggle('show', missing.length > 0);
+      return missing.length === 0;
     }
 
     // Livelli di accesso al programma Carelink (radio-card):
     // la selezione evidenzia il documento richiesto dal requisito scelto.
     // Si usa SEMPRE `label_patient` (senza importi): la label con la soglia ISEE
     // in euro resta riservata alla console del Coordinatore.
-    const levelDoc = { 1: 'urgenza', 2: 'isee', 3: 'duediligence' };
     let selectedLevel = 2;
     const accessList = document.getElementById('access-list');
     MOCK.access_levels.forEach(al => {
@@ -652,13 +699,50 @@
     function selectAccessLevel(level) {
       selectedLevel = level;
       document.querySelectorAll('.access-card').forEach(c => c.classList.toggle('selected', +c.querySelector('input').value === level));
+      const required = requiredDocKeys();
       document.querySelectorAll('.upload-card').forEach(c => {
-        // L'ISEE è già obbligatorio per tutti: non viene declassato a "Richiesto dal livello".
-        if (c.classList.contains('mandatory')) return;
-        c.classList.toggle('required', c.dataset.doc === levelDoc[level]);
+        // Il documento del livello selezionato diventa obbligatorio: cambiando
+        // livello cambia il documento richiesto, non se ne accumulano.
+        const isReq = required.includes(c.dataset.doc);
+        c.classList.toggle('mandatory', isReq);
+        c.classList.toggle('required',  isReq && c.dataset.doc !== 'cie');
+        if (!isReq) c.classList.remove('invalid');
       });
+      document.getElementById('docs-error').classList.remove('show');
     }
     selectAccessLevel(selectedLevel);
+
+    // ---- Codice di segnalazione: risolve l'ente, non lo fa scegliere ----
+    let referralBody = null;
+    const refInput   = document.getElementById('referral-code');
+    const refErr     = document.getElementById('referral-error');
+    const refOk      = document.getElementById('referral-ok');
+
+    function resolveReferral() {
+      const code = refInput.value.trim().toUpperCase();
+      referralBody = code ? MOCK.referralFromCode(code) : null;
+      if (referralBody) {
+        refErr.classList.remove('show');
+        refOk.style.display = 'flex';
+        document.getElementById('referral-ok-text').innerHTML =
+          'Segnalazione verificata: <strong>' + referralBody.name + '</strong>.<br>' +
+          'Ti seguirà <strong>' + referralBody.association + '</strong>, che cura onboarding e privacy.';
+      } else {
+        refOk.style.display = 'none';
+      }
+    }
+    refInput.addEventListener('input', resolveReferral);
+
+    function validateReferral() {
+      resolveReferral();
+      const code = refInput.value.trim();
+      if (referralBody) return true;
+      document.getElementById('referral-error-text').textContent = code
+        ? 'Codice non riconosciuto. Controlla con l\'ente che ti ha segnalato.'
+        : 'Inserisci il codice di segnalazione ricevuto dall\'ente.';
+      refErr.classList.add('show');
+      return false;
+    }
 
     renderStep();
   </script>

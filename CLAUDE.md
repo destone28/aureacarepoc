@@ -58,9 +58,13 @@ Both share `js/styles.css`, `js/navigation.js`, `js/icons.js`, and `data/mock-da
 
 ### Patient-side rules that came from the client's notes
 - **Care states are only two**: `pending` ("In attesa") and `approved` ("Approvate"). `confirmed` / `completed` / `cancelled` must not appear in patient UI (tabs, badges, filters, counters). Their `--b-*` tokens stay in `styles.css` — admin still uses them. An **approved booking with a past date = a visit that took place** (that's what drives the follow-up CTA).
-- **Mandatory, historicized declarations**: `patient.declarations` (truthful docs · authorization to contact the competent authorities) + `patient.declarations_history`. Accepted in onboarding (blocking), shown with their history and a downloadable receipt in `profile.html`, and surfaced to the Coordinator in `admin-patients.html`.
-- **ISEE is mandatory at registration** (blocks the onboarding wizard) and the **medical prescription is mandatory at booking** (the "Conferma" CTA stays disabled until the patient reuses the verified one or uploads a new one).
-- **SPID / CIE login** in `index.html` is **simulated** (no real IdP, no library, no external logos — text buttons only). `admin-login.html` does not use it.
+- **Mandatory, historicized declarations**: `patient.declarations` (truthful docs · authorization to contact the competent authorities) + `patient.declarations_history` + `patient.signature`. Accepted in onboarding (blocking), **signed with an advanced electronic signature** (see below), shown with their history and a printable receipt in `profile.html`, and surfaced to the Coordinator in `admin-patients.html`.
+- **The required document depends on the access level, not on everyone.** The three levels are alternatives, so `access_levels[].doc_key` names the single document each one requires — `urgenza` / `isee` / `duediligence`. ISEE is required only at level 2. The CIE is always required. Onboarding step 2 recomputes the mandatory set when the level changes; `admin-approvals.html` validates against the same rule. **Do not put ISEE back as a universal requirement.**
+- **Entry is by referral code, never self-declared.** Onboarding asks for a *codice di segnalazione* issued by the referring body; `MOCK.referralFromCode()` resolves the body and the association from its prefix (`RMCM` / `RMRL` / `RMAS` / `RMMG`). AureaShuttle uses the same prefixes and the same helper, so one code works across the suite. Don't reintroduce a dropdown of channels.
+- **Documents expire and the patient is warned 30 days ahead.** `patient.docs[].expires` plus `docExpiryState()` / `expiringDocs()` in `js/program-docs.js`. Rendered as a banner on `home.html`, as badges in `profile.html`, as a blocker on `booking.html`, and as a review blocker in `admin-approvals.html` / `admin-patients.html`. An expired document suspends new requests; already-approved care stays valid.
+- **Advanced electronic signature (FEA) on the blocking declarations.** `requestFeaSignature()` asks for a one-time code before the signature is recorded, and stores type, method, OTP reference, timestamp, origin and document hash. The OTP is **simulated and shown on screen** — the point is the shape of the retained record, not a real delivery. Don't wire a real OTP provider.
+- **Programme documents are versioned and downloadable as PDF.** `PROGRAM_DOCS` in `js/program-docs.js` holds the texts (conditions · privacy · declarations) with version, date and hash; `openProgramDoc()` shows them and `printProgramDoc()` opens a print view so the browser's "Save as PDF" produces the file. **No PDF library, no server-side generator** — don't add one.
+- **CIE login** in `index.html` is **simulated** (no real IdP, no library, no external logos — text buttons only). `admin-login.html` does not use it. **SPID has been removed from the whole POC** on the client's instruction: CIE is the only digital identity in the programme. Don't reintroduce it.
 
 ### Simulated SSO across the Aurea suite
 `js/navigation.js` reads/writes the localStorage key **`aurea_auth_user`** (`{ email, role, apps }`). This key is the convention shared with AureaVia and AureaShuttle to simulate cross-app SSO without a backend. `requireAuth()` / `requireAdmin()` redirect to the relevant login if the key is missing or `role` doesn't match. The Coordinatore Alphio is still `role: 'admin'` — only the copy changed.
@@ -94,7 +98,7 @@ The economic fields on `bookings` (`list_price`, `esg_price`, `voucher_id`) are 
 When adding screens that need data, extend `mock-data.js` rather than inlining. Numbers are cross-referenced by several pages (home, profile, admin-dashboard, admin-esg, admin-fund) — **grep all consumers before changing a value**, and run `node --check` on `mock-data.js` afterwards.
 
 ## What is explicitly NOT included
-Real backend, real auth (SPID/CIE is a simulated flow — no IdP, no library), **any payment flow at all** (the Carelink model has zero patient cost — do not add checkout, top-ups or payment providers), encrypted document storage (upload UI is simulated). Don't add these speculatively.
+Real backend, real auth (CIE is a simulated flow — no IdP, no library; **SPID is removed, don't add it back**), **any payment flow at all** (the Carelink model has zero patient cost — do not add checkout, top-ups or payment providers), encrypted document storage (upload UI is simulated). Don't add these speculatively.
 
 ## Open questions (To Be) — do not resolve unilaterally
 
@@ -103,3 +107,12 @@ These came from the client and are **not settled**. If a task touches them, keep
 1. **Scope of bookable services** — visits only, or other services too? Today the catalogue exposes Fascia A visits, Fascia B diagnostics and recurring cycles with transport.
 2. **How the ISEE is verified** — upload is simulated and the document reads "verificato dal Coordinatore Alphio". **No INPS integration** has been assumed. Don't add one.
 3. **How the medical prescription is verified** — same: simulated upload, verified by the Coordinator. **No tessera sanitaria / dematerialized-prescription integration.** Don't add one.
+
+## Net impact metrics — don't quietly turn them back into gross
+
+Two metrics were corrected in the client review and the correction is the point; both are **net**, and the arithmetic is written into `mock-data.js` so it can be checked.
+
+- **CO₂**: `esg.environmental` carries `co2_gross_t` (private car kilometres avoided × factor) minus `co2_fleet_t` (service fleet kilometres × factor) = `co2_ytd_t`, the only figure rendered and the only one compared to the 52 t target. The programme does not book its own emissions as a saving. `admin-esg.html` shows the three rows explicitly.
+- **Caregiver hours**: `esg.caregiver` splits visits into `visits_alone` (3,4 h freed) and `visits_accompanied` (1,2 h freed — driving, parking and waiting only), giving `net_h`. The per-booking input is `bookings[].companion`, collected by the "Sarai accompagnato?" question in `booking.html`. AureaShuttle nets the same way on `esgAggregate` using ride-level `caregiver_onboard`.
+
+Changing either figure means changing its derivation too — grep both repos before touching them.

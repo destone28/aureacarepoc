@@ -1832,3 +1832,24 @@ textarea.input { resize: vertical; min-height: 80px; }
   }
   .admin-topbar .switch-view .label-full { display: none; }
 }
+
+
+/* ---------- Avviso di scadenza documenti (home paziente) ----------
+   Revisione cliente: «I documenti scadono (es. Isee, carta identità)
+   alert 1 mese prima». Caldo a 30 giorni, rosso a scadenza avvenuta. */
+.doc-alert {
+  display: flex; align-items: center; gap: 12px;
+  padding: 12px 14px; margin-bottom: 16px;
+  border-radius: var(--r-md); text-decoration: none; color: inherit;
+  border: 1px solid var(--b-pending-bg); background: var(--b-pending-bg);
+}
+.doc-alert.is-expired { border-color: var(--b-cancelled-bg); background: var(--b-cancelled-bg); }
+.doc-alert-ico {
+  width: 38px; height: 38px; border-radius: 10px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  background: #fff; color: var(--b-pending-tx);
+}
+.doc-alert.is-expired .doc-alert-ico { color: var(--b-cancelled-tx); }
+.doc-alert-title { font-weight: 700; font-size: 14px; color: var(--b-pending-tx); margin: 0 0 2px; }
+.doc-alert.is-expired .doc-alert-title { color: var(--b-cancelled-tx); }
+.doc-alert .caption { color: var(--dark-gray); }

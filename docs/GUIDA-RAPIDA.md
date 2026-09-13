@@ -12,17 +12,17 @@ Il mockup è un **prototipo navigabile**, non un prodotto.
 
 # Parte 1 — L'app del paziente
 
-## 1.1 Accesso: credenziali, SPID o CIE
+## 1.1 Accesso: credenziali o CIE
 
 ![Schermata di login](img/01-login.png)
 
 La schermata di ingresso dichiara subito di cosa si tratta.
 
-Oltre alle credenziali sono disponibili **due accessi istituzionali, SPID e CIE**: è l'ipotesi di autenticazione che il cliente ha chiesto di valutare, resa qui visibile e navigabile.
+Oltre alle credenziali è disponibile l'accesso con **CIE**: è l'unica identità digitale prevista dal programma. *SPID è stato rimosso su indicazione del committente; gli screenshot di questa guida sono anteriori alla revisione e vanno rigenerati, così come il PDF allegato.*
 
-![Modale SPID](img/02-login-spid.png)
+![Modale identità digitale](img/02-login-spid.png)
 
-Il click su *Entra con SPID* apre la conferma di reindirizzamento all'Identity Provider.
+Il click su *Entra con CIE* apre la conferma di reindirizzamento al servizio di autenticazione.
 
 ![Password dimenticata](img/27-login-password-dimenticata.png)
 
@@ -38,9 +38,9 @@ La registrazione raccoglie ciò che serve al Coordinatore per decidere, e nulla 
 
 **Passo 1 — Dati e provenienza.** Oltre all'anagrafica si chiede *come sei arrivato al programma*.
 
-![Precompilazione da SPID](img/04-onboarding-spid-prefill.png)
+![Precompilazione da identità digitale](img/04-onboarding-spid-prefill.png)
 
-Se il paziente ha SPID, l'anagrafica si **precompila** invece di essere digitata: nome, cognome, codice fiscale, data di nascita e residenza arrivano dall'identità digitale.
+Con la CIE l'anagrafica si **precompila** invece di essere digitata: nome, cognome, codice fiscale, data di nascita e residenza arrivano dall'identità digitale.
 
 ![Onboarding step 2](img/05-onboarding-step2-documenti.png)
 
@@ -303,7 +303,7 @@ Il rendiconto del **Fondo ESG Territoriale di Roma**, circa **9 milioni** per l'
 
 | # | Schermata | File | A cosa serve |
 |---|---|---|---|
-| 1 | Login | `index.html` | Accesso con credenziali, SPID o CIE; recupero password |
+| 1 | Login | `index.html` | Accesso con credenziali o CIE; recupero password |
 | 2 | Registrazione | `onboarding.html` | Wizard in 5 passi: dati, livello di accesso e ISEE, indirizzo, questionario, dichiarazioni |
 | 3 | Home | `home.html` | Stato del programma, prossima cura, impatto personale, sponsor |
 | 4 | Catalogo | `book-care.html` | Fascia A, Fascia B e cure ricorsive |

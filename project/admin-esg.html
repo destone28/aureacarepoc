@@ -9,6 +9,14 @@
   <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="js/styles.css">
   <style>
+    /* Bilancio CO₂: le tre righe del calcolo lordo → servizio → netto */
+    .co2-balance { border: 1px solid #C8E6CF; border-radius: 10px; overflow: hidden; }
+    .co2-row {
+      display: flex; align-items: center; justify-content: space-between; gap: 14px;
+      padding: 12px 14px; background: #FBFDFB; border-bottom: 1px solid #E4F0E9;
+    }
+    .co2-row--net { background: #F4FBF6; border-bottom: 0; }
+
     .esg-hero {
       background: linear-gradient(135deg, #F4FBF6 0%, #E1F5EE 100%);
       border: 1px solid #C8E6CF;
@@ -378,19 +386,42 @@
             <div>
               <p class="eyebrow mb-8">KPI ambientali · target anno 1</p>
               <div style="display:grid;gap:10px">
+                <!-- Bilancio CO₂: lordo evitato, emesso dal servizio, netto.
+                     Revisione cliente: «se viene utilizzato il taxi, non consuma
+                     CO₂?». Sì — ed è sottratto qui, non taciuto. -->
+                <div class="co2-balance">
+                  <div class="co2-row">
+                    <div>
+                      <span class="text-muted">Evitata · lorda</span>
+                      <p class="caption" style="margin:2px 0 0;font-size:11px">241.500 km di auto privata non percorsi × 0,168 kg/km</p>
+                    </div>
+                    <strong style="font-size:18px;color:#0F6E56">+40,6 t</strong>
+                  </div>
+                  <div class="co2-row">
+                    <div>
+                      <span class="text-muted">Emessa dalla flotta di servizio</span>
+                      <p class="caption" style="margin:2px 0 0;font-size:11px">190.000 km Samarcanda × 0,101 kg/km · ibrida/Euro 6</p>
+                    </div>
+                    <strong style="font-size:18px;color:var(--b-cancelled-tx)">−19,2 t</strong>
+                  </div>
+                  <div class="co2-row co2-row--net">
+                    <div>
+                      <span style="font-weight:700">CO₂ evitata · NETTA (YTD)</span>
+                      <p class="caption" style="margin:2px 0 0;font-size:11px">≈ 1.020 alberi · 41% del target · è questo il dato rendicontato</p>
+                    </div>
+                    <strong style="font-size:22px;color:#0F6E56">21,4 t</strong>
+                  </div>
+                </div>
                 <div style="padding:14px;background:#F4FBF6;border-radius:10px">
-                  <div class="flex justify-between items-center"><span class="text-muted">CO₂ evitata · target anno 1</span><strong style="font-size:18px;color:#0F6E56">52 t</strong></div>
+                  <div class="flex justify-between items-center"><span class="text-muted">CO₂ netta · target anno 1</span><strong style="font-size:18px;color:#0F6E56">52 t</strong></div>
                   <p class="caption" style="margin-top:4px;font-size:11px">≈ 3.500 alberi piantati</p>
                 </div>
                 <div style="padding:14px;background:#F4FBF6;border-radius:10px">
-                  <div class="flex justify-between items-center"><span class="text-muted">CO₂ evitata · YTD</span><strong style="font-size:18px;color:#0F6E56">21,4 t</strong></div>
-                  <p class="caption" style="margin-top:4px;font-size:11px">≈ 1.020 alberi · 41% del target</p>
+                  <div class="flex justify-between items-center"><span class="text-muted">Km netti evitati (YTD)</span><strong style="font-size:18px;color:#0F6E56">51.500 km</strong></div>
+                  <p class="caption" style="margin-top:4px;font-size:11px">241.500 privati − 190.000 di servizio</p>
                 </div>
                 <div style="padding:14px;background:#F4FBF6;border-radius:10px">
-                  <div class="flex justify-between items-center"><span class="text-muted">Km evitati (YTD)</span><strong style="font-size:18px;color:#0F6E56">76.450 km</strong></div>
-                </div>
-                <div style="padding:14px;background:#F4FBF6;border-radius:10px">
-                  <div class="flex justify-between items-center"><span class="text-muted">CO₂ evitata / prestazione</span><strong style="font-size:18px;color:#0F6E56">1,5 kg</strong></div>
+                  <div class="flex justify-between items-center"><span class="text-muted">CO₂ netta / prestazione</span><strong style="font-size:18px;color:#0F6E56">1,5 kg</strong></div>
                 </div>
                 <div style="padding:14px;background:#F4FBF6;border-radius:10px">
                   <div class="flex justify-between items-center"><span class="text-muted">Quota trasporto Samarcanda</span><strong style="font-size:18px;color:var(--primary-orange)">54%</strong></div>
@@ -422,9 +453,9 @@
               <p class="caption">richieste approvate</p>
             </div>
             <div style="padding:14px;background:#FFF6E8;border:1px solid var(--bg-warm-br);border-radius:10px;text-align:center">
-              <p style="font-size:11px;color:#B45309;font-weight:700;letter-spacing:.05em;text-transform:uppercase">Ore caregiver liberate</p>
-              <p style="font-size:26px;font-weight:700;color:#B45309;margin-top:4px">16.500h</p>
-              <p class="caption">YTD · voci A3 e A5 del modello</p>
+              <p style="font-size:11px;color:#B45309;font-weight:700;letter-spacing:.05em;text-transform:uppercase">Ore caregiver liberate · nette</p>
+              <p style="font-size:26px;font-weight:700;color:#B45309;margin-top:4px">16.440h</p>
+              <p class="caption">YTD · voci A3 e A5 · lorde 20.400h, meno 3.960h per gli accompagnamenti effettivi</p>
             </div>
           </div>
 
@@ -582,7 +613,9 @@
           Il <strong>SROI</strong> segue lo standard <em>Social Value International</em> ed è <strong>validato ex-post da una primaria società di revisione</strong>
           (verifica CSRD su ogni fattura, incluso lo sconto contrattuale del 15%). Proxy finanziari: tempo caregiver liberato (€18/h),
           <strong>QALY</strong> (valore anno di vita in buona salute) e <strong>WELLBY</strong> (benessere caregiver), CO₂ evitata (€85/tCO₂),
-          risparmio sanitario su tariffe regionali Lazio. La metrica <em>fragilità servita</em> aggrega ISEE, età e condizioni croniche dichiarate in onboarding.
+          risparmio sanitario su tariffe regionali Lazio. La metrica <em>fragilità servita</em> aggrega requisito di accesso, età e condizioni croniche dichiarate in onboarding.
+          <br><br><strong>CO₂ al netto del servizio:</strong> la CO₂ rendicontata è la differenza tra i percorsi in auto privata evitati (40,6 t) e le emissioni della flotta Samarcanda che li sostituisce (19,2 t). Il programma non contabilizza come risparmio le emissioni che esso stesso genera.
+          <strong>Ore caregiver al netto degli accompagnamenti:</strong> quando il caregiver accompagna comunque il paziente si conteggia la sola quota di tempo effettivamente liberata (guida, parcheggio e attesa: 1,2 h contro 3,4 h), non l'intero accompagnamento. Il dato arriva dalla domanda già posta in prenotazione e dal flag di corsa su AureaShuttle.
           Tutti i dati sono <strong>aggregati e anonimizzati</strong>: nessuna informazione paziente individuale è esposta.
         </div>
 
@@ -896,7 +929,11 @@
         ...E.multiyear.l2.map(r => 'Layer 2 anno ' + r.year + ',' + r.cost_incidence + '%,' + r.sroi + '×'),
         '',
         'AMBIENTALE',
-        'Km evitati YTD,' + E.environmental.km_avoided,
+        'Km netti evitati YTD,' + E.environmental.km_avoided,
+        'CO2 evitata lorda (t),' + E.environmental.co2_gross_t,
+        'CO2 emessa dalla flotta di servizio (t),' + E.environmental.co2_fleet_t,
+        'Ore caregiver lorde,' + E.caregiver.gross_h,
+        'Ore caregiver nette,' + E.caregiver.net_h,
         'CO2 per visita (kg),' + E.environmental.co2_per_visit_avg,
         'Quota Shuttle (%),' + E.environmental.shuttle_share,
         'Km medio per visita AureaCare,' + E.environmental.avg_km_per_visit.aureacare,

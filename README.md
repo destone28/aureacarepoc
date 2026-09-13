@@ -13,7 +13,7 @@ Il paziente **non paga nulla**: le prestazioni sono coperte da **voucher ESG** f
 
 AureaCare copre **2 attori**:
 
-- **Paziente** · si registra (accesso **SPID / CIE simulato**, ISEE obbligatorio), prenota visite di Fascia A e diagnostica di Fascia B presso strutture private certificate ISO 9001 / JCI a Roma (**ricetta medica obbligatoria**), attiva il **trasporto gratuito porta-a-porta** per i cicli di cure ricorsive (handoff verso AureaShuttle), compila il questionario di raccolta informazioni e traccia l'impatto ESG personale (CO₂ evitata, ore caregiver risparmiate, drop-out evitati).
+- **Paziente** · si registra (accesso **CIE simulato**, codice di segnalazione dell'ente, documento del solo livello di accesso scelto), prenota visite di Fascia A e diagnostica di Fascia B presso strutture private certificate ISO 9001 / JCI a Roma (**ricetta medica obbligatoria**), attiva il **trasporto gratuito porta-a-porta** per i cicli di cure ricorsive (handoff verso AureaShuttle), compila il questionario di raccolta informazioni e traccia l'impatto ESG personale (CO₂ evitata, ore caregiver risparmiate, drop-out evitati).
 - **Coordinatore Alphio** (ruolo tecnico `admin`) · **valida i voucher** con revisione documenti e livello di accesso, scarica la **fattura verificabile CSRD**, gestisce la rete di 18 strutture private convenzionate, coordina le corse Samarcanda, monitora i KPI ESG (SROI per layer, benefici monetizzati, aderenza terapeutica) e il **Fondo ESG Territoriale** con la sua governance.
 
 ### L'app paziente non espone alcuna componente economica
@@ -46,7 +46,7 @@ I pazienti arrivano **segnalati** da Comuni / Regione Lazio → Associazioni (ch
 - **ISEE obbligatorio in registrazione**: l'upload del Modello ISEE blocca l'avanzamento del wizard se assente.
 - **Ricetta medica obbligatoria in prenotazione**: il CTA "Conferma" resta disabilitato finché il paziente non usa la ricetta già verificata o non ne carica una nuova. La ricetta compare nel recap e come requisito obbligatorio nel modale di revisione del Coordinatore.
 - **Due dichiarazioni obbligatorie e storicizzate** (accettate in onboarding, consultabili in `profile.html`): (a) la documentazione caricata è veritiera, (b) autorizzazione al contatto con le autorità competenti per eventuali verifiche. Di ognuna si conservano data/ora, versione del testo e canale di accettazione; lo **storico** è visibile al paziente (con ricevuta scaricabile) e al Coordinatore nella scheda paziente.
-- **Accesso SPID / CIE**: presente in `index.html` come flusso **simulato** (nessun Identity Provider reale), con precompilazione anagrafica da SPID in onboarding. È la valutazione richiesta dal cliente, resa visibile nel mockup.
+- **Accesso CIE**: presente in `index.html` come flusso **simulato** (nessun servizio di autenticazione reale), con precompilazione anagrafica da CIE in onboarding. **SPID è stato rimosso** dall'intero POC su indicazione del committente: la CIE resta l'unica identità digitale del programma.
 
 ### Questionario di raccolta informazioni · **bozza da validare**
 
@@ -129,7 +129,7 @@ aureacarepoc/
 ├── CLAUDE.md                  spec per agenti AI che riprendono il repo
 └── project/
     ├── canvas.html                  hub review (17 schermate + 3 tweaks live)
-    ├── index.html                   login paziente + SPID/CIE simulato + intro Programma Carelink
+    ├── index.html                   login paziente + CIE simulata + intro Programma Carelink
     ├── onboarding.html              wizard 5 step (anagrafica · livello di accesso + ISEE obbligatorio · indirizzo · questionario clinico [bozza] · consensi + dichiarazioni obbligatorie)
     ├── home.html                    dashboard paziente: stato programma (non numerico) + prossima cura + ESG personale + sponsor del Fondo
     ├── book-care.html               catalogo: Fascia A · Fascia B · cure ricorsive (pill "Coperta dal programma", nessun prezzo)
@@ -170,6 +170,23 @@ La bottom nav del paziente ha **4 voci**: Home · **Prenota** (`book-care.html`)
 
 L'unico canale di comunicazione tra Coordinatore Alphio e paziente, sia per le notifiche di validazione voucher sia per i messaggi diretti, è **email**. Niente SMS, niente push notification fuori dall'app: la mail è il canale di tracciabilità documentata previsto dal flow.
 
+## Revisione cliente — cosa è cambiato
+
+Seconda tornata di appunti del committente, tutti recepiti senza aggiungere servizi o strumenti esterni: dove serviva un documento firmato o un PDF, lo produce il browser.
+
+| Punto sollevato | Come è stato risolto |
+|---|---|
+| Perché è sempre obbligatorio l'ISEE? | Non lo è più. I tre livelli di accesso sono alternativi, quindi è obbligatorio **solo il documento del livello scelto** (`access_levels[].doc_key`), più la carta d'identità. Onboarding e coda approvazioni applicano la stessa regola. |
+| PDF da scaricare per le condizioni | Condizioni, informativa privacy e dichiarazioni sono testi **versionati con data e impronta** (`js/program-docs.js`), consultabili a video e scaricabili in PDF tramite la stampa del browser. Nessuna libreria, nessun generatore server-side. |
+| Sottoscrizione non rifiutabile delle dichiarazioni · firma qualificata | Le dichiarazioni si firmano con **firma elettronica avanzata**: dopo la spunta serve un codice monouso, e restano conservati tipo di firma, metodo, riferimento OTP, marca temporale, origine e impronta del testo. Nel POC l'OTP è simulato e mostrato a schermo. |
+| I documenti scadono · alert 1 mese prima | Ogni documento porta una **scadenza**; a 30 giorni scatta l'avviso in home, il badge nel profilo e la segnalazione al Coordinatore. Un documento **scaduto blocca le nuove richieste**; le cure già approvate restano valide. |
+| La segnalazione la fa l'utente stesso? | No. La registrazione chiede il **codice di segnalazione** rilasciato dall'ente, e il sistema ne ricava ente e associazione (`referralFromCode`). Il canale non è più autodichiarato. Stessi prefissi su AureaShuttle: un solo codice per la suite. |
+| Se il caregiver accompagna, come si calcolano le ore risparmiate? | Non si contano tutte. Paziente da solo → **3,4 h** liberate; caregiver comunque a bordo → **1,2 h** (guida, parcheggio, attesa). Il dato arriva dalla domanda già posta in prenotazione. Le ore rendicontate sono **nette**: 16.440 contro 20.400 lorde. |
+| Se viene usato il taxi, non consuma CO₂? | Sì, ed è sottratta. Il bilancio è esplicito: **40,6 t evitate lorde − 19,2 t emesse dalla flotta = 21,4 t nette**, l'unico dato rendicontato e l'unico confrontato col target. |
+| Data in formato americano, orario su 24h | I selettori nativi del browser seguono la lingua del sistema: sono stati **sostituiti con controlli propri** (`gg/mm/aaaa` e `hh:mm` su 24 ore, calendario compatto disegnato a mano) su AureaShuttle, che è dove comparivano. AureaCare usa già slot orari espliciti. |
+
+I punti su validazione della corsa, notifiche del pick-up, modifica del luogo di prelievo e taratura dei tempi per difficoltà motoria riguardano il trasporto e sono risolti nel repo **AureaShuttle**, con cui questo POC è allineato.
+
 ## Questioni aperte (To Be)
 
 Punti sollevati dal cliente che **non sono decidibili in autonomia**: nel mockup sono resi in modo esplicito ma provvisorio, in attesa di validazione.
@@ -179,6 +196,7 @@ Punti sollevati dal cliente che **non sono decidibili in autonomia**: nel mockup
 | 1 | **Perimetro delle prestazioni prenotabili**: solo visite, o anche altri servizi? | Il catalogo espone tutto: Fascia A (visite), Fascia B (diagnostica) e cicli di cure ricorsive con trasporto. Restringere il perimetro alle sole visite è una scelta di programma, non tecnica. |
 | 2 | **Modalità di verifica dell'ISEE** | L'upload è **simulato** e il documento risulta "verificato dal Coordinatore Alphio". Nessuna integrazione INPS: non è stata ipotizzata di proposito. |
 | 3 | **Modalità di verifica della ricetta medica** | Idem: upload simulato, ricetta "verificata dal Coordinatore Alphio". Nessuna integrazione con tessera sanitaria / ricetta dematerializzata. |
+| 4 | **Valore di legge della firma** | Il POC implementa una **firma elettronica avanzata** con OTP simulato. Se il programma richiede la firma *qualificata* (certificato su dispositivo, prestatore accreditato) serve un prestatore di servizi fiduciari: è una scelta di compliance con un costo, non una modifica di interfaccia. |
 
 ## Cosa NON è incluso
 

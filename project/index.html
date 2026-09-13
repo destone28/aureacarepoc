@@ -67,8 +67,10 @@
       color: var(--medium-gray); font-size: 12px;
     }
     .divider-or::before, .divider-or::after { content: ''; flex: 1; height: 1px; background: var(--border-soft); }
-    /* Accesso con identità digitale istituzionale (SPID / CIE).
-       Nessun logo esterno: non abbiamo gli asset ufficiali, il marchio è reso a testo. */
+    /* Accesso con identità digitale istituzionale (CIE).
+       SPID è stato rimosso dal POC su indicazione del committente: la CIE resta
+       l'unica identità digitale prevista. Nessun logo esterno: non abbiamo gli
+       asset ufficiali, il marchio è reso a testo. */
     .sso-list { display: grid; gap: 10px; }
     .sso-btn {
       width: 100%; padding: 13px;
@@ -81,7 +83,6 @@
       transition: filter .15s ease;
     }
     .sso-btn:hover { filter: brightness(1.08); }
-    .sso-btn--spid { background: linear-gradient(135deg, #0066CC, #002F6E); }
     .sso-btn--cie  { background: linear-gradient(135deg, #1B3B6F, #0B1F3F); }
     .sso-note { font-size: 12px; color: var(--medium-gray); text-align: center; margin-top: 10px; line-height: 1.5; }
   </style>
@@ -99,16 +100,12 @@
     <p class="subtitle">Usa le stesse credenziali di AureaVia e AureaShuttle.</p>
 
     <div class="sso-list">
-      <button type="button" class="sso-btn sso-btn--spid" onclick="openSso('SPID')">
-        <span id="ico-spid"></span>
-        <span>Entra con SPID</span>
-      </button>
       <button type="button" class="sso-btn sso-btn--cie" onclick="openSso('CIE')">
         <span id="ico-cie"></span>
         <span>Entra con CIE</span>
       </button>
     </div>
-    <p class="sso-note">Accesso con identità digitale: i tuoi dati anagrafici vengono precompilati e verificati.</p>
+    <p class="sso-note">Accesso con CIE: i tuoi dati anagrafici vengono precompilati e verificati. Puoi anche usare le credenziali qui sotto.</p>
 
     <div class="divider-or"><span>oppure</span></div>
 
@@ -185,14 +182,14 @@
   <div class="modal-overlay" id="sso-modal" onclick="if(event.target===this) closeModal('sso-modal')">
     <div class="modal">
       <div class="modal-header">
-        <div class="modal-title" id="sso-title">Entra con SPID</div>
+        <div class="modal-title" id="sso-title">Entra con CIE</div>
         <button class="modal-close" onclick="closeModal('sso-modal')"><span id="ico-x2"></span></button>
       </div>
       <div class="modal-body">
         <p class="caption mb-16" id="sso-text"></p>
         <div class="banner-roma">
           <span id="ico-i2"></span>
-          <p>Flusso simulato nel POC: nessun Identity Provider reale viene contattato. L'accesso con identità digitale è l'opzione in valutazione con il committente.</p>
+          <p>Flusso simulato nel POC: nessun servizio di autenticazione reale viene contattato. La CIE è l'unica identità digitale prevista dal programma.</p>
         </div>
       </div>
       <div class="modal-footer">
@@ -214,17 +211,15 @@
     document.getElementById('cl-b1').innerHTML    = aIcon('clock', { size: 16 });
     document.getElementById('cl-b2').innerHTML    = aIcon('users', { size: 16 });
     document.getElementById('cl-b3').innerHTML    = aIcon('shield-check', { size: 16 });
-    document.getElementById('ico-spid').innerHTML = aIcon('shield-check', { size: 18 });
     document.getElementById('ico-cie').innerHTML  = aIcon('lock', { size: 18 });
     document.getElementById('ico-x2').outerHTML   = aIcon('x', { size: 16 });
     document.getElementById('ico-i2').outerHTML   = aIcon('info', { size: 18 });
 
     // Identità digitale: il POC simula il reindirizzamento all'Identity Provider
     // e chiude il login con lo stesso setAuth del form credenziali.
-    let ssoProvider = 'SPID';
+    let ssoProvider = 'CIE';
     const SSO_COPY = {
-      SPID: 'Verrai reindirizzato al tuo Identity Provider SPID per confermare l\'identità. Al rientro l\'accesso ad AureaCare sarà completato.',
-      CIE:  'Verrai reindirizzato al servizio di autenticazione con Carta d\'Identità Elettronica (CIE) per confermare l\'identità. Al rientro l\'accesso ad AureaCare sarà completato.'
+      CIE: 'Verrai reindirizzato al servizio di autenticazione con Carta d\'Identità Elettronica (CIE) per confermare l\'identità. Al rientro l\'accesso ad AureaCare sarà completato.'
     };
     function openSso(provider) {
       ssoProvider = provider;

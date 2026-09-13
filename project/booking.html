@@ -212,6 +212,17 @@
         <span class="flex items-center gap-4"><span style="width:6px;height:6px;background:#cdd2d8;border-radius:50%"></span>Non disponibile</span>
       </div>
 
+      <!-- Documenti scaduti: la nuova richiesta si blocca qui, non alla
+           validazione del Coordinatore (revisione cliente sulle scadenze). -->
+      <a id="bk-doc-alert" class="doc-alert is-expired" href="profile.html" style="display:none">
+        <div class="doc-alert-ico"><span id="ico-bk-doc"></span></div>
+        <div style="flex:1;min-width:0">
+          <p class="doc-alert-title" id="bk-doc-title"></p>
+          <p class="caption" style="line-height:1.45">Aggiornalo dal profilo per poter richiedere nuove prestazioni. Le cure già approvate restano valide.</p>
+        </div>
+        <span id="ico-bk-chev"></span>
+      </a>
+
       <!-- Ricetta medica: obbligatoria per confermare la prenotazione -->
       <div class="divider-eyebrow"><span>Ricetta medica</span><span class="line"></span></div>
       <div class="rx-block">
@@ -273,7 +284,7 @@
               <option value="1">Sì, con 1 accompagnatore</option>
             </select>
           </div>
-          <p class="field-hint">Serve a dimensionare la corsa porta-a-porta.</p>
+          <p class="field-hint">Serve a dimensionare la corsa porta-a-porta e a calcolare correttamente le ore di caregiver liberate: se ti accompagna comunque, contiamo solo il tempo che il programma gli fa risparmiare.</p>
         </div>
 
         <p class="field-label">Necessità particolari</p>
@@ -328,6 +339,7 @@
   <script src="data/mock-data.js"></script>
   <script src="js/icons.js"></script>
   <script src="js/navigation.js"></script>
+  <script src="js/program-docs.js"></script>
   <script>
     document.getElementById('ico-back').outerHTML = aIcon('arrow-left', { size: 20 });
     document.getElementById('ico-grid').outerHTML = aIcon('grid', { size: 20 });
@@ -493,9 +505,28 @@
       });
     });
 
-    // Il CTA resta bloccato finché non ci sono sia lo slot sia la ricetta.
+    // Documenti scaduti: nessuna nuova richiesta finché non sono rinnovati.
+    const expiredDocs = expiringDocs().filter(d => d.state === 'expired');
+    if (expiredDocs.length) {
+      const el = document.getElementById('bk-doc-alert');
+      el.style.display = 'flex';
+      document.getElementById('bk-doc-title').textContent = expiredDocs.length === 1
+        ? expiredDocs[0].name + ' è scaduto: non puoi richiedere nuove prestazioni'
+        : expiredDocs.length + ' documenti sono scaduti: non puoi richiedere nuove prestazioni';
+      document.getElementById('ico-bk-doc').outerHTML  = aIcon('alert', { size: 18 });
+      document.getElementById('ico-bk-chev').outerHTML = aIcon('chevron-right', { size: 16 });
+    }
+
+    // Il CTA resta bloccato finché non ci sono sia lo slot sia la ricetta,
+    // e finché ci sono documenti scaduti.
     function updateProceed() {
       const btn = document.getElementById('proceed-btn');
+      if (expiredDocs.length) {
+        btn.disabled = true;
+        btn.style.opacity = .5;
+        btn.textContent = 'Aggiorna i documenti scaduti';
+        return;
+      }
       const ready = !!selectedTime && !!rxChoice;
       btn.disabled = !ready;
       btn.style.opacity = ready ? 1 : .5;

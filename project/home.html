@@ -35,6 +35,18 @@
         <p class="caption mt-8">Trasporto porta-a-porta gratuito e cure coperte dal programma: ogni corsa e ogni cura sono un aiuto concreto.</p>
       </div>
 
+      <!-- Avviso scadenza documenti: compare a 30 giorni dalla scadenza
+           (revisione cliente). Precede tutto il resto: senza documenti validi
+           il paziente non può richiedere nuove prestazioni. -->
+      <a id="doc-alert" class="doc-alert" href="profile.html" style="display:none">
+        <div class="doc-alert-ico"><span id="ico-doc-alert"></span></div>
+        <div style="flex:1;min-width:0">
+          <p class="doc-alert-title" id="doc-alert-title"></p>
+          <p class="caption" id="doc-alert-sub" style="line-height:1.45"></p>
+        </div>
+        <span id="ico-doc-chev"></span>
+      </a>
+
       <!-- Stato del programma -->
       <div class="card card--lg" style="padding: 22px; background: linear-gradient(160deg, #FFFFFF 0%, var(--care-blue-bg) 100%); border-color: #DCE7F4;">
         <div class="flex items-center gap-16">
@@ -126,7 +138,7 @@
             <p style="font-size:10px;color:var(--medium-gray);font-weight:600;letter-spacing:.04em">KG CO₂ EVITATA</p>
           </div>
           <div style="padding:10px;background:#fff;border-radius:10px;text-align:center">
-            <p style="font-size:18px;font-weight:700;color:#0F6E56">28h</p>
+            <p style="font-size:18px;font-weight:700;color:#0F6E56" id="esg-cg"></p>
             <p style="font-size:10px;color:var(--medium-gray);font-weight:600;letter-spacing:.04em">CAREGIVER</p>
           </div>
           <div style="padding:10px;background:#fff;border-radius:10px;text-align:center">
@@ -134,7 +146,7 @@
             <p style="font-size:10px;color:var(--medium-gray);font-weight:600;letter-spacing:.04em">DROP-OUT EVITATI</p>
           </div>
         </div>
-        <p class="caption mt-12" style="line-height:1.5">Hai contribuito a <strong style="color:#0F6E56"><span id="esg-co2-copy"></span> kg di CO₂ evitata</strong> e <strong style="color:#0F6E56">28 ore di caregiver risparmiate</strong>, grazie alle cure coperte dal programma e al trasporto gratuito porta-a-porta.</p>
+        <p class="caption mt-12" style="line-height:1.5">Hai contribuito a <strong style="color:#0F6E56"><span id="esg-co2-copy"></span> kg di CO₂ evitata</strong> — già al netto delle emissioni dei mezzi di servizio — e a <strong style="color:#0F6E56"><span id="esg-cg-copy"></span> ore di caregiver liberate</strong>, grazie alle cure coperte dal programma e al trasporto gratuito porta-a-porta.</p>
         <p class="caption mt-8" style="line-height:1.5;border-top:1px dashed #C8E6CF;padding-top:10px">Il tuo percorso ha evitato <strong style="color:#0F6E56">3 drop-out di seduta</strong>: nel Programma Carelink l'aderenza alle cure è al <strong style="color:#0F6E56">94%</strong>.</p>
       </div>
 
@@ -209,6 +221,7 @@
   <script src="data/mock-data.js"></script>
   <script src="js/icons.js"></script>
   <script src="js/navigation.js"></script>
+  <script src="js/program-docs.js"></script>
   <script>
     // Header icons
     document.getElementById('ico-grid').outerHTML = aIcon('grid', { size: 20 });
@@ -254,6 +267,33 @@
     document.getElementById('esg-approved').textContent = approved;
     document.getElementById('esg-co2').textContent = co2;
     document.getElementById('esg-co2-copy').textContent = co2;
+
+    // ---- Avviso di scadenza documenti (soglia 30 giorni) -------------------
+    const dueDocs = expiringDocs();
+    if (dueDocs.length) {
+      const worst   = dueDocs[0];
+      const expired = dueDocs.filter(d => d.state === 'expired');
+      const el = document.getElementById('doc-alert');
+      el.style.display = 'flex';
+      el.classList.add(expired.length ? 'is-expired' : 'is-expiring');
+      document.getElementById('doc-alert-title').textContent = expired.length
+        ? (expired.length === 1 ? expired[0].name + ' è scaduto' : expired.length + ' documenti sono scaduti')
+        : (dueDocs.length === 1 ? worst.name + ' sta per scadere' : dueDocs.length + ' documenti stanno per scadere');
+      document.getElementById('doc-alert-sub').innerHTML = expired.length
+        ? 'Aggiornalo per poter richiedere nuove prestazioni. Le cure già approvate restano valide.'
+        : worst.label + ' · aggiornalo dal profilo per non interrompere le cure.';
+      document.getElementById('ico-doc-alert').outerHTML = aIcon(expired.length ? 'alert' : 'clock', { size: 18 });
+      document.getElementById('ico-doc-chev').outerHTML  = aIcon('chevron-right', { size: 16 });
+    }
+
+    // Ore caregiver NETTE: quando il caregiver accompagna comunque il paziente
+    // è liberato solo il tempo di guida, parcheggio e attesa (revisione cliente).
+    const CGH = MOCK.esg.caregiver;
+    const cgHours = Math.round(MOCK.bookings
+      .filter(b => b.status === 'approved')
+      .reduce((h, b) => h + (b.companion ? CGH.h_per_visit_accompanied : CGH.h_per_visit_alone), 0));
+    document.getElementById('esg-cg').textContent      = cgHours + 'h';
+    document.getElementById('esg-cg-copy').textContent = cgHours;
   </script>
 </body>
 </html>

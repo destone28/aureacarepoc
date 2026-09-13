@@ -25,6 +25,7 @@
     }
     .doc-pill.ok { background: var(--b-approved-bg); color: var(--b-approved-tx); }
     .doc-pill.partial { background: var(--b-pending-bg); color: var(--b-pending-tx); }
+    .doc-pill.warn { background: var(--b-pending-bg); color: var(--b-pending-tx); }
     .doc-pill.pending { background: var(--b-cancelled-bg); color: var(--b-cancelled-tx); }
     /* Mini-pill livello di accesso Carelink (1/2/3) */
     .lvl-pill {
@@ -198,6 +199,7 @@
   <script src="data/mock-data.js"></script>
   <script src="js/icons.js"></script>
   <script src="js/navigation.js"></script>
+  <script src="js/program-docs.js"></script>
   <script src="js/invoice.js"></script>
   <script>
     document.getElementById('sb1').outerHTML = aIcon('bar-chart', { size: 20 });
@@ -259,6 +261,47 @@
 
     // Dichiarazioni obbligatorie in scheda: reali per il paziente loggato,
     // stato derivato dai documenti per gli altri record dell'estratto.
+    /* Documenti del paziente con stato di validità. Revisione cliente: i
+       documenti scadono, e il Coordinatore deve vederlo prima di validare.
+       Fuori dal paziente loggato il mock non porta il dettaglio documentale:
+       si espone lo stato aggregato, senza inventare scadenze. */
+    function patientDocsHtml(p) {
+      if (p.id !== MOCK.patient.id) {
+        const ok = p.docs_status === 'complete';
+        return `<div style="padding:12px 14px;background:#FAFAFA;border-radius:10px;font-size:12.5px" class="text-muted">
+          Dettaglio documentale non incluso in questo estratto mock. Stato aggregato:
+          <strong>${ok ? 'completo' : p.docs_status === 'partial' ? 'parziale' : 'in attesa'}</strong>.</div>`;
+      }
+      const docs = MOCK.patient.docs;
+      return `<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:12px">
+        ${Object.keys(docs).filter(k => docs[k].status !== 'not_required').map(k => {
+          const d = docs[k], ex = docExpiryState(d.expires);
+          const bg = ex.state === 'expired' ? 'var(--b-cancelled-bg)' : ex.state === 'expiring' ? 'var(--b-pending-bg)' : '#FAFAFA';
+          return `<div style="padding:10px;background:${bg};border-radius:8px">
+            <strong>${d.name}</strong><br>
+            <span class="caption">verificato ${d.uploaded}</span>
+            ${ex.state === 'none' ? '' : `<br><span class="caption" style="font-weight:600">${ex.label}</span>`}
+          </div>`;
+        }).join('')}
+      </div>`;
+    }
+
+    /* Pill di stato documentale: un documento scaduto è un blocco operativo,
+       uno in scadenza è un promemoria da girare al paziente. */
+    function docStatePill(p) {
+      if (p.id !== MOCK.patient.id) {
+        const ok = p.docs_status === 'complete';
+        return ok ? `<span class="doc-pill ok">${aIcon('check-circle',{size:12})}Completi</span>`
+                  : `<span class="doc-pill warn">${aIcon('alert',{size:12})}${p.docs_status === 'partial' ? 'Parziali' : 'In attesa'}</span>`;
+      }
+      const due = expiringDocs(MOCK.patient.docs);
+      if (!due.length) return `<span class="doc-pill ok">${aIcon('check-circle',{size:12})}Completi</span>`;
+      const expired = due.filter(d => d.state === 'expired');
+      return expired.length
+        ? `<span class="doc-pill warn">${aIcon('alert',{size:12})}${expired.length} scaduto/i</span>`
+        : `<span class="doc-pill warn">${aIcon('clock',{size:12})}${due.length} in scadenza</span>`;
+    }
+
     function declarationsBlock(p) {
       if (p.id === MOCK.patient.id) {
         return `<div style="display:grid;gap:8px;font-size:13px;background:#F4FBF6;border:1px solid #C8E6CF;padding:14px;border-radius:10px">
@@ -269,8 +312,9 @@
               <span class="badge badge--approved"><span class="dot"></span>${d.accepted ? 'Accettata' : 'Mancante'}</span>
             </div>`;
           }).join('')}
-          <p class="caption" style="border-top:1px dashed #C8E6CF;padding-top:8px;margin-top:2px">Accettate il <strong>${DECL.truthful_docs.ts}</strong> · testo <span class="font-mono">${DECL.truthful_docs.version}</span> · storicizzate (${DECL_HIST.length} registrazioni)</p>
-        </div>`;
+          <p class="caption" style="border-top:1px dashed #C8E6CF;padding-top:8px;margin-top:2px">Sottoscritte il <strong>${DECL.truthful_docs.ts}</strong> · testo <span class="font-mono">${DECL.truthful_docs.version}</span> · storicizzate (${DECL_HIST.length} registrazioni)</p>
+        </div>
+        <div style="margin-top:8px">${feaSummaryHtml(MOCK.patient.signature)}</div>`;
       }
       const ok = p.docs_status === 'complete';
       return `<div style="display:grid;gap:8px;font-size:13px;background:#FAFAFA;border:1px solid var(--border-soft);padding:14px;border-radius:10px">
@@ -480,23 +524,19 @@
               <div style="display:flex;justify-content:space-between;align-items:center"><span class="text-muted">Livello di accesso</span><span><span class="lvl-pill">Livello ${al.level}</span> <strong style="color:#0F6E56">${al.label}</strong></span></div>
               <div style="display:flex;justify-content:space-between"><span class="text-muted">Requisito</span><strong>${al.desc} · verificato</strong></div>
               <div style="display:flex;justify-content:space-between;gap:12px"><span class="text-muted">Segnalato da</span><strong style="text-align:right">${p.referral}</strong></div>
+              <div style="display:flex;justify-content:space-between;gap:12px"><span class="text-muted">Codice di segnalazione</span><strong class="font-mono" style="text-align:right">${p.referral_code || '—'}</strong></div>
               <div style="display:flex;justify-content:space-between"><span class="text-muted">Voucher residui</span><strong style="color:var(--care-blue-dark)">${p.vouchers_left} su 12</strong></div>
               <div style="display:flex;justify-content:space-between"><span class="text-muted">Prestazioni completate</span><strong>${p.completed}</strong></div>
               <div style="display:flex;justify-content:space-between"><span class="text-muted">Approvazioni</span><strong>${Math.floor(p.completed*0.95)} su ${p.completed+1}</strong></div>
               <div style="display:flex;justify-content:space-between"><span class="text-muted">Cliente da</span><strong>04/01/2026</strong></div>
-              <div style="display:flex;justify-content:space-between"><span class="text-muted">Stato documenti</span><span class="doc-pill ok">${aIcon('check-circle',{size:12})}Completi</span></div>
+              <div style="display:flex;justify-content:space-between"><span class="text-muted">Stato documenti</span>${docStatePill(p)}</div>
             </div>
 
             <p class="eyebrow mt-20 mb-8">Dichiarazioni obbligatorie</p>
             ${declarationsBlock(p)}
 
-            <p class="eyebrow mt-20 mb-8">Documenti</p>
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:12px">
-              <div style="padding:10px;background:#FAFAFA;border-radius:8px"><strong>Ricetta rossa</strong><br><span class="caption">verificata 12/04/26</span></div>
-              <div style="padding:10px;background:#FAFAFA;border-radius:8px"><strong>ISEE</strong><br><span class="caption">verificato 02/02/26</span></div>
-              <div style="padding:10px;background:#FAFAFA;border-radius:8px"><strong>CIE</strong><br><span class="caption">verificata 04/01/26</span></div>
-              <div style="padding:10px;background:#FAFAFA;border-radius:8px"><strong>SPID</strong><br><span class="caption">login federato</span></div>
-            </div>
+            <p class="eyebrow mt-20 mb-8">Documenti e scadenze</p>
+            ${patientDocsHtml(p)}
           </div>
 
           <div>

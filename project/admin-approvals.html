@@ -45,6 +45,8 @@
       border-radius: 10px;
     }
     .doc-tile--req { background: #F4FBF6; border-color: #C8E6CF; }
+    /* Documento mancante o scaduto: blocca l'approvazione */
+    .doc-tile--bad { background: var(--b-cancelled-bg); border-color: #F0C9C9; }
     .req-pill {
       display: inline-flex; align-items: center;
       padding: 1px 6px; border-radius: 999px;
@@ -186,6 +188,7 @@
   <script src="data/mock-data.js"></script>
   <script src="js/icons.js"></script>
   <script src="js/navigation.js"></script>
+  <script src="js/program-docs.js"></script>
   <script src="js/invoice.js"></script>
   <script>
     // Icons
@@ -211,6 +214,51 @@
     };
     // Lookup livello di accesso Carelink (1 urgenza · 2 ISEE · 3 due diligence)
     const accessLevelOf = lvl => MOCK.access_levels.find(a => a.level === lvl);
+
+    /* Documenti della richiesta. I requisiti obbligatori sono DUE e dipendono
+       dalla richiesta, non sono più una coppia fissa:
+         · la ricetta medica, presupposto clinico di ogni prestazione;
+         · il documento del LIVELLO DI ACCESSO del paziente — i tre livelli sono
+           alternativi, quindi l'ISEE si chiede solo al livello 2 (revisione
+           cliente: «perché è sempre obbligatorio l'ISEE?»).
+       Ogni documento porta lo stato di validità: uno scaduto blocca
+       l'approvazione tanto quanto uno mancante. */
+    function reviewDocsHtml(r) {
+      const lv   = accessLevelOf(r.access_level) || {};
+      const docs = MOCK.patient.docs;
+      const tiles = [
+        { key: 'ricetta', short: 'ricetta', required: true, why: 'presupposto clinico' },
+        { key: lv.doc_key || 'isee', short: (lv.doc_key || 'isee').slice(0, 7), required: true, why: 'livello ' + r.access_level },
+        { key: 'cie', short: 'CIE', required: false }
+      ];
+      let blocking = [];
+      const html = tiles.map(t => {
+        const d  = docs[t.key] || { name: (lv.doc_label || t.key), status: 'missing' };
+        const ex = docExpiryState(d.expires);
+        const missing = d.status === 'missing' || d.status === 'not_required';
+        const bad = missing || ex.state === 'expired';
+        if (t.required && bad) blocking.push(d.name);
+        const badge = missing            ? '<span class="badge badge--cancelled" style="margin-top:4px"><span class="dot"></span>Mancante</span>'
+                    : ex.state === 'expired'  ? '<span class="badge badge--cancelled" style="margin-top:4px"><span class="dot"></span>Scaduto</span>'
+                    : ex.state === 'expiring' ? '<span class="badge badge--pending" style="margin-top:4px"><span class="dot"></span>In scadenza</span>'
+                    : '<span class="badge badge--approved" style="margin-top:4px"><span class="dot"></span>Verificato</span>';
+        const meta = missing ? 'Non caricato'
+                   : 'Caricato il ' + d.uploaded + (ex.state === 'none' ? '' : '<br>' + ex.label);
+        return `<div class="doc-tile${t.required ? ' doc-tile--req' : ''}${bad ? ' doc-tile--bad' : ''}">
+            <div class="review-doc">${t.short}</div>
+            <div style="font-size:12px">
+              <strong>${d.name}</strong>${t.required ? ` <span class="req-pill">Obbligatorio</span>` : ''}<br>
+              <span class="caption">${meta}</span><br>${badge}
+            </div>
+          </div>`;
+      }).join('');
+
+      const note = blocking.length
+        ? `<p class="caption mb-16" style="line-height:1.5;color:var(--b-cancelled-tx)"><strong>Approvazione bloccata</strong>: ${blocking.join(' · ')} — mancante o scaduto. Richiedi l'integrazione al paziente prima di validare il voucher.</p>`
+        : `<p class="caption mb-16" style="line-height:1.5"><strong>Ricetta medica</strong> (presupposto clinico della prestazione) e <strong>${lv.doc_label || 'documento del livello di accesso'}</strong> (requisito del livello ${r.access_level}) sono gli unici documenti obbligatori: i tre livelli sono alternativi, l'ISEE non è richiesto a chi accede per urgenza clinica o due diligence. La verifica è manuale, a cura del Coordinatore Alphio.</p>`;
+
+      return `<div style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:8px">${html}</div>${note}`;
+    }
 
     // Fattura verificabile CSRD: SOLO sulle richieste approvate che hanno
     // consumato un voucher (Layer 2). Le richieste Layer 1 (trasporto, nessun
@@ -331,13 +379,7 @@
             </div>`; })()}
 
             <p class="eyebrow mb-8">Documenti caricati</p>
-            <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:8px">
-              <div class="doc-tile doc-tile--req"><div class="review-doc">ricetta</div><div style="font-size:12px"><strong>Ricetta rossa</strong> <span class="req-pill">Obbligatoria</span><br><span class="caption">Caricata il 12/04/2026</span><br><span class="badge badge--approved" style="margin-top:4px"><span class="dot"></span>Verificata</span></div></div>
-              <div class="doc-tile doc-tile--req"><div class="review-doc">ISEE</div><div style="font-size:12px"><strong>Modello ISEE</strong> <span class="req-pill">Obbligatorio</span><br><span class="caption">Caricato il 02/02/2026</span><br><span class="badge badge--approved" style="margin-top:4px"><span class="dot"></span>Verificato</span></div></div>
-              <div class="doc-tile"><div class="review-doc">CIE</div><div style="font-size:12px"><strong>CIE</strong><br><span class="caption">04/01/2026</span><br><span class="badge badge--approved" style="margin-top:4px"><span class="dot"></span>Verificato</span></div></div>
-              <div class="doc-tile"><div class="review-doc">SPID</div><div style="font-size:12px"><strong>SPID</strong><br><span class="caption">login federato</span><br><span class="badge badge--approved" style="margin-top:4px"><span class="dot"></span>Attivo</span></div></div>
-            </div>
-            <p class="caption mb-16" style="line-height:1.5"><strong>Ricetta medica</strong> (presupposto clinico della prestazione) e <strong>Modello ISEE</strong> sono requisiti obbligatori: senza entrambi verificati la richiesta non può essere approvata. La verifica è manuale, a cura del Coordinatore Alphio.</p>
+            ${reviewDocsHtml(r)}
 
             <p class="eyebrow mb-8">Storico paziente</p>
             ${(() => { const p = (MOCK.admin_patients || []).find(x => x.cf === r.cf) || { completed: 0 }; return `

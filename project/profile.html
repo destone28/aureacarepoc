@@ -9,6 +9,13 @@
   <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="js/styles.css">
   <style>
+    /* Matrice delle notifiche: quando scriviamo e per cosa */
+    .notif-matrix { display: grid; gap: 1px; background: var(--border-soft); border: 1px solid var(--border-soft); border-radius: var(--r-md); overflow: hidden; }
+    .notif-ev { display: grid; grid-template-columns: 88px 1fr auto; gap: 10px; align-items: center; background: #fff; padding: 10px 12px; }
+    .notif-when { font-family: var(--font-mono, monospace); font-size: 11px; font-weight: 700; color: var(--care-blue); letter-spacing: .02em; }
+    .notif-ev .badge { font-size: 10px; white-space: nowrap; }
+    @media (max-width: 420px) { .notif-ev { grid-template-columns: 72px 1fr; } .notif-ev .badge { grid-column: 2; justify-self: start; } }
+
     .profile-hero {
       text-align: center;
       padding: 20px 0 16px;
@@ -150,31 +157,10 @@
       <!-- Documenti -->
       <div class="divider-eyebrow"><span>Documenti caricati</span><span class="line"></span></div>
       <div class="card card--padded mb-20">
-        <div class="doc-row">
-          <div class="doc-ico"><span id="dr1"></span></div>
-          <div style="flex:1"><p style="font-weight:700;font-size:14px">Ricetta rossa</p><p class="caption font-mono">ricetta_marchetti_apr26.pdf · 12/04/2026</p></div>
-          <span class="badge badge--approved"><span class="dot"></span>Verificato</span>
-        </div>
-        <div class="doc-row">
-          <div class="doc-ico"><span id="dr2"></span></div>
-          <div style="flex:1"><p style="font-weight:700;font-size:14px">Modello ISEE</p><p class="caption font-mono">isee_marchetti_2026.pdf · 02/02/2026</p></div>
-          <span class="badge badge--approved"><span class="dot"></span>Verificato</span>
-        </div>
-        <div class="doc-row">
-          <div class="doc-ico"><span id="dr3"></span></div>
-          <div style="flex:1"><p style="font-weight:700;font-size:14px">CIE</p><p class="caption font-mono">cie_marchetti.jpg · 04/01/2026</p></div>
-          <span class="badge badge--approved"><span class="dot"></span>Verificato</span>
-        </div>
-        <div class="doc-row">
-          <div class="doc-ico"><span id="dr4"></span></div>
-          <div style="flex:1"><p style="font-weight:700;font-size:14px">SPID</p><p class="caption">Login federato attivo</p></div>
-          <span class="badge badge--approved"><span class="dot"></span>Attivo</span>
-        </div>
-        <div class="doc-row">
-          <div class="doc-ico" style="background:var(--light-gray);color:var(--medium-gray)"><span id="dr5"></span></div>
-          <div style="flex:1"><p style="font-weight:700;font-size:14px">Certificato urgenza SSN/MMG</p><p class="caption">Non necessario per il livello di accesso 2</p></div>
-          <span class="badge" style="background:var(--light-gray);color:var(--medium-gray)">Non richiesto</span>
-        </div>
+        <div id="doc-list"></div>
+        <p class="caption mt-12" style="border-top:1px dashed var(--border-soft);padding-top:12px;line-height:1.55">
+          Ti avvisiamo <strong>30 giorni prima</strong> della scadenza di ogni documento. Un documento scaduto sospende
+          le nuove richieste finché non lo rinnovi: le cure già approvate restano valide.</p>
       </div>
 
       <!-- Dichiarazioni obbligatorie e storicizzate -->
@@ -186,7 +172,14 @@
         <p class="eyebrow mt-16 mb-8">Storico dichiarazioni</p>
         <div class="decl-hist" id="decl-hist"></div>
 
-        <button class="btn btn--secondary btn--block mt-12" onclick="downloadDeclarations()"><span id="ico-rcpt"></span>Scarica ricevuta delle dichiarazioni</button>
+        <p class="eyebrow mt-16 mb-8">Firma</p>
+        <div id="decl-sign"></div>
+
+        <button class="btn btn--secondary btn--block mt-12" onclick="downloadDeclarations()"><span id="ico-rcpt"></span>Scarica ricevuta firmata (PDF)</button>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px">
+          <button class="btn btn--ghost btn--sm" onclick="openProgramDoc('conditions')">Condizioni</button>
+          <button class="btn btn--ghost btn--sm" onclick="openProgramDoc('privacy')">Privacy</button>
+        </div>
       </div>
 
       <!-- ESG personale -->
@@ -195,9 +188,9 @@
         <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px">
           <div style="text-align:center"><p style="font-size:22px;font-weight:700;color:#0F6E56" id="pf-approved"></p><p class="caption">cure approvate</p></div>
           <div style="text-align:center"><p style="font-size:22px;font-weight:700;color:#0F6E56">3</p><p class="caption">drop-out evitati</p></div>
-          <div style="text-align:center"><p style="font-size:22px;font-weight:700;color:#0F6E56">28h</p><p class="caption">caregiver liberate</p></div>
+          <div style="text-align:center"><p style="font-size:22px;font-weight:700;color:#0F6E56" id="pf-cg"></p><p class="caption">caregiver liberate</p></div>
         </div>
-        <p class="caption" style="line-height:1.55;border-top:1px dashed #C8E6CF;padding-top:12px">Grazie al Programma Carelink hai contribuito a <strong style="color:#0F6E56"><span id="pf-co2"></span> kg di CO₂ evitata</strong> e a <strong style="color:#0F6E56">28 ore di caregiver risparmiate</strong>. Il tuo percorso ha evitato <strong style="color:#0F6E56">3 drop-out di seduta</strong> e le tue cure sono <strong style="color:#0F6E56">coperte dal programma</strong>: nessun costo a tuo carico.</p>
+        <p class="caption" style="line-height:1.55;border-top:1px dashed #C8E6CF;padding-top:12px">Grazie al Programma Carelink hai contribuito a <strong style="color:#0F6E56"><span id="pf-co2"></span> kg di CO₂ evitata</strong> — <span id="pf-co2-note"></span> — e a <strong style="color:#0F6E56"><span id="pf-cg-copy"></span> ore di caregiver liberate</strong>. Il tuo percorso ha evitato <strong style="color:#0F6E56">3 drop-out di seduta</strong> e le tue cure sono <strong style="color:#0F6E56">coperte dal programma</strong>: nessun costo a tuo carico.</p>
       </div>
 
       <!-- Sponsor del Fondo ESG Territoriale di Roma -->
@@ -292,13 +285,43 @@
   <script src="data/mock-data.js"></script>
   <script src="js/icons.js"></script>
   <script src="js/navigation.js"></script>
+  <script src="js/program-docs.js"></script>
   <script>
     document.getElementById('ico-grid').outerHTML = aIcon('grid', { size: 20 });
     document.getElementById('ico-set').outerHTML  = aIcon('settings', { size: 20 });
     document.getElementById('ico-x').outerHTML    = aIcon('x', { size: 16 });
     document.getElementById('ico-x2').outerHTML   = aIcon('x', { size: 16 });
-    ['dr1','dr2','dr3','dr4'].forEach((id,i) => { document.getElementById(id).outerHTML = aIcon(i===3 ? 'shield-check' : 'file-check', { size: 18 }); });
-    document.getElementById('dr5').outerHTML = aIcon('file', { size: 18 });
+    // ---- Documenti caricati, con stato di validità -------------------------
+    // Revisione cliente: i documenti scadono e il paziente va avvisato prima.
+    // docExpiryState() (program-docs.js) classifica ogni documento e la stessa
+    // logica alimenta il banner di home e la scheda paziente della console.
+    const DOCS = MOCK.patient.docs;
+    document.getElementById('doc-list').innerHTML = Object.keys(DOCS).map(k => {
+      const d  = DOCS[k];
+      const ex = docExpiryState(d.expires);
+      if (d.status === 'not_required') {
+        return `<div class="doc-row">
+          <div class="doc-ico" style="background:var(--light-gray);color:var(--medium-gray)">${aIcon('file',{size:18})}</div>
+          <div style="flex:1"><p style="font-weight:700;font-size:14px">${d.name}</p><p class="caption">Non richiesto dal tuo livello di accesso</p></div>
+          <span class="badge" style="background:var(--light-gray);color:var(--medium-gray)">Non richiesto</span>
+        </div>`;
+      }
+      const badge = ex.state === 'expired'  ? '<span class="badge badge--cancelled"><span class="dot"></span>Scaduto</span>'
+                  : ex.state === 'expiring' ? '<span class="badge badge--pending"><span class="dot"></span>In scadenza</span>'
+                  : '<span class="badge badge--approved"><span class="dot"></span>Verificato</span>';
+      const meta = [d.file ? `${d.file} · caricato il ${d.uploaded}` : `caricato il ${d.uploaded}`]
+        .concat(ex.state === 'none' ? [] : [ex.label]).join('<br>');
+      return `<div class="doc-row">
+        <div class="doc-ico"${ex.state === 'expired' ? ' style="background:var(--b-cancelled-bg);color:var(--b-cancelled-tx)"' : ex.state === 'expiring' ? ' style="background:var(--b-pending-bg);color:var(--b-pending-tx)"' : ''}>${aIcon('file-check',{size:18})}</div>
+        <div style="flex:1">
+          <p style="font-weight:700;font-size:14px">${d.name}</p>
+          <p class="caption font-mono" style="line-height:1.5">${meta}</p>
+          ${ex.state === 'expiring' || ex.state === 'expired'
+            ? `<button class="btn btn--ghost btn--sm mt-8" onclick="showToast('Caricamento nuovo documento: simulato nel POC','info')">${aIcon('upload',{size:13})}<span>Aggiorna documento</span></button>` : ''}
+        </div>
+        ${badge}
+      </div>`;
+    }).join('');
     document.getElementById('pc-ico').outerHTML = aIcon('shield-check', { size: 18 });
 
     // Livello di accesso: unica fonte di verità è il mock, con la label PAZIENTE
@@ -341,8 +364,17 @@
     document.getElementById('decl-hist').innerHTML = DECL_HIST.map(h => `
       <div class="h-item">
         <strong>${h.action}</strong>
-        <p class="caption mt-4">${h.date} · testo <span class="font-mono">${h.version}</span> · ${h.channel}</p>
+        <p class="caption mt-4">${h.date} · testo <span class="font-mono">${h.version}</span> · ${h.channel}${h.otp_ref ? ` · <span class="font-mono">${h.otp_ref}</span>` : ''}</p>
       </div>`).join('');
+
+    // Firma elettronica avanzata: se la registrazione è avvenuta in questa demo
+    // si mostra la firma appena apposta, altrimenti quella storicizzata nel mock.
+    let SIG = MOCK.patient.signature;
+    try {
+      const local = JSON.parse(localStorage.getItem('aureacare_declaration_signature'));
+      if (local && local.otp_ref) SIG = local;
+    } catch (e) { /* voce corrotta: si usa il mock */ }
+    document.getElementById('decl-sign').innerHTML = feaSummaryHtml(SIG);
 
     // Ricevuta delle dichiarazioni (.txt) — nessun dato economico: è la prova
     // dell'accettazione, non un documento contabile.
@@ -380,19 +412,45 @@
         'non veritiera comporta l\'esclusione dal Programma ESG Carelink.',
         'Alphio APS · Coordinatore del programma'
       );
-      const blob = new Blob([lines.join('\n')], { type: 'text/plain;charset=utf-8' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = 'dichiarazioni_' + p.id + '.txt';
-      document.body.appendChild(a); a.click(); a.remove();
-      URL.revokeObjectURL(url);
-      showToast('Ricevuta delle dichiarazioni scaricata', 'success');
+      // La ricevuta è il testo integrale sottoscritto più il blocco di firma:
+      // si genera con il motore di stampa del browser ("Salva come PDF"), senza
+      // librerie né servizi esterni.
+      const esc = t => String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;');
+      const sign = `
+        <div class="sign">
+          <h3>Sottoscrizione</h3>
+          <div><span>Sottoscrittore</span><strong>${esc(p.first_name + ' ' + p.last_name)} · ${esc(p.cf)}</strong></div>
+          <div><span>ID paziente</span><strong>${esc(p.id)}</strong></div>
+          <div><span>Tipo di firma</span><strong>${esc(SIG.type)}</strong></div>
+          <div><span>Metodo</span><strong>${esc(SIG.method)}</strong></div>
+          <div><span>Data e ora</span><strong>${esc(SIG.ts)}</strong></div>
+          <div><span>Riferimento OTP</span><strong>${esc(SIG.otp_ref)}</strong></div>
+          <div><span>Origine</span><strong>${esc(SIG.ip)}</strong></div>
+          <div><span>Impronta del testo</span><strong>${esc(SIG.doc_hash)}</strong></div>
+        </div>
+        <h2>Storico delle sottoscrizioni</h2>
+        ${DECL_HIST.map(h => `<p>· ${esc(h.date)} — ${esc(h.action)} (${esc(h.version)} · ${esc(h.channel)}${h.otp_ref ? ' · ' + esc(h.otp_ref) : ''})</p>`).join('')}`;
+      printProgramDoc('declarations', sign);
+      // `lines` resta la versione testuale della ricevuta, usata in debug.
+      void lines;
     }
 
     // Impatto personale — derivato dalle cure approvate (unico stato di conferma)
     const pfApproved = MOCK.bookings.filter(b => b.status === 'approved').length;
     document.getElementById('pf-approved').textContent = pfApproved;
+
+    // Ore di caregiver liberate, AL NETTO degli accompagnamenti effettivi
+    // (revisione cliente): quando il caregiver sale comunque in vettura è
+    // liberato solo il tempo di guida, parcheggio e attesa, non l'intero
+    // accompagnamento. Il dato "con accompagnatore" arriva dalla prenotazione.
+    const CG = MOCK.esg.caregiver;
+    const pfCgHours = MOCK.bookings
+      .filter(b => b.status === 'approved')
+      .reduce((h, b) => h + (b.companion ? CG.h_per_visit_accompanied : CG.h_per_visit_alone), 0);
+    const pfCg = Math.round(pfCgHours);
+    document.getElementById('pf-cg').textContent      = pfCg + 'h';
+    document.getElementById('pf-cg-copy').textContent = pfCg;
+    document.getElementById('pf-co2-note').textContent = 'già al netto delle emissioni dei mezzi di servizio';
     document.getElementById('pf-co2').textContent = Math.round(pfApproved * MOCK.esg.environmental.co2_per_visit_avg);
 
     // Mini mappa indirizzo paziente
@@ -404,20 +462,48 @@
       interactive: false
     });
 
+    // Sequenza completa delle notifiche del percorso (revisione cliente:
+    // «nel promemoria si dice 2 ore prima, quindi ci sarà un'altra notifica?»).
+    // Sì: il promemoria è l'ultimo di una sequenza, non l'unico messaggio.
+    const NOTIF_EVENTS = [
+      { when: 'Subito',        title: 'Richiesta ricevuta',        body: 'Confermiamo di aver preso in carico la prenotazione.',                          required: true },
+      { when: '2–4 h',         title: 'Esito della validazione',   body: 'Il Coordinatore Alphio approva o chiede un\'integrazione dei documenti.',       required: true },
+      { when: 'Alla conferma', title: 'Trasporto assegnato',       body: 'Se hai richiesto il trasporto, AureaShuttle conferma la corsa e l\'orario di prelievo.', required: true },
+      { when: '24 h prima',    title: 'Promemoria visita',         body: 'Struttura, orario e cosa portare con te.',                                       required: false },
+      { when: '2 h prima',     title: 'Promemoria del prelievo',   body: 'Solo se hai il trasporto: ti avvisiamo poco prima che il mezzo arrivi.',         required: false },
+      { when: 'Dopo la visita',title: 'Questionario di follow-up', body: 'Come è andata, se serve un richiamo, se la prescrizione va rinnovata.',          required: false },
+      { when: '30 gg prima',   title: 'Documento in scadenza',     body: 'ISEE e carta d\'identità: ti avvisiamo in tempo per rinnovarli.',                required: true }
+    ];
+
     // Settings: 4 pannelli (Notifiche, Lingua, Privacy, Aiuto)
     const settingsState = {
-      notif: { booking: true, reminder: true, marketing: false, esg: true },
+      notif: { booking: true, reminder: true, docs: true, marketing: false, esg: true },
       lang:  'it'
     };
     const panels = {
       notif: () => ({
         title: 'Notifiche',
         html: `
-          <p class="caption mb-16">Scegli come e quando ricevere comunicazioni AureaCare.</p>
+          <p class="caption mb-16">Ogni momento del percorso ha la sua notifica: qui trovi la sequenza completa e cosa puoi disattivare.</p>
+          <p class="eyebrow mb-8">Quando ti scriviamo</p>
+          <div class="notif-matrix">
+            ${NOTIF_EVENTS.map(n => `
+              <div class="notif-ev">
+                <div class="notif-when">${n.when}</div>
+                <div>
+                  <p style="font-weight:700;font-size:13px;margin:0">${n.title}</p>
+                  <p class="caption" style="margin:2px 0 0;line-height:1.45">${n.body}</p>
+                </div>
+                <span class="badge ${n.required ? 'badge--approved' : ''}" style="${n.required ? '' : 'background:var(--light-gray);color:var(--medium-gray)'}">${n.required ? 'Sempre attiva' : 'Disattivabile'}</span>
+              </div>`).join('')}
+          </div>
+          <p class="eyebrow mt-16 mb-8">Preferenze</p>
           <div class="set-modal-row"><span class="label">Conferme prenotazione</span><div class="switch ${settingsState.notif.booking?'on':''}" data-key="booking"></div></div>
           <div class="set-modal-row"><span class="label">Promemoria visita (24h prima)</span><div class="switch ${settingsState.notif.reminder?'on':''}" data-key="reminder"></div></div>
+          <div class="set-modal-row"><span class="label">Avvisi di scadenza documenti (30 giorni prima)</span><div class="switch ${settingsState.notif.docs?'on':''}" data-key="docs"></div></div>
           <div class="set-modal-row"><span class="label">Comunicazioni promozionali</span><div class="switch ${settingsState.notif.marketing?'on':''}" data-key="marketing"></div></div>
-          <div class="set-modal-row"><span class="label">Report ESG trimestrale</span><div class="switch ${settingsState.notif.esg?'on':''}" data-key="esg"></div></div>`
+          <div class="set-modal-row"><span class="label">Report ESG trimestrale</span><div class="switch ${settingsState.notif.esg?'on':''}" data-key="esg"></div></div>
+          <p class="caption mt-12" style="font-size:11.5px">Le notifiche di validazione e di scadenza documenti restano sempre attive: senza, il programma non potrebbe garantirti la continuità delle cure.</p>`
       }),
       lang: () => ({
         title: 'Lingua',
@@ -437,6 +523,9 @@
           <div class="set-modal-row"><span class="label"><strong>Trattamento dati clinici</strong><br><span class="caption">Necessario per l'erogazione del servizio</span></span><div class="switch on" style="opacity:.5;pointer-events:none"></div></div>
           <div class="set-modal-row"><span class="label">Condivisione dati con AureaShuttle</span><div class="switch on" data-key="share-shuttle"></div></div>
           <div class="set-modal-row"><span class="label">Analisi anonime per miglioramento servizio</span><div class="switch" data-key="analytics"></div></div>
+          <p class="eyebrow mt-16 mb-8">Documenti del programma</p>
+          <div class="list-row" onclick="openProgramDoc('conditions')">${aIcon('file-check',{size:20})}<div class="row-body"><div class="row-title">Condizioni del Programma Carelink</div><div class="row-meta">Versione v1.0 · leggi e scarica in PDF</div></div>${aIcon('chevron-right',{size:16,cls:'text-muted'})}</div>
+          <div class="list-row" onclick="openProgramDoc('privacy')">${aIcon('shield',{size:20})}<div class="row-body"><div class="row-title">Informativa privacy (GDPR)</div><div class="row-meta">Versione v1.0 · leggi e scarica in PDF</div></div>${aIcon('chevron-right',{size:16,cls:'text-muted'})}</div>
           <p class="caption mt-12">Puoi richiedere la cancellazione totale dei dati dal supporto.</p>
           <button class="btn btn--ghost btn--block mt-8" style="color:var(--error)" onclick="showConfirmDialog('Richiedi cancellazione', 'Riceverai una mail con la procedura GDPR di cancellazione (entro 30 giorni).', ()=> showToast('Richiesta inviata · controlla la mail','info'), {confirmLabel:'Invia richiesta', danger:true})">Richiedi cancellazione account</button>`
       }),
