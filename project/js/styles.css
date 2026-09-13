@@ -1853,3 +1853,6 @@ textarea.input { resize: vertical; min-height: 80px; }
 .doc-alert-title { font-weight: 700; font-size: 14px; color: var(--b-pending-tx); margin: 0 0 2px; }
 .doc-alert.is-expired .doc-alert-title { color: var(--b-cancelled-tx); }
 .doc-alert .caption { color: var(--dark-gray); }
+
+/* Campo in errore (conferma dell'orario concordato, upload obbligatori) */
+.input--error { border-color: var(--error) !important; box-shadow: 0 0 0 2px rgba(244,67,54,.14); }

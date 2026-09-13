@@ -500,30 +500,30 @@ const STEPS = [
     title: 'Le strutture convenzionate',
     lead: 'La rete è fatta di sole strutture private certificate ISO 9001 o JCI, mostrate su mappa e in elenco, ordinabili per vicinanza, disponibilità o valutazione.',
     points: [
-      'Diciotto strutture su Roma, con distanza dal domicilio e primo posto disponibile.',
+      'Diciotto strutture su Roma, con distanza dal domicilio e prima disponibilità indicativa.',
       'Ogni scheda porta la <strong>certificazione</strong> e la conferma che il listino è depositato e verificato.',
       'La prossimità non è un dettaglio estetico: è ciò che riduce il viaggio, e quindi le rinunce.'
     ],
-    focus: 'La mappa è centrata sul domicilio della persona, non sul centro città: il criterio è la raggiungibilità reale.'
+    focus: 'Le disponibilità mostrate sono orientative, comunicate dalle strutture: la piattaforma non è collegata alle loro agende, e l’appuntamento lo concorda il coordinamento.'
   },
   {
     ch: 1, app: 'care', role: 'Paziente', device: 'phone', url: 'booking.html',
     title: 'La richiesta di prenotazione',
-    lead: 'Si sceglie giorno e orario fra quelli liberi, si allega la prescrizione medica e si indica se servirà il trasporto. La richiesta parte solo quando tutto è a posto.',
+    lead: 'Si indica un giorno e una fascia oraria di preferenza, si allega la prescrizione medica e si dice se servirà il trasporto. Non si sta bloccando un posto in agenda: si sta dicendo quando si può.',
     points: [
+      '<strong>Preferenza, non appuntamento</strong>: la piattaforma non è collegata alle agende delle strutture, quindi l’orario esatto lo concorda il coordinamento con la struttura.',
       'La <strong>prescrizione medica</strong> è il presupposto clinico: finché manca, la conferma resta spenta.',
-      'Poche domande accompagnano la richiesta — urgenza percepita, presenza di un accompagnatore, necessità particolari.',
-      'Se un documento è scaduto, la richiesta si ferma qui: le cure già approvate restano comunque valide.'
+      'Se un documento è scaduto la richiesta si ferma qui; poche altre domande raccolgono urgenza percepita, accompagnatore e necessità particolari.'
     ],
-    focus: 'La domanda sull’accompagnatore non è di cortesia: alimenta il calcolo delle ore di caregiver effettivamente liberate.'
+    focus: 'Il calendario propone i giorni di apertura della struttura, non slot liberi: mostrare disponibilità che il sistema non conosce sarebbe una promessa che non può mantenere.'
   },
   {
     ch: 1, app: 'care', role: 'Paziente', device: 'phone', url: 'booking-summary.html',
     title: 'Il riepilogo e il passaggio al trasporto',
     lead: 'Prima dell’invio, un riepilogo raccoglie prestazione, struttura, data e documentazione. È anche il punto in cui il percorso di cura incontra quello di mobilità.',
     points: [
-      'La richiesta viene validata dal coordinamento entro poche ore lavorative.',
-      'Il <strong>passaggio ad AureaShuttle</strong> è già pronto: struttura, data e orario viaggiano insieme alla richiesta.',
+      'Il coordinamento verifica la disponibilità con la struttura e conferma <strong>data e orario esatti</strong>.',
+      'Il <strong>passaggio ad AureaShuttle</strong> parte da qui: il prelievo verrà calcolato appena l’appuntamento è confermato.',
       'La copertura è dichiarata in chiaro: prestazione coperta dal programma, trasporto gratuito.'
     ],
     focus: 'Da qui in avanti la visita guidata si sposta sulla seconda applicazione della suite.'
@@ -605,9 +605,9 @@ const STEPS = [
     title: 'Le cure richieste e approvate',
     lead: 'Il percorso torna su AureaCare. Qui si trovano tutte le prestazioni, divise in due soli stati perché sono i soli che contano davvero per chi le riceve.',
     points: [
-      '<strong>In attesa</strong> — la richiesta è al vaglio del coordinamento.',
+      '<strong>In attesa</strong> — il coordinamento sta concordando l’appuntamento con la struttura; si vede la fascia chiesta, non un orario.',
       '<strong>Approvate</strong> — la prestazione è autorizzata; se la data è passata, la visita si è svolta.',
-      'Ogni voce porta struttura, data, orario e l’eventuale trasporto collegato.'
+      'A conferma avvenuta la fascia lascia il posto all’orario definitivo, con la struttura e l’eventuale trasporto collegato.'
     ],
     focus: 'Gli stati intermedi esistono nel sistema ma non vengono mostrati: aggiungerebbero incertezza senza aggiungere informazione.'
   },
@@ -708,11 +708,11 @@ const STEPS = [
     title: 'La revisione delle richieste',
     lead: 'Ogni richiesta di prestazione passa da qui. La scheda di revisione mostra la persona, il requisito di accesso, i documenti e la prestazione richiesta.',
     points: [
-      'I documenti obbligatori dipendono dal <strong>livello di accesso</strong>: prescrizione più il documento di quel livello.',
-      'Un documento mancante o scaduto <strong>blocca l’approvazione</strong>, indicandone il motivo.',
+      'È qui che nasce l’appuntamento: verificata la disponibilità con la struttura, si fissa l’orario che il paziente riceverà.',
+      'I documenti obbligatori dipendono dal <strong>livello di accesso</strong>; uno mancante o scaduto blocca l’approvazione indicandone il motivo.',
       'All’approvazione si può generare la <strong>fattura verificabile</strong> con listino, sconto, tariffa e identificativo del voucher.'
     ],
-    focus: 'È il documento che rende l’impatto auditabile: senza, la rendicontazione resterebbe una dichiarazione.'
+    focus: 'Senza orario concordato la validazione non passa: approvare senza appuntamento lascerebbe la persona senza nulla di definitivo.'
   },
   {
     ch: 5, app: 'care', role: 'Console', device: 'desktop', url: 'admin-structures.html',

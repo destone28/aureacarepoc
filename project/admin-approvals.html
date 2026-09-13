@@ -136,7 +136,7 @@
                 <th>Paziente</th>
                 <th>Prestazione</th>
                 <th>Struttura</th>
-                <th>Data prevista</th>
+                <th>Appuntamento</th>
                 <th>Tariffa ESG</th>
                 <th>Voucher</th>
                 <th>Stato</th>
@@ -212,6 +212,16 @@
       rejected: ['badge--cancelled','Rifiutata'],
       info_requested: ['badge--warning','Info richieste']
     };
+    /* Il paziente indica giorno e FASCIA preferiti: la piattaforma non è
+       collegata alle agende delle strutture. L'orario esatto nasce qui, quando
+       il Coordinatore ha verificato la disponibilità con la struttura. Finché
+       manca, la richiesta non ha un appuntamento — ha una preferenza. */
+    function slotCell(r) {
+      return r.confirmed_time
+        ? `<strong>${r.date} · ${r.confirmed_time}</strong><div class="cell-sub">confermato con la struttura</div>`
+        : `<strong>${r.date}</strong><div class="cell-sub">${MOCK.bandLabel(r.slot_pref).toLowerCase()} · da concordare</div>`;
+    }
+
     // Lookup livello di accesso Carelink (1 urgenza · 2 ISEE · 3 due diligence)
     const accessLevelOf = lvl => MOCK.access_levels.find(a => a.level === lvl);
 
@@ -273,7 +283,7 @@
       const st = (MOCK.structures || []).find(s => s.id === r.structure_id);
       downloadCsrdInvoice({
         id: r.id,
-        date: r.date.replace(' · ', ' 2026 · '), // "26 mag · 15:30" → "26 mag 2026 · 15:30"
+        date: r.date + ' 2026' + (r.confirmed_time ? ' · ' + r.confirmed_time : ''), // appuntamento concordato con la struttura
         patient: r.patient,
         cf: r.cf,
         structure_name: r.structure,
@@ -305,7 +315,7 @@
         <td data-th="Paziente"><div style="font-weight:700">${r.patient} <span class="lvl-pill" title="Livello di accesso ${al.level} · ${al.label} — ${al.desc}">L${al.level}</span></div><div class="cell-sub">${r.cf}</div></td>
         <td data-th="Prestazione">${r.service}</td>
         <td data-th="Struttura">${r.structure}</td>
-        <td data-th="Data prevista"><div>${r.date}</div><div class="cell-sub">inv. ${r.submitted}</div></td>
+        <td data-th="Appuntamento">${slotCell(r)}</td>
         <td data-th="Tariffa ESG">${r.voucher_id ? `<strong>€${r.esg_price}</strong><div class="cell-sub"><s>listino €${r.list_price}</s> · −15%</div>` : `<strong>€0</strong><div class="cell-sub">trasporto L1</div>`}</td>
         <td data-th="Voucher">${r.voucher_id ? `<span class="font-mono" style="font-size:12px;font-weight:700">${r.voucher_id}</span><div class="cell-sub">${r.vouchers_left} residui</div>` : `<span class="cell-sub" style="display:inline">nessun voucher · L1</span>`}</td>
         <td data-th="Stato"><span class="badge ${b}"><span class="dot"></span>${l}</span></td>
@@ -338,7 +348,9 @@
             <div style="display:grid;gap:8px;font-size:13px;background:#FAFAFA;padding:14px;border-radius:10px">
               <div style="display:flex;justify-content:space-between"><span class="text-muted">Prestazione</span><strong>${r.service}</strong></div>
               <div style="display:flex;justify-content:space-between"><span class="text-muted">Struttura</span><strong>${r.structure}</strong></div>
-              <div style="display:flex;justify-content:space-between"><span class="text-muted">Data prevista</span><strong>${r.date}</strong></div>
+              <div style="display:flex;justify-content:space-between;gap:12px"><span class="text-muted">Giorno preferito</span><strong>${r.date}</strong></div>
+              <div style="display:flex;justify-content:space-between;gap:12px"><span class="text-muted">Fascia preferita</span><strong style="text-align:right">${MOCK.bandLabel(r.slot_pref)}<br><span class="caption" style="font-weight:400">${MOCK.bandRange(r.slot_pref)}</span></strong></div>
+              <div style="display:flex;justify-content:space-between;gap:12px"><span class="text-muted">Orario concordato</span><strong style="text-align:right">${r.confirmed_time ? r.confirmed_time + '<br><span class="caption" style="font-weight:400">verificato con la struttura</span>' : '<span style="color:var(--b-pending-tx)">da concordare</span>'}</strong></div>
               <div style="display:flex;justify-content:space-between"><span class="text-muted">Inviata</span><strong>${r.submitted}</strong></div>
             </div>
 
@@ -389,6 +401,22 @@
               <div style="display:flex;justify-content:space-between"><span>Annullamenti</span><strong>1</strong></div>
               <div style="display:flex;justify-content:space-between"><span>Nel programma dal</span><strong>09/01/2026</strong></div>
             </div>`; })()}
+
+            <p class="eyebrow mt-20 mb-8">Conferma dell'appuntamento</p>
+            <div style="background:var(--bg-warm);border:1px solid var(--bg-warm-br);border-radius:10px;padding:14px">
+              <p class="caption" style="margin:0 0 10px;line-height:1.5">Il paziente ha indicato <strong>${r.date}</strong>, fascia <strong>${MOCK.bandLabel(r.slot_pref).toLowerCase()}</strong> (${MOCK.bandRange(r.slot_pref)}). Verifica la disponibilità con la struttura e fissa qui l'orario: è quello che il paziente riceverà come appuntamento.</p>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+                <div class="field" style="margin-bottom:0">
+                  <label class="field-label" for="ap-day">Giorno</label>
+                  <div class="input-container"><input class="input" id="ap-day" value="${r.date}"></div>
+                </div>
+                <div class="field" style="margin-bottom:0">
+                  <label class="field-label" for="ap-time">Orario concordato</label>
+                  <div class="input-container"><input class="input font-mono" id="ap-time" placeholder="hh:mm" inputmode="numeric" maxlength="5" value="${r.confirmed_time || ''}"></div>
+                </div>
+              </div>
+              <p class="caption" style="margin:8px 0 0;font-size:11.5px">Senza orario la richiesta non può essere validata: il paziente resterebbe senza appuntamento.</p>
+            </div>
 
             <p class="eyebrow mt-20 mb-8">Posizione struttura</p>
             <div class="aurea-map aurea-map--xs" id="ap-map" style="height:180px"></div>
@@ -447,7 +475,21 @@
         () => showToast('Richiesta ' + id + ' rifiutata', 'info'),
         { confirmLabel: 'Sì, rifiuta', danger: true });
     }
-    function actApprove() { closeModal('approve-modal'); showToast('Voucher validato per ' + currentReqId + ' · paziente notificato', 'success'); }
+    function actApprove() {
+      // L'appuntamento nasce dalla verifica con la struttura: senza orario
+      // concordato la validazione non ha senso, perché al paziente non si
+      // potrebbe comunicare nulla di definitivo.
+      const t = (document.getElementById('ap-time') || {}).value || '';
+      if (!/^([01]\d|2[0-3]):[0-5]\d$/.test(t.trim())) {
+        showToast('Indica l\'orario concordato con la struttura (hh:mm)', 'error');
+        const el = document.getElementById('ap-time');
+        if (el) { el.classList.add('input--error'); el.focus(); }
+        return;
+      }
+      const d = (document.getElementById('ap-day') || {}).value || '';
+      closeModal('approve-modal');
+      showToast('Voucher validato per ' + currentReqId + ' · appuntamento ' + d + ' ' + t + ' · paziente notificato', 'success');
+    }
     function actReject()  { closeModal('approve-modal'); showToast('Richiesta ' + currentReqId + ' rifiutata', 'info'); }
     function actInfo()    { closeModal('approve-modal'); showToast('Richiesta info inviata al paziente', 'info'); }
   </script>

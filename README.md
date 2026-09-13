@@ -187,6 +187,17 @@ Seconda tornata di appunti del committente, tutti recepiti senza aggiungere serv
 
 I punti su validazione della corsa, notifiche del pick-up, modifica del luogo di prelievo e taratura dei tempi per difficoltà motoria riguardano il trasporto e sono risolti nel repo **AureaShuttle**, con cui questo POC è allineato.
 
+## Disponibilità: preferenza, non prenotazione
+
+La piattaforma **non è collegata alle agende delle strutture convenzionate** e nessuna integrazione è stata ipotizzata. Il mockup lo dice invece di nasconderlo:
+
+- Il paziente indica **giorno e fascia oraria preferiti** (`MOCK.time_bands`), non uno slot. Il calendario propone i giorni di apertura della struttura, senza inventare orari liberi o occupati.
+- Le prenotazioni in attesa portano la **fascia richiesta** e nessun orario; l'orario compare solo a conferma avvenuta.
+- L'appuntamento **nasce nella console**: il Coordinatore verifica la disponibilità con la struttura e fissa lì l'orario, che il paziente riceve come appuntamento definitivo. Senza orario concordato la validazione non passa.
+- Le disponibilità mostrate nell'elenco strutture sono **orientative**, comunicate dalle strutture stesse: servono a scegliere, non a prenotare.
+
+È stato inoltre rimosso ovunque il vincolo esplicito di **2-4 ore lavorative** per la validazione: il copy dice che il Coordinatore verifica e conferma, senza promettere tempi.
+
 ## Questioni aperte (To Be)
 
 Punti sollevati dal cliente che **non sono decidibili in autonomia**: nel mockup sono resi in modo esplicito ma provvisorio, in attesa di validazione.
@@ -197,6 +208,7 @@ Punti sollevati dal cliente che **non sono decidibili in autonomia**: nel mockup
 | 2 | **Modalità di verifica dell'ISEE** | L'upload è **simulato** e il documento risulta "verificato dal Coordinatore Alphio". Nessuna integrazione INPS: non è stata ipotizzata di proposito. |
 | 3 | **Modalità di verifica della ricetta medica** | Idem: upload simulato, ricetta "verificata dal Coordinatore Alphio". Nessuna integrazione con tessera sanitaria / ricetta dematerializzata. |
 | 4 | **Valore di legge della firma** | Il POC implementa una **firma elettronica avanzata** con OTP simulato. Se il programma richiede la firma *qualificata* (certificato su dispositivo, prestatore accreditato) serve un prestatore di servizi fiduciari: è una scelta di compliance con un costo, non una modifica di interfaccia. |
+| 5 | **Come conoscere la disponibilità reale delle strutture** | Oggi nessuna integrazione: il paziente esprime una preferenza e il Coordinatore concorda l'appuntamento con la struttura. Le alternative — integrazione con le agende delle 18 strutture, oppure un pannello in cui ogni struttura pubblica le proprie finestre — hanno costi e oneri di gestione molto diversi, ed è una scelta di programma. |
 
 ## Cosa NON è incluso
 

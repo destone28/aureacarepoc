@@ -82,7 +82,7 @@
 
     <div class="patient-content">
       <h2 class="h2 mb-4">Conferma la tua prenotazione</h2>
-      <p class="caption mb-16">La richiesta sarà validata dal Coordinatore Alphio (entro 2-4 ore lavorative).</p>
+      <p class="caption mb-16">Il Coordinatore Alphio verifica la disponibilità con la struttura e conferma data e orario dell'appuntamento.</p>
 
       <!-- Recap prestazione -->
       <div class="recap-block">
@@ -97,8 +97,8 @@
           </div>
         </div>
         <div class="kv-row"><span class="k">Struttura</span><span class="v" id="kv-structure">&nbsp;</span></div>
-        <div class="kv-row"><span class="k">Data</span><span class="v" id="kv-date">Giovedì 22 maggio 2026</span></div>
-        <div class="kv-row"><span class="k">Orario</span><span class="v" id="kv-time">14:30</span></div>
+        <div class="kv-row"><span class="k">Giorno preferito</span><span class="v" id="kv-date">Giovedì 22 maggio 2026</span></div>
+        <div class="kv-row"><span class="k">Fascia preferita</span><span class="v" id="kv-time">Pomeriggio</span></div>
         <div class="kv-row"><span class="k">Medico</span><span class="v" id="kv-doctor">&nbsp;</span></div>
         <div class="kv-row"><span class="k">Ricetta medica</span><span class="v" id="kv-rx">&nbsp;</span></div>
       </div>
@@ -121,7 +121,7 @@
       <button class="btn btn--care btn--block btn--lg mt-20" onclick="confirmBooking()">Conferma prenotazione</button>
       <button class="btn btn--ghost btn--block mt-8" onclick="history.back()">Modifica</button>
 
-      <p class="caption text-center mt-16">La richiesta sarà validata dal Coordinatore Alphio. Tempi medi: 2-4 ore lavorative.</p>
+      <p class="caption text-center mt-16">La richiesta passa al Coordinatore Alphio, che concorda l'appuntamento con la struttura e te lo conferma.</p>
     </div>
 
     <nav class="bottom-nav">
@@ -148,9 +148,11 @@
     const params = new URLSearchParams(location.search);
     const shuttle = params.get('shuttle') === '1';
     const day = params.get('day') || 22;
-    const time = params.get('time') || '14:30';
+    // Preferenza, non appuntamento: l'orario esatto arriva con la conferma.
+    const band = params.get('band') || 'pomeriggio';
     document.getElementById('kv-date').innerHTML = `Giovedì ${day} maggio 2026`;
-    document.getElementById('kv-time').textContent = time;
+    document.getElementById('kv-time').innerHTML =
+      `${MOCK.bandLabel(band)}<br><span class="caption" style="font-weight:400">${MOCK.bandRange(band)} · da confermare</span>`;
     if (shuttle) {
       document.getElementById('row-shuttle-fee').style.display = 'flex';
     }
@@ -208,7 +210,7 @@
           <div class="handoff-icon">${aIcon('ambulance', { size: 24 })}</div>
           <div class="handoff-body">
             <div class="handoff-title">Hai bisogno del trasporto sanitario?</div>
-            <p class="handoff-sub">Prenota con AureaShuttle: i dati della visita sono già precompilati. Corsa gratuita, erogata da Samarcanda Scarl · certificata ISO 9001:2015 — coperta dal Programma Carelink.</p>
+            <p class="handoff-sub">Richiedilo ora: i dati della visita passano ad AureaShuttle e l'orario di prelievo viene calcolato appena il Coordinatore conferma l'appuntamento. Corsa gratuita, erogata da Samarcanda Scarl · certificata ISO 9001:2015 — coperta dal Programma Carelink.</p>
             <div class="handoff-actions">
               <a class="btn btn--primary-grad" href="#" onclick="event.preventDefault();openShuttleSim()">Sì, apri AureaShuttle</a>
               <button class="btn btn--secondary" onclick="declineShuttle(this)">No, grazie</button>
@@ -222,12 +224,12 @@
             <div class="ambo-illo">${aIcon('ambulance', { size: 28 })}</div>
             <div>
               <p style="font-weight:700">Aggiungi trasporto sanitario gratuito</p>
-              <p class="caption" style="color:#856404">AureaShuttle ti porta a destinazione, già precompilato. Nessun costo a tuo carico.</p>
+              <p class="caption" style="color:#856404">AureaShuttle ti porta a destinazione. Nessun costo a tuo carico.</p>
             </div>
           </div>
           <div class="step3">
             <div class="row"><span class="num">1</span><span><strong>Conferma qui</strong>: i dati della visita passano ad AureaShuttle.</span></div>
-            <div class="row"><span class="num">2</span><span>Scegli orario di ritiro su AureaShuttle (suggerito 1h prima).</span></div>
+            <div class="row"><span class="num">2</span><span>L'orario di prelievo lo calcola il sistema, appena l'appuntamento è confermato.</span></div>
             <div class="row"><span class="num">3</span><span>La corsa è <strong>gratuita</strong>: erogata da Samarcanda Scarl · certificata ISO 9001:2015, coperta dal Programma Carelink.</span></div>
           </div>
           <div class="handoff-actions" style="display:flex;gap:8px;margin-top:12px">
@@ -247,7 +249,7 @@
               <div class="prefill-list">
                 <div class="row"><span>Da</span><span>${(MOCK.patient && MOCK.patient.address) || 'Via Tuscolana 124, Roma'}</span></div>
                 <div class="row"><span>A</span><span>${st.name}</span></div>
-                <div class="row"><span>Arrivo richiesto</span><span>${day} mag · 14:15</span></div>
+                <div class="row"><span>Arrivo richiesto</span><span>${day} mag · ${MOCK.bandLabel(band).toLowerCase()}<br><span class="caption">orario esatto alla conferma</span></span></div>
                 <div class="row"><span>Corsa</span><span style="color:#0F6E56;font-weight:700">Gratuita · ~22 min</span></div>
                 <div class="row"><span>Erogata da</span><span>Samarcanda Scarl · certificata ISO 9001:2015</span></div>
                 <div class="row"><span>Percorso di cura</span><span>Corse illimitate · coperte dal programma</span></div>
@@ -264,7 +266,7 @@
             <div class="handoff-icon">${aIcon('ambulance', { size: 24 })}</div>
             <div class="handoff-body">
               <div class="handoff-title">Vuoi aggiungere il trasporto gratuito?</div>
-              <p class="handoff-sub">Non l'hai richiesto in fase di prenotazione. Puoi aggiungerlo ora: i dati passano automaticamente ad AureaShuttle. Corsa erogata da Samarcanda Scarl · certificata ISO 9001:2015, coperta dal Programma Carelink.</p>
+              <p class="handoff-sub">Non l'hai richiesto in fase di prenotazione. Puoi aggiungerlo ora: i dati passano ad AureaShuttle e il prelievo viene calcolato alla conferma dell'appuntamento. Corsa erogata da Samarcanda Scarl · certificata ISO 9001:2015, coperta dal Programma Carelink.</p>
               <div class="handoff-actions">
                 <a class="btn btn--primary-grad btn--sm" href="#" onclick="event.preventDefault();openShuttleSim()">Sì, apri AureaShuttle</a>
                 <button class="btn btn--secondary btn--sm" onclick="declineShuttle(this)">No, grazie</button>
@@ -325,7 +327,7 @@
     function confirmBooking() {
       showConfirmDialog(
         'Confermi la prenotazione?',
-        'La richiesta sarà validata dal Coordinatore Alphio. Riceverai una notifica entro 2-4 ore lavorative.',
+        'Il Coordinatore Alphio verifica la disponibilità con la struttura e ti conferma data e orario dell\'appuntamento.',
         () => {
           showToast('Richiesta inviata al Coordinatore Alphio', 'care');
           setTimeout(() => location.href = 'my-cures.html', 900);

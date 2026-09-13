@@ -164,7 +164,7 @@
                 <th>Paziente</th>
                 <th>Prestazione</th>
                 <th>Struttura</th>
-                <th>Data</th>
+                <th>Appuntamento</th>
                 <th>Tariffa ESG</th>
                 <th>Stato</th>
                 <th style="width:160px">Azione</th>
@@ -232,7 +232,7 @@
         <td data-th="Paziente"><div style="font-weight:700">${r.patient}</div><div class="cell-sub">${r.cf}</div></td>
         <td data-th="Prestazione">${r.service}</td>
         <td data-th="Struttura">${r.structure}</td>
-        <td data-th="Data"><div>${r.date}</div><div class="cell-sub">inv. ${r.submitted}</div></td>
+        <td data-th="Appuntamento"><div>${r.confirmed_time ? r.date + ' · ' + r.confirmed_time : r.date}</div><div class="cell-sub">${r.confirmed_time ? 'confermato' : MOCK.bandLabel(r.slot_pref).toLowerCase() + ' · da concordare'}</div></td>
         <td data-th="Tariffa ESG">${r.voucher_id ? `<strong>€${r.esg_price}</strong><div class="cell-sub"><s>listino €${r.list_price}</s></div>` : `<strong>€0</strong><div class="cell-sub">trasporto L1</div>`}</td>
         <td data-th="Stato"><span class="badge ${b}"><span class="dot"></span>${l}</span></td>
         <td data-th="Azione">${action}</td>

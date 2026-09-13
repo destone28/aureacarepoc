@@ -161,7 +161,7 @@
               </div>
               <div class="cure-title">${b.service_name}</div>
               <div class="cure-meta">${b.structure_name} · ${b.doctor}</div>
-              <div class="cure-meta">${b.date} · ${b.time}</div>
+              <div class="cure-meta">${b.date} · ${b.time ? b.time : MOCK.bandLabel(b.slot_pref).toLowerCase() + ' (da confermare)'}</div>
               <div class="cure-meta" style="color:#0F6E56;font-weight:600;margin-top:4px">Coperta dal Programma Carelink</div>
             </div>
           </div>
@@ -204,7 +204,9 @@
           <div style="display:flex;justify-content:space-between"><span class="text-muted">Struttura</span><strong>${b.structure_name}</strong></div>
           <div style="display:flex;justify-content:space-between;align-items:center"><span class="text-muted">Certificazione</span><strong style="display:flex;align-items:center;gap:5px">${aIcon('award',{size:13})}${certOf(b)}</strong></div>
           <div style="display:flex;justify-content:space-between"><span class="text-muted">Data</span><strong>${b.date}</strong></div>
-          <div style="display:flex;justify-content:space-between"><span class="text-muted">Orario</span><strong>${b.time}</strong></div>
+          ${b.time
+            ? `<div style="display:flex;justify-content:space-between"><span class="text-muted">Orario</span><strong>${b.time} <span class="caption" style="font-weight:400">confermato</span></strong></div>`
+            : `<div style="display:flex;justify-content:space-between;gap:12px"><span class="text-muted">Fascia preferita</span><strong style="text-align:right">${MOCK.bandLabel(b.slot_pref)}<br><span class="caption" style="font-weight:400">${MOCK.bandRange(b.slot_pref)} · orario da confermare</span></strong></div>`}
           <div style="display:flex;justify-content:space-between"><span class="text-muted">Riferimento</span><strong class="font-mono">${b.id}</strong></div>
           <div style="display:flex;justify-content:space-between"><span class="text-muted">Copertura</span><strong style="color:#0F6E56">Programma Carelink</strong></div>
           ${b.shuttle ? `<div style="display:flex;justify-content:space-between"><span class="text-muted">Trasporto</span><strong style="color:var(--primary-orange)">AureaShuttle · Samarcanda · gratuito</strong></div>` : ''}
@@ -212,7 +214,7 @@
 
         <p class="caption mt-12" style="display:flex;align-items:flex-start;gap:6px;color:#0F6E56">${aIcon('shield-check',{size:14})}<span>Prestazione <strong>coperta dal Programma Carelink</strong>: nessun costo a tuo carico.</span></p>
 
-        ${b.status === 'pending' ? `<p class="caption mt-12">In attesa di validazione del <strong>Coordinatore Alphio</strong> · tempi medi 2-4 ore lavorative.</p>` : ''}
+        ${b.status === 'pending' ? `<p class="caption mt-12">In attesa che il <strong>Coordinatore Alphio</strong> verifichi la disponibilità con la struttura e confermi data e orario.</p>` : ''}
 
         ${isVisitDone(b) && !getFollowUp(b.id) ? `<a class="btn btn--secondary btn--block mt-16" href="follow-up.html?booking=${b.id}">${aIcon('message-square',{size:16})} Com'è andata la visita? <span class="badge badge--draft">Bozza</span></a>` : ''}
 
@@ -237,9 +239,9 @@
       const sid = b.structure_id || 'STR-001';
       showConfirmDialog(
         'Sposta la prenotazione',
-        'Verrai portato al calendario per scegliere un nuovo orario per "' + b.service_name + '". La data attuale (' + b.date + ') sarà liberata.',
+        'Potrai indicare un nuovo giorno e una nuova fascia per "' + b.service_name + '". Il Coordinatore riconcorderà l\'appuntamento con la struttura.',
         () => location.href = 'booking.html?structure=' + sid + '&service=' + (b.service_id || '') + '&reschedule=' + id,
-        { confirmLabel: 'Scegli nuovo slot' }
+        { confirmLabel: 'Indica nuova preferenza' }
       );
     }
 

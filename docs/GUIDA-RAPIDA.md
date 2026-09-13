@@ -106,33 +106,33 @@ Il catalogo espone **esattamente** ciò che la Convenzione Terzo Settore prevede
 
 ![Strutture](img/15-strutture.png)
 
-Le strutture convenzionate di Roma — **17 attive delle 18 in rete**, perché il Coordinatore può disattivarne una dalla console — su lista e su mappa, con distanza dal paziente e primo slot disponibile. Ognuna mostra la **certificazione ISO 9001 o JCI**: è il requisito di ammissione alla rete, e l'unica cosa che il paziente ha davvero bisogno di sapere sulla qualità del posto in cui andrà.
+Le strutture convenzionate di Roma — **17 attive delle 18 in rete**, perché il Coordinatore può disattivarne una dalla console — su lista e su mappa, con distanza dal paziente e prima disponibilità indicativa. Ognuna mostra la **certificazione ISO 9001 o JCI**: è il requisito di ammissione alla rete, e l'unica cosa che il paziente ha davvero bisogno di sapere sulla qualità del posto in cui andrà.
 
 I filtri permettono di restringere per specialità, prossimità (≤ 5 km), disponibilità immediata e **certificazione JCI**.
 
 ![Ordinamento](img/28-strutture-ordina.png)
 
-Un pannello dedicato ordina la rete per **distanza, valutazione, certificazione o disponibilità dello slot**.
+Un pannello dedicato ordina la rete per **distanza, valutazione, certificazione o disponibilità indicativa**.
 
 ## 1.6 Prenotazione: la ricetta è il presupposto clinico
 
 ![Prenotazione bloccata](img/16-prenotazione-bloccata.png)
 
-Alla prima apertura il pulsante di conferma è **spento**: manca lo slot. Il riepilogo in alto mostra la prestazione e la struttura scelte davvero (qui una PET al Centro Diagnostico Italiano Eur), con la riga *«Coperta dal Programma Carelink · nessun costo a tuo carico»*. Una mini-mappa traccia il percorso da casa alla struttura.
+Alla prima apertura il pulsante di conferma è **spento**: manca la preferenza di giorno e fascia. Il riepilogo in alto mostra la prestazione e la struttura scelte davvero (qui una PET al Centro Diagnostico Italiano Eur), con la riga *«Coperta dal Programma Carelink · nessun costo a tuo carico»*. Una mini-mappa traccia il percorso da casa alla struttura.
 
-![Selezione slot](img/17-prenotazione-slot.png)
+![Selezione della fascia](img/17-prenotazione-slot.png)
 
-Il calendario apre gli slot del giorno; quelli non disponibili sono disattivati. Cambiare giorno **invalida** l'orario già confermato, così il riepilogo non resta mai indietro rispetto alla scelta.
+Il calendario propone i giorni di apertura della struttura e apre le **fasce orarie preferite** — mattina, ora di pranzo, pomeriggio, tardo pomeriggio, indifferente. Non sono slot prenotabili: la piattaforma non è collegata alle agende delle strutture, e l'orario esatto lo concorda il Coordinatore. Cambiare giorno **invalida** la fascia già scelta, così il riepilogo non resta mai indietro. *(Gli screenshot di questa guida sono anteriori alla revisione e mostrano ancora gli slot puntuali: vanno rigenerati.)*
 
 ![Ricetta obbligatoria](img/18-prenotazione-ricetta-obbligatoria.png)
 
-Scelto lo slot, il pulsante **resta bloccato** e cambia messaggio: *«Allega la ricetta medica»*. È il secondo requisito chiesto dal cliente: **senza ricetta non si prenota**, perché è il presupposto clinico della prestazione e senza di essa il Coordinatore non può validare nulla. Il paziente può **riusare la ricetta già verificata** o caricarne una nuova.
+Scelta la fascia, il pulsante **resta bloccato** e cambia messaggio: *«Allega la ricetta medica»*. È il secondo requisito chiesto dal cliente: **senza ricetta non si prenota**, perché è il presupposto clinico della prestazione e senza di essa il Coordinatore non può validare nulla. Il paziente può **riusare la ricetta già verificata** o caricarne una nuova.
 
 Nella stessa schermata, il **questionario di prenotazione** raccoglie il motivo della prestazione, l'**urgenza percepita**, se il paziente **sarà accompagnato** e se ha **necessità particolari** (sedia a rotelle, barella, assistenza): sono le informazioni che dimensionano la corsa. Il **trasporto** si attiva con un interruttore dedicato, subito sopra il questionario.
 
 ![Prenotazione sbloccata](img/19-prenotazione-sbloccata.png)
 
-Solo con **slot e ricetta insieme** il pulsante si accende e mostra data e ora scelte.
+Solo con **preferenza e ricetta insieme** il pulsante si accende e mostra giorno e fascia scelti.
 
 ![Dissuasione ciclo](img/29b-ciclo-dissuasione.png)
 
@@ -146,7 +146,7 @@ Il riepilogo conferma prestazione, struttura, data, ricetta allegata e copertura
 
 ![Handoff AureaShuttle](img/21-handoff-shuttle.png)
 
-Il passaggio ad **AureaShuttle** arriva già compilato con partenza da casa, arrivo alla struttura e giorno dell'appuntamento. *(Nel mockup l'orario di ritiro è un valore dimostrativo fisso, non ancora calcolato sull'ora dello slot.)* È il punto di giunzione tra i due layer del programma — la cura e il modo di arrivarci — e attraversa due app della suite senza che il paziente debba reinserire nulla.
+Il passaggio ad **AureaShuttle** arriva già compilato con partenza da casa, arrivo alla struttura e giorno dell'appuntamento. *(L'orario di prelievo viene calcolato da AureaShuttle quando il Coordinatore ha confermato l'orario dell'appuntamento.)* È il punto di giunzione tra i due layer del programma — la cura e il modo di arrivarci — e attraversa due app della suite senza che il paziente debba reinserire nulla.
 
 ![Ciclo con trasporto](img/22-ciclo-trasporto.png)
 
@@ -230,7 +230,7 @@ Le 18 strutture convenzionate: **tutte private, tutte certificate** ISO 9001 o J
 
 ![Dettaglio struttura](img/35-admin-struttura-dettaglio.png)
 
-Il dettaglio riporta anagrafica e specialità, i **KPI della struttura** (valutazione, recensioni, distanza, certificazione), la posizione su mappa, il prossimo slot disponibile e la conferma che il **listino ufficiale è depositato e verificato**: è la base su cui si applica lo sconto contrattuale del 15%, ed è ciò che rende la tariffa ESG verificabile invece che dichiarata.
+Il dettaglio riporta anagrafica e specialità, i **KPI della struttura** (valutazione, recensioni, distanza, certificazione), la posizione su mappa, la disponibilità indicativa comunicata e la conferma che il **listino ufficiale è depositato e verificato**: è la base su cui si applica lo sconto contrattuale del 15%, ed è ciò che rende la tariffa ESG verificabile invece che dichiarata.
 
 ![Aggiungi struttura](img/42-admin-aggiungi-struttura.png)
 

@@ -29,7 +29,7 @@ aureacarepoc/
 ├── home.html                 # Dashboard paziente (stato programma non numerico, prossima cura, ESG personale, sponsor del Fondo)
 ├── book-care.html            # Catalogo: Fascia A (visite) / Fascia B (diagnostica) / cure ricorsive (trasporto) — pill "Coperta dal programma"
 ├── structures.html           # Mappa Roma + strutture private certificate ISO 9001 / JCI
-├── booking.html              # Calendario + bottom sheet slot + ricetta obbligatoria + questionario di prenotazione + trasporto gratuito Layer 1
+├── booking.html              # Giorno + fascia oraria preferita + ricetta obbligatoria + questionario di prenotazione + trasporto gratuito Layer 1
 ├── booking-summary.html      # Recap senza importi (prestazione, struttura, ricetta allegata) + handoff AureaShuttle
 ├── my-cures.html             # Tab "In attesa" / "Approvate" + modale dettaglio + CTA "Com'è andata la visita?"
 ├── follow-up.html            # Questionario post-visita (bozza) — risposte in localStorage

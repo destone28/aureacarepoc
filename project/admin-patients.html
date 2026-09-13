@@ -251,11 +251,11 @@
     function historyOf(p) {
       const fromBookings = (MOCK.bookings || [])
         .filter(b => b.patient_id === p.id)
-        .map(b => ({ src: 'booking', id: b.id, title: b.service_name, structure: b.structure_name, when: `${b.date} ${b.time}`, voucher_id: b.voucher_id, esg_price: b.esg_price, status: b.status }));
+        .map(b => ({ src: 'booking', id: b.id, title: b.service_name, structure: b.structure_name, when: b.time ? `${b.date} ${b.time}` : `${b.date} · ${MOCK.bandLabel(b.slot_pref).toLowerCase()} (da concordare)`, voucher_id: b.voucher_id, esg_price: b.esg_price, status: b.status }));
       if (fromBookings.length) return fromBookings.slice(0, 5);
       return (MOCK.admin_requests || [])
         .filter(r => r.cf === p.cf)
-        .map(r => ({ src: 'request', id: r.id, title: r.service, structure: r.structure, when: r.date, voucher_id: r.voucher_id, esg_price: r.esg_price, status: r.status }))
+        .map(r => ({ src: 'request', id: r.id, title: r.service, structure: r.structure, when: r.confirmed_time ? `${r.date} ${r.confirmed_time}` : `${r.date} · ${MOCK.bandLabel(r.slot_pref).toLowerCase()} (da concordare)`, voucher_id: r.voucher_id, esg_price: r.esg_price, status: r.status }))
         .slice(0, 5);
     }
 
@@ -438,7 +438,7 @@
       const st = (MOCK.structures || []).find(s => s.id === r.structure_id);
       downloadCsrdInvoice({
         id: r.id,
-        date: r.date.replace(' · ', ' 2026 · '),
+        date: r.date + ' 2026' + (r.confirmed_time ? ' · ' + r.confirmed_time : ''),
         patient: r.patient,
         cf: r.cf,
         structure_name: r.structure,
@@ -457,7 +457,7 @@
       const st = (MOCK.structures || []).find(s => s.id === b.structure_id);
       downloadCsrdInvoice({
         id: b.id,
-        date: b.date + ' 2026 · ' + b.time,
+        date: b.date + ' 2026' + (b.time ? ' · ' + b.time : ''),
         patient: p.name,
         cf: p.cf,
         structure_name: b.structure_name,

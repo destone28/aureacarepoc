@@ -108,6 +108,18 @@ These came from the client and are **not settled**. If a task touches them, keep
 2. **How the ISEE is verified** — upload is simulated and the document reads "verificato dal Coordinatore Alphio". **No INPS integration** has been assumed. Don't add one.
 3. **How the medical prescription is verified** — same: simulated upload, verified by the Coordinator. **No tessera sanitaria / dematerialized-prescription integration.** Don't add one.
 
+## Availability is a preference, never a booked slot
+
+The platform is **not connected to the facilities' scheduling systems** and no such integration has been assumed. Everything downstream follows from that, and it is easy to break by accident:
+
+- The patient picks a **day** and a **time band** (`MOCK.time_bands`, with `bandLabel()` / `bandRange()`), never a precise slot. `booking.html` offers the facility's opening days — closed days are excluded because the facility declares them — and never fake "free/taken" slots.
+- `bookings[]` carries `slot_pref` always, and `time` **only once confirmed**: a `pending` booking has `time: null`. `admin_requests[]` mirrors this with `slot_pref` + `confirmed_time` (null until approved).
+- The appointment is **created in the console**: `admin-approvals.html` asks the Coordinator for the agreed time and refuses to validate without it, because approving with no appointment leaves the patient with nothing definite.
+- `structures[].next_slot` is an **indicative** first availability communicated by the facility, used to orient the choice. It is not bookable — label it as indicative wherever it is shown.
+- Patient screens show the band plus "da confermare" while pending, and the confirmed time afterwards.
+
+**Never reintroduce a slot picker**, and never state a validation SLA (the old "entro 2-4 ore lavorative" was removed on the client's instruction — the copy says the Coordinator verifies with the facility and confirms, without promising a turnaround).
+
 ## Net impact metrics — don't quietly turn them back into gross
 
 Two metrics were corrected in the client review and the correction is the point; both are **net**, and the arithmetic is written into `mock-data.js` so it can be checked.
