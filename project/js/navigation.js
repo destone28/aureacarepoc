@@ -16,11 +16,30 @@ function setAuth(user) {
   localStorage.setItem(AUTH_KEY, JSON.stringify(user));
 }
 
+// ---------- Visita guidata (tutorial.html) ----------
+// Le schermate sono incorporate in tutorial.html, anche dall'altro dominio
+// della suite, e devono renderizzare senza una sessione attiva: lì dentro non
+// si può scrivere il localStorage dell'origine incorporata, e il ruolo
+// cambierebbe comunque a metà percorso (paziente → console).
+//
+// Il bypass vale SOLO dentro un iframe e SOLO con ?tour=1 esplicito: una
+// visita diretta con lo stesso parametro resta protetta dalla guardia.
+function isTourFrame() {
+  try {
+    return window.top !== window.self &&
+           new URLSearchParams(location.search).get('tour') === '1';
+  } catch (e) {
+    return false; // accesso cross-origin a window.top negato: non è il tour
+  }
+}
+
 function requireAuth() {
+  if (isTourFrame()) return;
   if (!getAuth()) { window.location.href = 'index.html'; }
 }
 
 function requireAdmin() {
+  if (isTourFrame()) return;
   const u = getAuth();
   if (!u || u.role !== 'admin') { window.location.href = 'admin-login.html'; }
 }
