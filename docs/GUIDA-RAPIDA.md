@@ -12,13 +12,13 @@ Il mockup è un **prototipo navigabile**, non un prodotto.
 
 # Parte 1 — L'app del paziente
 
-## 1.1 Accesso: credenziali o CIE
+## 1.1 Accesso con credenziali
 
 ![Schermata di login](img/01-login.png)
 
 La schermata di ingresso dichiara subito di cosa si tratta.
 
-Oltre alle credenziali è disponibile l'accesso con **CIE**: è l'unica identità digitale prevista dal programma. *SPID è stato rimosso su indicazione del committente; gli screenshot di questa guida sono anteriori alla revisione e vanno rigenerati, così come il PDF allegato.*
+L'accesso avviene con le sole **credenziali**. *SPID e CIE sono stati rimossi su indicazione del committente: gli screenshot di questa guida sono anteriori alla revisione e li mostrano ancora, quindi vanno rigenerati insieme al PDF allegato.*
 
 ![Modale identità digitale](img/02-login-spid.png)
 
@@ -303,7 +303,7 @@ Il rendiconto del **Fondo ESG Territoriale di Roma**, circa **9 milioni** per l'
 
 | # | Schermata | File | A cosa serve |
 |---|---|---|---|
-| 1 | Login | `index.html` | Accesso con credenziali o CIE; recupero password |
+| 1 | Login | `index.html` | Accesso con credenziali; recupero password |
 | 2 | Registrazione | `onboarding.html` | Wizard in 5 passi: dati, livello di accesso e ISEE, indirizzo, questionario, dichiarazioni |
 | 3 | Home | `home.html` | Stato del programma, prossima cura, impatto personale, sponsor |
 | 4 | Catalogo | `book-care.html` | Fascia A, Fascia B e cure ricorsive |

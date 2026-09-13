@@ -24,7 +24,7 @@ Tutto il modello economico (listino, sconto fisso 15%, tariffa ESG, voucher, Fon
 aureacarepoc/
 ├── canvas.html               # Hub di review con tutte le 17 schermate + Tweaks panel
 │
-├── index.html                # Lato paziente — login unificato Aurea + CIE simulata + intro Carelink
+├── index.html                # Lato paziente — login unificato Aurea (sole credenziali) + intro Carelink
 ├── onboarding.html           # Wizard 5 step: anagrafica → livello di accesso + ISEE obbligatorio → indirizzo → questionario clinico (bozza) → consensi + dichiarazioni obbligatorie
 ├── home.html                 # Dashboard paziente (stato programma non numerico, prossima cura, ESG personale, sponsor del Fondo)
 ├── book-care.html            # Catalogo: Fascia A (visite) / Fascia B (diagnostica) / cure ricorsive (trasporto) — pill "Coperta dal programma"
@@ -112,13 +112,13 @@ Sollevate dal cliente e **non decidibili in autonomia** — nel mockup sono rese
 
 ## Revisione cliente — cosa è cambiato
 
-Documento obbligatorio **per livello di accesso** (l'ISEE non è più richiesto a tutti) · **codice di segnalazione** al posto del canale autodichiarato · **scadenze documentali** con avviso a 30 giorni e blocco delle nuove richieste · **firma elettronica avanzata** sulle dichiarazioni · condizioni, privacy e dichiarazioni **scaricabili in PDF** dalla stampa del browser · **CO₂ netta** delle emissioni della flotta · **ore caregiver nette** degli accompagnamenti effettivi · **SPID rimosso**, resta la sola CIE.
+Documento obbligatorio **per livello di accesso** (l'ISEE non è più richiesto a tutti) · **codice di segnalazione** al posto del canale autodichiarato · **scadenze documentali** con avviso a 30 giorni e blocco delle nuove richieste · **firma elettronica avanzata** sulle dichiarazioni · condizioni, privacy e dichiarazioni **scaricabili in PDF** dalla stampa del browser · **CO₂ netta** delle emissioni della flotta · **ore caregiver nette** degli accompagnamenti effettivi · **SPID e CIE rimossi**: accesso con sole credenziali.
 
 Il modulo condiviso di queste funzioni è `js/program-docs.js`; l'equivalente su AureaShuttle vive in coda a `js/navigation.js`.
 
 ## Cosa NON è incluso
 
-- Backend reale o autenticazione vera (la CIE è un flusso **simulato**: nessun Identity Provider, nessuna libreria, nessun logo esterno). **SPID è stato rimosso dal POC** su indicazione del committente.
+- Backend reale o autenticazione vera. **SPID e CIE sono stati rimossi dal POC** su indicazione del committente: nessun Identity Provider, nessuna libreria, nessun logo esterno, solo credenziali.
 - **Pagamenti**: nel modello Carelink il paziente non paga e non ricarica nulla. Nessun checkout, nessun wallet prepagato.
 - Storage cifrato dei documenti (UI di upload simulata)
 - Verifiche automatiche di ISEE e ricetta (vedi "Questioni aperte")

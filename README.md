@@ -13,7 +13,7 @@ Il paziente **non paga nulla**: le prestazioni sono coperte da **voucher ESG** f
 
 AureaCare copre **2 attori**:
 
-- **Paziente** · si registra (accesso **CIE simulato**, codice di segnalazione dell'ente, documento del solo livello di accesso scelto), prenota visite di Fascia A e diagnostica di Fascia B presso strutture private certificate ISO 9001 / JCI a Roma (**ricetta medica obbligatoria**), attiva il **trasporto gratuito porta-a-porta** per i cicli di cure ricorsive (handoff verso AureaShuttle), compila il questionario di raccolta informazioni e traccia l'impatto ESG personale (CO₂ evitata, ore caregiver risparmiate, drop-out evitati).
+- **Paziente** · si registra (accesso con credenziali, codice di segnalazione dell'ente, documento del solo livello di accesso scelto), prenota visite di Fascia A e diagnostica di Fascia B presso strutture private certificate ISO 9001 / JCI a Roma (**ricetta medica obbligatoria**), attiva il **trasporto gratuito porta-a-porta** per i cicli di cure ricorsive (handoff verso AureaShuttle), compila il questionario di raccolta informazioni e traccia l'impatto ESG personale (CO₂ evitata, ore caregiver risparmiate, drop-out evitati).
 - **Coordinatore Alphio** (ruolo tecnico `admin`) · **valida i voucher** con revisione documenti e livello di accesso, scarica la **fattura verificabile CSRD**, gestisce la rete di 18 strutture private convenzionate, coordina le corse Samarcanda, monitora i KPI ESG (SROI per layer, benefici monetizzati, aderenza terapeutica) e il **Fondo ESG Territoriale** con la sua governance.
 
 ### L'app paziente non espone alcuna componente economica
@@ -46,7 +46,7 @@ I pazienti arrivano **segnalati** da Comuni / Regione Lazio → Associazioni (ch
 - **ISEE obbligatorio in registrazione**: l'upload del Modello ISEE blocca l'avanzamento del wizard se assente.
 - **Ricetta medica obbligatoria in prenotazione**: il CTA "Conferma" resta disabilitato finché il paziente non usa la ricetta già verificata o non ne carica una nuova. La ricetta compare nel recap e come requisito obbligatorio nel modale di revisione del Coordinatore.
 - **Due dichiarazioni obbligatorie e storicizzate** (accettate in onboarding, consultabili in `profile.html`): (a) la documentazione caricata è veritiera, (b) autorizzazione al contatto con le autorità competenti per eventuali verifiche. Di ognuna si conservano data/ora, versione del testo e canale di accettazione; lo **storico** è visibile al paziente (con ricevuta scaricabile) e al Coordinatore nella scheda paziente.
-- **Accesso CIE**: presente in `index.html` come flusso **simulato** (nessun servizio di autenticazione reale), con precompilazione anagrafica da CIE in onboarding. **SPID è stato rimosso** dall'intero POC su indicazione del committente: la CIE resta l'unica identità digitale del programma.
+- **Accesso con sole credenziali**: **SPID e CIE sono stati rimossi** dall'intero POC su indicazione del committente. Nessuna identità digitale, nessuna precompilazione anagrafica: `index.html` espone il solo form email/password. La *carta d'identità* resta come **documento** da caricare, con la sua scadenza — è un requisito documentale, non un metodo di accesso.
 
 ### Questionario di raccolta informazioni · **bozza da validare**
 
@@ -129,7 +129,7 @@ aureacarepoc/
 ├── CLAUDE.md                  spec per agenti AI che riprendono il repo
 └── project/
     ├── canvas.html                  hub review (17 schermate + 3 tweaks live)
-    ├── index.html                   login paziente + CIE simulata + intro Programma Carelink
+    ├── index.html                   login paziente (sole credenziali) + intro Programma Carelink
     ├── onboarding.html              wizard 5 step (anagrafica · livello di accesso + ISEE obbligatorio · indirizzo · questionario clinico [bozza] · consensi + dichiarazioni obbligatorie)
     ├── home.html                    dashboard paziente: stato programma (non numerico) + prossima cura + ESG personale + sponsor del Fondo
     ├── book-care.html               catalogo: Fascia A · Fascia B · cure ricorsive (pill "Coperta dal programma", nessun prezzo)

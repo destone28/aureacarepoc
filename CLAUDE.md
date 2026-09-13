@@ -64,7 +64,7 @@ Both share `js/styles.css`, `js/navigation.js`, `js/icons.js`, and `data/mock-da
 - **Documents expire and the patient is warned 30 days ahead.** `patient.docs[].expires` plus `docExpiryState()` / `expiringDocs()` in `js/program-docs.js`. Rendered as a banner on `home.html`, as badges in `profile.html`, as a blocker on `booking.html`, and as a review blocker in `admin-approvals.html` / `admin-patients.html`. An expired document suspends new requests; already-approved care stays valid.
 - **Advanced electronic signature (FEA) on the blocking declarations.** `requestFeaSignature()` asks for a one-time code before the signature is recorded, and stores type, method, OTP reference, timestamp, origin and document hash. The OTP is **simulated and shown on screen** — the point is the shape of the retained record, not a real delivery. Don't wire a real OTP provider.
 - **Programme documents are versioned and downloadable as PDF.** `PROGRAM_DOCS` in `js/program-docs.js` holds the texts (conditions · privacy · declarations) with version, date and hash; `openProgramDoc()` shows them and `printProgramDoc()` opens a print view so the browser's "Save as PDF" produces the file. **No PDF library, no server-side generator** — don't add one.
-- **CIE login** in `index.html` is **simulated** (no real IdP, no library, no external logos — text buttons only). `admin-login.html` does not use it. **SPID has been removed from the whole POC** on the client's instruction: CIE is the only digital identity in the programme. Don't reintroduce it.
+- **No digital-identity login at all.** **SPID and CIE have both been removed from the whole POC** on the client's instruction: `index.html` offers credentials only, and onboarding has no identity prefill. Don't reintroduce either. The *carta d'identità* survives as an uploaded **document** (`patient.docs.cie`, with an expiry) — that is a document requirement, not an access method, and must stay.
 
 ### Simulated SSO across the Aurea suite
 `js/navigation.js` reads/writes the localStorage key **`aurea_auth_user`** (`{ email, role, apps }`). This key is the convention shared with AureaVia and AureaShuttle to simulate cross-app SSO without a backend. `requireAuth()` / `requireAdmin()` redirect to the relevant login if the key is missing or `role` doesn't match. The Coordinatore Alphio is still `role: 'admin'` — only the copy changed.
@@ -98,7 +98,7 @@ The economic fields on `bookings` (`list_price`, `esg_price`, `voucher_id`) are 
 When adding screens that need data, extend `mock-data.js` rather than inlining. Numbers are cross-referenced by several pages (home, profile, admin-dashboard, admin-esg, admin-fund) — **grep all consumers before changing a value**, and run `node --check` on `mock-data.js` afterwards.
 
 ## What is explicitly NOT included
-Real backend, real auth (CIE is a simulated flow — no IdP, no library; **SPID is removed, don't add it back**), **any payment flow at all** (the Carelink model has zero patient cost — do not add checkout, top-ups or payment providers), encrypted document storage (upload UI is simulated). Don't add these speculatively.
+Real backend, real auth (**no SPID, no CIE, no identity provider of any kind** — credentials only), **any payment flow at all** (the Carelink model has zero patient cost — do not add checkout, top-ups or payment providers), encrypted document storage (upload UI is simulated). Don't add these speculatively.
 
 ## Open questions (To Be) — do not resolve unilaterally
 

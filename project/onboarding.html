@@ -135,21 +135,8 @@
     .upload-card.mandatory.done::after { content: 'Caricato'; background: var(--success); }
     .upload-card.mandatory.invalid { border-color: var(--error); box-shadow: 0 0 0 2px rgba(244,67,54,.14); background: #FCEBEB; }
     .upload-card.mandatory.invalid::after { background: var(--error); }
-    /* Precompilazione da identità digitale (CIE) — flusso simulato nel POC.
-       SPID rimosso su indicazione del committente: la CIE è l'unica identità
-       digitale prevista dal programma. */
-    .sso-banner {
-      border: 1px solid #C7DBF5;
-      background: #F2F7FD;
-      border-radius: var(--r-md);
-      padding: 14px;
-      margin-bottom: 22px;
-      display: grid; gap: 12px;
-    }
-    .sso-banner-head { display: flex; gap: 10px; align-items: flex-start; }
-    .sso-banner-head svg { flex: none; color: var(--care-blue-dark); margin-top: 1px; }
-    .sso-banner-head p { font-size: 13px; line-height: 1.5; color: var(--ink); }
-    .sso-banner .btn svg { vertical-align: -3px; }
+    /* Nessuna precompilazione da identità digitale: SPID e CIE sono stati
+       rimossi dal POC su indicazione del committente. L'anagrafica si digita. */
     /* Questionario di censimento anagrafico — proposta da validare col cliente.
        Il consenso sanitario è obbligatorio ma ha una classe propria (q-required):
        le due dichiarazioni dello step 5 restano un blocco di validazione a sé. */
@@ -201,17 +188,6 @@
       <section class="step-pane active" data-step="1">
         <h2 class="wiz-title">Iniziamo dai tuoi dati</h2>
         <p class="wiz-sub">Il Programma ESG Carelink, promosso da Alphio APS, nasce per contrastare il drop-out terapeutico e la rinuncia alle cure causati da liste d'attesa e costi. I tuoi dati servono per associare prestazioni e documenti.</p>
-
-        <!-- Identità digitale: i dati anagrafici arrivano già verificati dall'IdP (flusso simulato) -->
-        <div class="sso-banner">
-          <div class="sso-banner-head">
-            <span id="ico-sso"></span>
-            <p>I dati anagrafici possono essere <strong>precompilati dalla CIE</strong>: arrivano già verificati dall'identità digitale, senza doverli riscrivere.</p>
-          </div>
-          <button type="button" class="btn btn--secondary btn--block" id="btn-prefill" onclick="prefillFromCie()">
-            <span id="ico-prefill"></span> Precompila da CIE
-          </button>
-        </div>
 
         <div class="field-row">
           <div class="field">
@@ -607,23 +583,7 @@
     document.getElementById('ico-fea').outerHTML = aIcon('shield-check', { size: 20 });
     document.getElementById('ico-ref-ok').outerHTML = aIcon('shield-check', { size: 18 });
     document.getElementById('ico-err-health').outerHTML = aIcon('alert', { size: 16 });
-    document.getElementById('ico-sso').outerHTML = aIcon('shield-check', { size: 18 });
-    document.getElementById('ico-prefill').innerHTML = aIcon('user', { size: 16 });
 
-    // Precompilazione da identità digitale: nel POC i dati arrivano dal mock,
-    // in produzione sarebbero gli attributi letti dalla CIE.
-    function prefillFromCie() {
-      const p = MOCK.patient;
-      document.getElementById('ob-first-name').value = p.first_name;
-      document.getElementById('ob-last-name').value  = p.last_name;
-      document.getElementById('ob-cf').value         = p.cf;
-      document.getElementById('ob-birth').value      = p.birth;
-      document.getElementById('ob-address').value    = p.address.replace(/,\s*Roma$/, '');
-      const btn = document.getElementById('btn-prefill');
-      btn.innerHTML = aIcon('check-circle', { size: 16 }) + ' Dati verificati da CIE';
-      btn.disabled = true;
-      showToast('Dati anagrafici precompilati dalla CIE', 'success');
-    }
 
     // Upload grid (step 2). Obbligatori: la carta d'identità e il SOLO documento
     // del livello di accesso selezionato — i tre livelli sono alternativi, quindi
